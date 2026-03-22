@@ -1,0 +1,23 @@
+﻿# Node modules
+node_modules/
+npm-debug.log*
+
+# Build outputs
+dist/
+build/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Playwright browsers (downloaded separately)
+/backend/node_modules/.cache/
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+
+# Logs
+*.log
