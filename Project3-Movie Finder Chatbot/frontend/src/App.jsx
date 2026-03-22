@@ -5,7 +5,7 @@ import './App.css';
 
 const WELCOME = {
   id: 'welcome', role: 'bot', type: 'text',
-  text: "👋 Hi! I'm **Movie Finder**. Type the name of a city and I'll tell you what movies are playing there right now!",
+  text: "👋 Hi! I'm your **Agentic Movie & Weather Planner**. Ask me about movies in any city — I'll check the weather and find what's playing!",
 };
 let counter = 0;
 const uid = () => `msg-${++counter}-${Date.now()}`;
@@ -13,6 +13,8 @@ const uid = () => `msg-${++counter}-${Date.now()}`;
 export default function App() {
   const [messages, setMessages] = useState([WELCOME]);
   const [loading, setLoading] = useState(false);
+  // Conversation history kept for multi-turn context (role/content pairs only)
+  const [history, setHistory] = useState([]);
   const bottomRef = useRef(null);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
@@ -21,22 +23,38 @@ export default function App() {
 
   const handleSend = async (text) => {
     if (!text.trim() || loading) return;
-    addMsg({ role: 'user', type: 'text', text: text.trim() });
+    const userText = text.trim();
+    addMsg({ role: 'user', type: 'text', text: userText });
     setLoading(true);
     try {
-      const res = await fetch('/api/movies', {
+      const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ city: text.trim() }),
+        body: JSON.stringify({ message: userText, history }),
       });
-      if (!res.ok) { const { error } = await res.json().catch(() => ({})); throw new Error(error || `Server error ${res.status}`); }
-      const { movies, city, source } = await res.json();
-      if (!movies?.length) {
-        addMsg({ role: 'bot', type: 'text', text: `😕 No movies found for **${city}**. Try another city!` });
-      } else {
-        const note = source === 'live' ? '🌐 *Live data from Rotten Tomatoes*' : '🎭 *Demo data — live scraping unavailable for this region*';
-        addMsg({ role: 'bot', type: 'text', text: `🎬 Found **${movies.length} movies** now playing in **${city}**!\n\n${note}` });
+      if (!res.ok) {
+        const { error } = await res.json().catch(() => ({}));
+        throw new Error(error || `Server error ${res.status}`);
+      }
+      const { reply, movies, toolsUsed } = await res.json();
+
+      // Show the LLM's text reply
+      addMsg({ role: 'bot', type: 'text', text: reply });
+
+      // Show structured movie cards if the agent fetched them
+      if (movies?.length) {
         addMsg({ role: 'bot', type: 'movies', movies });
+      }
+
+      // Append this turn to history for follow-up questions
+      setHistory((prev) => [
+        ...prev,
+        { role: 'user', content: userText },
+        { role: 'assistant', content: reply },
+      ]);
+
+      if (toolsUsed?.length) {
+        console.log('[Agent] Tools used:', toolsUsed.join(', '));
       }
     } catch (err) {
       addMsg({ role: 'bot', type: 'text', text: `⚠️ Oops! ${err.message}. Make sure the backend is running on port 5000.` });
@@ -46,22 +64,28 @@ export default function App() {
   return (
     <div className="app">
       <aside className="sidebar">
-        <div className="sidebar-logo">🎬</div>
-        <h2 className="sidebar-title">Movie Finder</h2>
-        <p className="sidebar-subtitle">powered by Playwright</p>
+        <div className="sidebar-logo">🤖</div>
+        <h2 className="sidebar-title">Agentic Planner</h2>
+        <p className="sidebar-subtitle">powered by Llama 3.1</p>
         <div className="sidebar-divider" />
-        <p className="sidebar-hint">Try typing one of these cities:</p>
+        <p className="sidebar-hint">Try asking:</p>
         <ul className="sidebar-examples">
-          {['New York', 'Mumbai', 'London', 'Tokyo', 'Sydney'].map((c) => (
+          {[
+            'Movies in New York',
+            'What\'s playing in London?',
+            'Good movies for a rainy day in Tokyo',
+            'What should I watch in Mumbai tonight?',
+            'Movies in Sydney',
+          ].map((c) => (
             <li key={c}>{c}</li>
           ))}
         </ul>
-        <div className="sidebar-footer"><span className="status-dot" /><span>Backend on :5000</span></div>
+        <div className="sidebar-footer"><span className="status-dot" /><span>Backend on :5001</span></div>
       </aside>
       <main className="chat-area">
         <header className="chat-header">
-          <span className="chat-header-icon">🎬</span>
-          <span className="chat-header-title">Movie Finder Chatbot</span>
+          <span className="chat-header-icon">🤖</span>
+          <span className="chat-header-title">Agentic Movie & Weather Planner</span>
         </header>
         <ChatWindow messages={messages} loading={loading} />
         <div ref={bottomRef} />

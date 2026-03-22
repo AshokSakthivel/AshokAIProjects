@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mimecast · AWS Migration FinOps Strategy | Eswar · April 2026</title>
+  <style>
+    /* ── Reset & Variables ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:       #060c1a;
+      --bg-card:       #0d1526;
+      --bg-panel:      #101d33;
+      --bg-hover:      #162338;
+      --bg-glass:      rgba(255,255,255,0.03);
+      --border:        #1a3355;
+      --border-light:  #2a4f7a;
+      --blue:    #38bdf8;
+      --indigo:  #818cf8;
+      --green:   #34d399;
+      --amber:   #fbbf24;
+      --rose:    #fb7185;
+      --pink:    #f472b6;
+      --purple:  #c084fc;
+      --cyan:    #22d3ee;
+      --text:    #e2e8f0;
+      --muted:   #94a3b8;
+      --dim:     #4a647e;
+      --font-mono: 'Courier New', 'Lucida Console', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--bg-deep);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    /* Grid bg */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(56,189,248,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56,189,248,0.025) 1px, transparent 1px);
+      background-size: 44px 44px;
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── Nav Sidebar ─────────────────────────────────────────────────────── */
+    .sidenav {
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      width: 220px;
+      background: rgba(6,12,26,0.95);
+      border-right: 1px solid var(--border);
+      padding: 28px 0;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      backdrop-filter: blur(8px);
+    }
+    .sidenav-logo {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 6px;
+    }
+    .sidenav-logo .corp { font-size: 15px; font-weight: 800; color: #fff; }
+    .sidenav-logo .sub  { font-size: 11px; color: var(--blue); font-family: var(--font-mono); }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 20px;
+      font-size: 12px; font-weight: 600; color: var(--muted);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .nav-item:hover, .nav-item.active {
+      color: var(--blue);
+      border-left-color: var(--blue);
+      background: rgba(56,189,248,0.06);
+    }
+    .nav-icon { font-size: 14px; width: 18px; text-align: center; }
+    .nav-section {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--dim);
+      font-family: var(--font-mono);
+      padding: 14px 20px 4px;
+    }
+    .wave-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      flex-shrink: 0; margin-left: auto;
+    }
+
+    @media (max-width: 900px) { .sidenav { display: none; } }
+
+    /* ── Main Content ────────────────────────────────────────────────────── */
+    .main {
+      margin-left: 220px;
+      padding: 0 40px 80px;
+      position: relative; z-index: 1;
+    }
+    @media (max-width: 900px) { .main { margin-left: 0; padding: 0 16px 60px; } }
+
+    /* ── Page Hero ───────────────────────────────────────────────────────── */
+    .hero {
+      padding: 48px 0 36px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg,rgba(56,189,248,0.12),rgba(129,140,248,0.09));
+      border: 1px solid rgba(56,189,248,0.25);
+      border-radius: 6px;
+      padding: 4px 14px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--blue);
+      font-family: var(--font-mono);
+      margin-bottom: 18px;
+    }
+    .hero-badge .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+
+    .hero h1 {
+      font-size: 32px; font-weight: 800; line-height: 1.25;
+      color: #fff; margin-bottom: 12px; max-width: 750px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(90deg, var(--blue), var(--indigo), var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p { font-size: 15px; color: var(--muted); max-width: 650px; margin-bottom: 24px; }
+    .hero-meta {
+      display: flex; flex-wrap: wrap; gap: 20px;
+    }
+    .hero-chip {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 13px; color: var(--muted);
+    }
+    .hero-chip strong { color: var(--text); }
+    .hero-chip .icon { font-size: 14px; }
+
+    /* ── Section Headings ─────────────────────────────────────────────────── */
+    .sec-heading {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 24px; padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sec-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .bg-blue   { background: rgba(56,189,248,0.12); }
+    .bg-indigo { background: rgba(129,140,248,0.12); }
+    .bg-green  { background: rgba(52,211,153,0.12); }
+    .bg-amber  { background: rgba(251,191,36,0.12); }
+    .bg-rose   { background: rgba(251,113,133,0.12); }
+    .bg-purple { background: rgba(192,132,252,0.12); }
+    .bg-cyan   { background: rgba(34,211,238,0.12); }
+
+    .sec-heading-text { flex: 1; }
+    .sec-num { font-size: 11px; font-family: var(--font-mono); color: var(--dim); margin-bottom: 2px; }
+    .sec-title { font-size: 20px; font-weight: 700; color: #fff; }
+    .tag {
+      font-size: 11px; font-weight: 600; padding: 3px 10px;
+      border-radius: 20px; text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .tag-blue   { background:rgba(56,189,248,.14);  color:var(--blue);   border:1px solid rgba(56,189,248,.25); }
+    .tag-green  { background:rgba(52,211,153,.14);  color:var(--green);  border:1px solid rgba(52,211,153,.25); }
+    .tag-amber  { background:rgba(251,191,36,.14);  color:var(--amber);  border:1px solid rgba(251,191,36,.25); }
+    .tag-rose   { background:rgba(251,113,133,.14); color:var(--rose);   border:1px solid rgba(251,113,133,.25); }
+    .tag-purple { background:rgba(192,132,252,.14); color:var(--purple); border:1px solid rgba(192,132,252,.25); }
+    .tag-indigo { background:rgba(129,140,248,.14); color:var(--indigo); border:1px solid rgba(129,140,248,.25); }
+
+    /* ── Cards & Panels ──────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: var(--border-light); }
+
+    .section-block {
+      margin-bottom: 40px;
+      scroll-margin-top: 30px;
+    }
+
+    /* ── KPI Row ─────────────────────────────────────────────────────────── */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 1100px) { .kpi-row { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 600px)  { .kpi-row { grid-template-columns: 1fr; } }
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      position: relative; overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .kpi-card:hover { transform: translateY(-2px); border-color: var(--border-light); }
+    .kpi-card::after {
+      content: ''; position: absolute;
+      bottom: 0; left: 0; right: 0; height: 2px;
+    }
+    .kpi-card.c-blue::after  { background: linear-gradient(90deg, var(--blue), transparent); }
+    .kpi-card.c-green::after { background: linear-gradient(90deg, var(--green), transparent); }
+    .kpi-card.c-amber::after { background: linear-gradient(90deg, var(--amber), transparent); }
+    .kpi-card.c-rose::after  { background: linear-gradient(90deg, var(--rose), transparent); }
+    .kpi-card.c-purple::after{ background: linear-gradient(90deg, var(--purple), transparent); }
+    .kpi-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
+    .kpi-val   { font-size: 26px; font-weight: 800; color: #fff; line-height: 1; margin-bottom: 6px; }
+    .kpi-sub   { font-size: 12px; color: var(--muted); }
+    .kpi-icon  { position: absolute; top: 16px; right: 16px; font-size: 22px; opacity: 0.3; }
+
+    /* ── Wave Timeline ───────────────────────────────────────────────────── */
+    .wave-timeline {
+      display: flex; flex-direction: column; gap: 0;
+      position: relative;
+    }
+    .wave-timeline::before {
+      content: ''; position: absolute;
+      left: 28px; top: 0; bottom: 0; width: 2px;
+      background: linear-gradient(to bottom, var(--blue), var(--purple), var(--green), var(--amber), var(--rose));
+    }
+
+    .wave-item { position: relative; padding-left: 72px; padding-bottom: 36px; }
+    .wave-item:last-child { padding-bottom: 0; }
+
+    .wave-node {
+      position: absolute; left: 0; top: 0;
+      width: 58px; height: 58px; border-radius: 12px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      border: 2px solid;
+      font-weight: 800; font-size: 11px; letter-spacing: 0.05em;
+      font-family: var(--font-mono);
+      z-index: 1;
+    }
+    .wave-node .wn-num  { font-size: 18px; line-height: 1; margin-bottom: 2px; }
+    .wave-node .wn-label{ font-size: 9px; opacity: 0.8; }
+
+    .wn-0 { background:rgba(56,189,248,.1);   border-color:var(--blue);   color:var(--blue);   }
+    .wn-1 { background:rgba(129,140,248,.1);  border-color:var(--indigo); color:var(--indigo); }
+    .wn-2 { background:rgba(52,211,153,.1);   border-color:var(--green);  color:var(--green);  }
+    .wn-3 { background:rgba(192,132,252,.1);  border-color:var(--purple); color:var(--purple); }
+    .wn-4 { background:rgba(251,191,36,.1);   border-color:var(--amber);  color:var(--amber);  }
+    .wn-5 { background:rgba(251,113,133,.1);  border-color:var(--rose);   color:var(--rose);   }
+
+    .wave-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .wave-content:hover { border-color: var(--border-light); }
+
+    .wave-header {
+      padding: 16px 20px;
+      display: flex; align-items: center; gap: 12px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+    .wave-header:hover { background: var(--bg-hover); }
+    .wave-header.open  { background: rgba(255,255,255,0.03); }
+
+    .wave-title { font-size: 15px; font-weight: 700; color: #fff; flex: 1; }
+    .wave-range { font-size: 11px; font-family: var(--font-mono); color: var(--dim); white-space: nowrap; }
+    .wave-chevron { font-size: 13px; color: var(--dim); transition: transform 0.25s; }
+    .wave-header.open .wave-chevron { transform: rotate(90deg); }
+
+    .wave-body {
+      padding: 0 20px 20px;
+      display: none;
+    }
+    .wave-body.open { display: block; }
+
+    .week-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .week-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      transition: border-color 0.2s;
+    }
+    .week-card:hover { border-color: var(--border-light); }
+    .week-badge {
+      display: inline-block;
+      font-size: 10px; font-weight: 700;
+      font-family: var(--font-mono); letter-spacing: 0.1em;
+      padding: 2px 8px; border-radius: 4px;
+      text-transform: uppercase;
+      background: rgba(255,255,255,0.05); color: var(--dim);
+      margin-bottom: 8px;
+    }
+    .week-focus-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 12px; }
+
+    .lever-block { margin-top: 10px; }
+    .lever-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--dim); font-family: var(--font-mono);
+      display: flex; align-items: center; gap: 5px;
+      margin-bottom: 6px;
+    }
+    .lever-label .lcolor { width: 6px; height: 6px; border-radius: 50%; }
+    ul.lever-list {
+      list-style: none; display: flex; flex-direction: column; gap: 5px; padding-left: 0;
+    }
+    ul.lever-list li {
+      display: flex; align-items: flex-start; gap: 7px;
+      font-size: 12px; color: var(--muted); line-height: 1.5;
+    }
+    ul.lever-list li::before {
+      content: '▸'; font-size: 10px; margin-top: 3px;
+      flex-shrink: 0;
+    }
+    ul.lever-list.db li::before   { color: var(--green); }
+    ul.lever-list.aws li::before  { color: var(--amber); }
+    ul.lever-list.risk li::before { color: var(--rose); }
+
+    code { font-family: var(--font-mono); font-size: 11px; background: rgba(255,255,255,0.07); padding: 1px 5px; border-radius: 3px; color: var(--cyan); }
+
+    /* ── Portal Design ───────────────────────────────────────────────────── */
+    .portal-frame {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(56,189,248,0.06);
+    }
+    .portal-topbar {
+      background: linear-gradient(135deg, #0b1929, #0e2040);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .portal-dots { display: flex; gap: 7px; }
+    .portal-dots span { width: 11px; height: 11px; border-radius: 50%; }
+    .portal-dots span:nth-child(1) { background: #ff5f57; }
+    .portal-dots span:nth-child(2) { background: #febc2e; }
+    .portal-dots span:nth-child(3) { background: #28c840; }
+    .portal-title { font-size: 13px; font-weight: 600; color: var(--muted); font-family: var(--font-mono); flex: 1; text-align: center; }
+    .portal-status { font-size: 11px; color: var(--green); }
+
+    .portal-layout {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      min-height: 520px;
+    }
+    @media (max-width: 700px) { .portal-layout { grid-template-columns: 1fr; } }
+
+    .portal-sidenav {
+      background: rgba(0,0,0,0.25);
+      border-right: 1px solid var(--border);
+      padding: 16px 0;
+    }
+    .portal-nav-item {
+      padding: 9px 16px;
+      font-size: 12px; font-weight: 500; color: var(--muted);
+      display: flex; align-items: center; gap: 8px;
+      border-left: 2px solid transparent;
+      transition: all 0.2s; cursor: pointer;
+    }
+    .portal-nav-item:hover { color: var(--blue); background: rgba(56,189,248,0.05); }
+    .portal-nav-item.active { color: var(--blue); border-left-color: var(--blue); background: rgba(56,189,248,0.08); font-weight: 700; }
+    .portal-nav-group { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); padding: 12px 16px 4px; font-family: var(--font-mono); }
+
+    .portal-main-area { padding: 20px; }
+    .pane-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); font-family: var(--font-mono); margin-bottom: 12px; }
+
+    .portal-kpi-mini {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 16px;
+    }
+    @media (max-width: 900px) { .portal-kpi-mini { grid-template-columns: repeat(2,1fr); } }
+    .pkpi {
+      background: var(--bg-panel); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px;
+    }
+    .pkpi .pk-label { font-size: 10px; color: var(--dim); margin-bottom: 6px; }
+    .pkpi .pk-val   { font-size: 20px; font-weight: 800; color: #fff; }
+    .pkpi .pk-sub   { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .pkpi .pk-bar   { height: 3px; border-radius: 2px; margin-top: 8px; }
+
+    .portal-charts {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    @media (max-width: 700px) { .portal-charts { grid-template-columns: 1fr; } }
+    .portal-chart-box {
+      background: var(--bg-panel); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px;
+    }
+    .chart-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+
+    /* Fake bar chart */
+    .bar-chart { display: flex; flex-direction: column; gap: 8px; }
+    .bar-row { display: flex; align-items: center; gap: 8px; }
+    .bar-label { font-size: 11px; color: var(--muted); width: 80px; flex-shrink: 0; text-align: right; }
+    .bar-track { flex: 1; height: 14px; background: rgba(255,255,255,0.05); border-radius: 7px; overflow: hidden; }
+    .bar-fill  { height: 100%; border-radius: 7px; transition: width 1s; }
+    .bar-val   { font-size: 11px; color: var(--muted); width: 36px; text-align: right; }
+
+    /* Doughnut fake */
+    .donut-container { display: flex; align-items: center; gap: 16px; }
+    .donut-svg { flex-shrink: 0; }
+    .donut-legend { display: flex; flex-direction: column; gap: 7px; }
+    .dl-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); }
+    .dl-dot  { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Alert feed */
+    .alert-feed { display: flex; flex-direction: column; gap: 7px; }
+    .alert-item {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--bg-panel); border: 1px solid var(--border);
+      border-radius: 7px; padding: 9px 12px; font-size: 12px;
+    }
+    .alert-sev { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .alert-sev.warn { background: var(--amber); }
+    .alert-sev.crit { background: var(--rose); animation: pulse 1.5s infinite; }
+    .alert-sev.ok   { background: var(--green); }
+    .alert-msg { flex: 1; color: var(--text); }
+    .alert-team{ font-family: var(--font-mono); font-size: 11px; color: var(--dim); white-space: nowrap; }
+
+    /* ── Pane Spec Cards ─────────────────────────────────────────────────── */
+    .pane-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 640px) { .pane-grid { grid-template-columns: 1fr; } }
+    .pane-spec {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px;
+      transition: border-color 0.2s, transform 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .pane-spec:hover { border-color: var(--border-light); transform: translateY(-2px); }
+    .pane-spec::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+    .pane-spec.p-exec::before   { background: linear-gradient(90deg, var(--blue), var(--indigo)); }
+    .pane-spec.p-eng::before    { background: linear-gradient(90deg, var(--green), var(--cyan)); }
+    .pane-spec.p-cost::before   { background: linear-gradient(90deg, var(--amber), var(--rose)); }
+    .pane-spec.p-alert::before  { background: linear-gradient(90deg, var(--rose), var(--pink)); }
+    .pane-spec.p-decom::before  { background: linear-gradient(90deg, var(--purple), var(--blue)); }
+    .pane-spec.p-tag::before    { background: linear-gradient(90deg, var(--cyan), var(--green)); }
+
+    .pane-spec-icon { font-size: 28px; margin-bottom: 10px; }
+    .pane-spec-name { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .pane-spec-sub  { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+    .widget-list { display: flex; flex-direction: column; gap: 6px; }
+    .widget-item {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; color: var(--muted);
+      background: var(--bg-panel); border: 1px solid var(--border);
+      border-radius: 6px; padding: 7px 10px;
+    }
+    .widget-item .wi-icon { font-size: 14px; flex-shrink: 0; }
+    .widget-item .wi-badge {
+      margin-left: auto; font-size: 10px; font-weight: 700;
+      padding: 1px 7px; border-radius: 10px; white-space: nowrap;
+    }
+    .wb-new   { background:rgba(52,211,153,.15);  color:var(--green);  border:1px solid rgba(52,211,153,.3); }
+    .wb-live  { background:rgba(56,189,248,.15);  color:var(--blue);   border:1px solid rgba(56,189,248,.3); }
+    .wb-alert { background:rgba(251,191,36,.15);  color:var(--amber);  border:1px solid rgba(251,191,36,.3); }
+    .wb-warn  { background:rgba(251,113,133,.15); color:var(--rose);   border:1px solid rgba(251,113,133,.3); }
+
+    /* ── Risk / Bubble Table ─────────────────────────────────────────────── */
+    table.strategy-table {
+      width: 100%; border-collapse: collapse; font-size: 13px;
+    }
+    table.strategy-table thead tr { background: var(--bg-panel); }
+    table.strategy-table th {
+      padding: 10px 14px; text-align: left;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--dim); border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono);
+    }
+    table.strategy-table td {
+      padding: 11px 14px; border-bottom: 1px solid var(--border);
+      color: var(--text); vertical-align: top;
+    }
+    table.strategy-table tr:last-child td { border-bottom: none; }
+    table.strategy-table tr:hover td { background: var(--bg-hover); }
+
+    /* ── Fade Up ─────────────────────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(18px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .fadein { animation: fadeUp 0.45s ease both; }
+    .d1  { animation-delay: 0.05s; }
+    .d2  { animation-delay: 0.10s; }
+    .d3  { animation-delay: 0.15s; }
+    .d4  { animation-delay: 0.20s; }
+    .d5  { animation-delay: 0.25s; }
+    .d6  { animation-delay: 0.30s; }
+
+    /* ── Misc ────────────────────────────────────────────────────────────── */
+    strong { color: #fff; font-weight: 600; }
+    p { color: var(--muted); margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+    .text-blue   { color: var(--blue); }
+    .text-green  { color: var(--green); }
+    .text-amber  { color: var(--amber); }
+    .text-rose   { color: var(--rose); }
+    .text-purple { color: var(--purple); }
+  </style>
+</head>
+<body>
+
+<!-- ── Sidebar Navigation ──────────────────────────────────────────────── -->
+<nav class="sidenav">
+  <div class="sidenav-logo">
+    <div class="corp">Mimecast</div>
+    <div class="sub">// AWS Migration FinOps</div>
+  </div>
+  <div class="nav-section">Overview</div>
+  <a class="nav-item active" href="#overview"><span class="nav-icon">🏠</span> Executive Brief</a>
+  <a class="nav-item" href="#kpis"><span class="nav-icon">📊</span> Migration KPIs</a>
+  <div class="nav-section">Wave Strategy</div>
+  <a class="nav-item" href="#wave-model"><span class="nav-icon">🌊</span> Wave 0 — Foundation</a>
+  <a class="nav-item" href="#wave-model"><span class="nav-icon">🌊</span> Wave 1 — Baseline</a>
+  <a class="nav-item" href="#wave-model"><span class="nav-icon">🌊</span> Wave 2 — DB Migration</a>
+  <a class="nav-item" href="#wave-model"><span class="nav-icon">🌊</span> Wave 3 — Optimization</a>
+  <a class="nav-item" href="#wave-model"><span class="nav-icon">🌊</span> Wave 4 — Go-Live</a>
+  <a class="nav-item" href="#wave-model"><span class="nav-icon">🌊</span> Wave 5 — Decommission</a>
+  <div class="nav-section">Portal Design</div>
+  <a class="nav-item" href="#portal-preview"><span class="nav-icon">🖥️</span> Dashboard Preview</a>
+  <a class="nav-item" href="#portal-panes"><span class="nav-icon">🧩</span> Pane Specs</a>
+  <div class="nav-section">Appendix</div>
+  <a class="nav-item" href="#bubble-risk"><span class="nav-icon">⚡</span> Migration Bubble Risk</a>
+</nav>
+
+<!-- ── Main ───────────────────────────────────────────────────────────────── -->
+<main class="main">
+
+  <!-- Hero -->
+  <section class="hero fadein" id="overview">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      CONFIDENTIAL · STRATEGY DOCUMENT · LIVE
+    </div>
+    <h1>AWS Data Migration <em>FinOps Strategy</em><br>& Command Center Design</h1>
+    <p>
+      A 12-week wave-based execution plan and internal portal architecture for Mimecast's
+      large-scale Private Data Center to AWS migration — engineered for aggressive cost
+      optimization and zero financial surprises.
+    </p>
+    <div class="hero-meta">
+      <div class="hero-chip"><span class="icon">👤</span> <strong>Engineering Leader:</strong>&nbsp;Eswar</div>
+      <div class="hero-chip"><span class="icon">📅</span> <strong>Kick-off:</strong>&nbsp;April 1, 2026</div>
+      <div class="hero-chip"><span class="icon">🏁</span> <strong>Target Go-Live:</strong>&nbsp;May 31, 2026</div>
+      <div class="hero-chip"><span class="icon">🔧</span> <strong>Maintenance Window:</strong>&nbsp;June 30, 2026</div>
+      <div class="hero-chip"><span class="icon">☁️</span> <strong>Destination:</strong>&nbsp;AWS (Multi-Region)</div>
+      <div class="hero-chip"><span class="icon">💰</span> <strong>Program:</strong>&nbsp;AWS MAP + FinOps Excellence</div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- KPIs -->
+  <section class="section-block fadein d1" id="kpis">
+    <div class="sec-heading">
+      <div class="sec-icon bg-blue">📊</div>
+      <div class="sec-heading-text">
+        <div class="sec-num">§ 01 · MIGRATION KPIs</div>
+        <div class="sec-title">Programme Success Metrics</div>
+      </div>
+      <span class="tag tag-blue">North Star Metrics</span>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-card c-blue">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-label">MAP Credits Target</div>
+        <div class="kpi-val">$2.5M</div>
+        <div class="kpi-sub">AWS Migration Acceleration Program</div>
+      </div>
+      <div class="kpi-card c-green">
+        <div class="kpi-icon">📉</div>
+        <div class="kpi-label">COGS Reduction Target</div>
+        <div class="kpi-val">35%</div>
+        <div class="kpi-sub">vs. current DC run-rate (12-month view)</div>
+      </div>
+      <div class="kpi-card c-amber">
+        <div class="kpi-icon">🔥</div>
+        <div class="kpi-label">Bubble Window (Dual-Run)</div>
+        <div class="kpi-val">≤ 8 wk</div>
+        <div class="kpi-sub">Overlapping DC + AWS cost target cap</div>
+      </div>
+      <div class="kpi-card c-rose">
+        <div class="kpi-icon">🖥️</div>
+        <div class="kpi-label">DC Decommission</div>
+        <div class="kpi-val">100%</div>
+        <div class="kpi-sub">Target: July 5, 2026 full rack exit</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p style="font-size:14px; color:var(--text); margin-bottom:14px;">
+        <strong>Strategic Imperative:</strong> The "migration bubble" — the period where Mimecast pays for both its
+        private DC and AWS infrastructure simultaneously — is the single largest financial risk in this programme.
+        All wave execution decisions are optimized to <strong class="text-amber">compress this window to under 8 weeks</strong>.
+      </p>
+      <div style="display:grid; grid-template-columns: repeat(3,1fr); gap:12px;">
+        <div style="background:var(--bg-panel); border:1px solid var(--border); border-radius:8px; padding:14px;">
+          <div style="font-size:11px; color:var(--dim); font-family:var(--font-mono); margin-bottom:6px;">OPTIMIZATION PILLARS</div>
+          <ul class="lever-list db">
+            <li>Graviton3 instance adoption</li>
+            <li>Aurora Serverless v2 for variable DB workloads</li>
+            <li>EBS <code>io2</code> → <code>gp3</code> migration (−20% cost)</li>
+          </ul>
+        </div>
+        <div style="background:var(--bg-panel); border:1px solid var(--border); border-radius:8px; padding:14px;">
+          <div style="font-size:11px; color:var(--dim); font-family:var(--font-mono); margin-bottom:6px;">COMMERCIAL LEVERS</div>
+          <ul class="lever-list aws">
+            <li>AWS MAP credit tagging from Day 1</li>
+            <li>Compute Savings Plans (1-year, no-upfront)</li>
+            <li>S3 Intelligent-Tiering + Lifecycle Policies</li>
+          </ul>
+        </div>
+        <div style="background:var(--bg-panel); border:1px solid var(--border); border-radius:8px; padding:14px;">
+          <div style="font-size:11px; color:var(--dim); font-family:var(--font-mono); margin-bottom:6px;">GOVERNANCE CONTROLS</div>
+          <ul class="lever-list risk">
+            <li>15% daily spend spike auto-alert</li>
+            <li>Mandatory resource tagging policy (SCPs)</li>
+            <li>Weekly COGS review cadence</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Wave Model -->
+  <section class="section-block fadein d2" id="wave-model">
+    <div class="sec-heading">
+      <div class="sec-icon bg-green">🌊</div>
+      <div class="sec-heading-text">
+        <div class="sec-num">§ 02 · THE WAVE MODEL</div>
+        <div class="sec-title">12-Week Execution Plan — April 1 to June 23, 2026</div>
+      </div>
+      <span class="tag tag-green">Click Waves to Expand</span>
+    </div>
+
+    <div class="wave-timeline">
+
+      <!-- WAVE 0 -->
+      <div class="wave-item">
+        <div class="wave-node wn-0">
+          <span class="wn-num">W0</span>
+          <span class="wn-label">FOUNDATION</span>
+        </div>
+        <div class="wave-content">
+          <div class="wave-header open" onclick="toggleWave(this)">
+            <span class="wave-title">Wave 0 — Foundation & FinOps Scaffolding</span>
+            <span class="wave-range">Weeks 1–2 · Apr 1–14</span>
+            <span class="tag tag-blue">Infra Zero</span>
+            <span class="wave-chevron">▶</span>
+          </div>
+          <div class="wave-body open">
+            <p><strong>Strategic Focus:</strong> Establish FinOps guardrails before a single workload touches AWS. No engineering team ships infrastructure without tagging policies, budget alerts, and MAP credit enrollment in place. Cost attribution is non-negotiable from day one.</p>
+            <div class="week-grid">
+              <div class="week-card">
+                <span class="week-badge">Week 1 · Apr 1–7</span>
+                <div class="week-focus-title">🏗 FinOps Infrastructure Setup</div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--green)"></span> DB Expert Levers</div>
+                  <ul class="lever-list db">
+                    <li>Inventory all existing DB workloads: Oracle, MSSQL, PostgreSQL instance families, storage volumes, IOPS profiles</li>
+                    <li>Capture CloudWatch Disk I/O baselines for all DBs to size <code>gp3</code> provisioned IOPS correctly</li>
+                    <li>Identify Aurora Serverless v2 candidates (variable-load, dev/test DBs)</li>
+                    <li>Flag <code>io2</code> volumes: projected savings migrating to <code>gp3</code> at same IOPS (−20% cost)</li>
+                  </ul>
+                </div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--amber)"></span> AWS Commercial Levers</div>
+                  <ul class="lever-list aws">
+                    <li>Enroll in <strong>AWS MAP</strong> — secure migration credits. Tag all new resources with <code>map-migrated: yes</code> immediately</li>
+                    <li>Enable <strong>AWS Cost Explorer</strong> + Cost Anomaly Detection (15% daily threshold)</li>
+                    <li>Configure <strong>AWS Budgets</strong> — per-team budget alerts at 80% and 100% thresholds</li>
+                    <li>Activate <strong>Consolidated Billing</strong> under AWS Organization with SCPs for tagging enforcement</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="week-card">
+                <span class="week-badge">Week 2 · Apr 8–14</span>
+                <div class="week-focus-title">🏷 Tagging Policy & Baseline Baselining</div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--green)"></span> DB Expert Levers</div>
+                  <ul class="lever-list db">
+                    <li>Deploy <strong>AWS DMS replication instances</strong> in target VPCs — use <code>r7g</code> (Graviton3) DMS instances for ~20% compute saving</li>
+                    <li>Enable <strong>RDS Performance Insights</strong> on all target RDS instances from creation</li>
+                    <li>Size DMS replication instance storage: use <code>gp3</code> not <code>gp2</code> for all DMS volumes</li>
+                  </ul>
+                </div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--amber)"></span> AWS Commercial Levers</div>
+                  <ul class="lever-list aws">
+                    <li>Define mandatory tagging taxonomy: <code>team</code>, <code>env</code>, <code>product</code>, <code>cost-center</code>, <code>migration-wave</code></li>
+                    <li>Enforce via AWS Config + SCP — deny resource creation without required tags</li>
+                    <li>Establish <strong>S3 Intelligent-Tiering</strong> baseline policy on all migration staging buckets</li>
+                    <li>Capture DC total cost baseline (colocation + power + bandwidth) for bubble tracking</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WAVE 1 -->
+      <div class="wave-item">
+        <div class="wave-node wn-1">
+          <span class="wn-num">W1</span>
+          <span class="wn-label">ASSESS</span>
+        </div>
+        <div class="wave-content">
+          <div class="wave-header" onclick="toggleWave(this)">
+            <span class="wave-title">Wave 1 — Assessment, Network & Non-Prod Migration</span>
+            <span class="wave-range">Weeks 3–4 · Apr 15–28</span>
+            <span class="tag tag-indigo">Non-Prod First</span>
+            <span class="wave-chevron">▶</span>
+          </div>
+          <div class="wave-body">
+            <p><strong>Strategic Focus:</strong> Migrate non-production workloads first to validate tooling, burn in monitoring, and generate real AWS cost data against which to right-size production. Network egress costs are profiled and Direct Connect pricing locked in before production cutover.</p>
+            <div class="week-grid">
+              <div class="week-card">
+                <span class="week-badge">Week 3 · Apr 15–21</span>
+                <div class="week-focus-title">🔬 Right-Sizing & Non-Prod DB Migration</div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--green)"></span> DB Expert Levers</div>
+                  <ul class="lever-list db">
+                    <li>Migrate dev/test databases using DMS full-load — validate schema conversion via <strong>AWS SCT</strong></li>
+                    <li>Run non-prod on <strong>Aurora Serverless v2</strong> — set ACU min=0.5, max=8; validate autoscaling against actual dev traffic</li>
+                    <li>Compare <code>db.r7g</code> (Graviton3) vs <code>db.r6i</code> on non-prod for benchmark lift before committing to prod</li>
+                    <li>Enable <strong>RDS Storage Autoscaling</strong> for all non-prod instances to avoid over-provisioning</li>
+                  </ul>
+                </div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--amber)"></span> AWS Commercial Levers</div>
+                  <ul class="lever-list aws">
+                    <li>Non-prod runs on <strong>Spot Instances</strong> wherever possible (dev environments, batch jobs, CI/CD runners)</li>
+                    <li>Use <strong>AWS Compute Optimizer</strong> recommendations on first week of non-prod data</li>
+                    <li>Tag all non-prod resources with <code>env: non-prod</code>; allocate separate budget alert</li>
+                    <li>Evaluate <strong>AWS Reserved Instance Marketplace</strong> for 1-year standard RI purchases on steady-state services</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="week-card">
+                <span class="week-badge">Week 4 · Apr 22–28</span>
+                <div class="week-focus-title">🌐 Network Cost Profiling</div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--green)"></span> DB Expert Levers</div>
+                  <ul class="lever-list db">
+                    <li>Measure DMS migration throughput — profile data transfer bytes and ingress costs (ingress to AWS is free; validate egress patterns)</li>
+                    <li>Optimize DMS LOB column handling — <code>Limited LOB mode</code> vs <code>Full LOB mode</code> dramatically impacts replication cost</li>
+                    <li>Profile read replica traffic — identify candidates for <strong>RDS Proxy</strong> to reduce connection overhead and costs</li>
+                  </ul>
+                </div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--amber)"></span> AWS Commercial Levers</div>
+                  <ul class="lever-list aws">
+                    <li>Lock in <strong>AWS Direct Connect</strong> pricing for production bulk data transfer — dramatically cheaper than internet egress at scale</li>
+                    <li>Configure <strong>VPC Flow Logs</strong> + cost attribution for cross-AZ data transfer monitoring</li>
+                    <li>Evaluate <strong>S3 Transfer Acceleration</strong> vs Direct Connect for bulk DB dump transfer — benchmark cost/time</li>
+                    <li>First weekly COGS review — compare actuals vs MAP-adjusted baseline</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WAVE 2 -->
+      <div class="wave-item">
+        <div class="wave-node wn-2">
+          <span class="wn-num">W2</span>
+          <span class="wn-label">DB MIG</span>
+        </div>
+        <div class="wave-content">
+          <div class="wave-header" onclick="toggleWave(this)">
+            <span class="wave-title">Wave 2 — Production Database Migration</span>
+            <span class="wave-range">Weeks 5–7 · Apr 29 – May 19</span>
+            <span class="tag tag-green">Critical Path</span>
+            <span class="wave-chevron">▶</span>
+          </div>
+          <div class="wave-body">
+            <p><strong>Strategic Focus:</strong> Execute production database migrations — the highest-risk, highest-impact cost events. DB teams lead on Graviton3 adoption, Aurora I/O optimization, and EBS modernization. The "bubble" cost peak occurs here — compress it with aggressive DC rack exit planning running in parallel.</p>
+            <div class="week-grid">
+              <div class="week-card">
+                <span class="week-badge">Week 5 · Apr 29 – May 5</span>
+                <div class="week-focus-title">🗄 Tier-1 DB Migration Begin</div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--green)"></span> DB Expert Levers</div>
+                  <ul class="lever-list db">
+                    <li>Initiate DMS CDC (Change Data Capture) replication for Tier-1 databases — target lag ≤ 60 seconds before cutover</li>
+                    <li>Provision production RDS instances on <strong><code>db.r7g.2xlarge</code> (Graviton3)</strong> — validate against benchmark results from Wave 1</li>
+                    <li>Migrate all EBS volumes on DB hosts from <code>io2</code> → <code>gp3</code> — match IOPS and throughput; lock in 20% cost reduction</li>
+                    <li>Deploy <strong>Aurora I/O-Optimized</strong> configuration for high-throughput Aurora clusters — eliminates per-million I/O charge above baseline</li>
+                  </ul>
+                </div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--amber)"></span> AWS Commercial Levers</div>
+                  <ul class="lever-list aws">
+                    <li>Purchase <strong>1-year Compute Savings Plans</strong> (no-upfront) for steady-state RDS and EC2 instances — 30–40% vs On-Demand</li>
+                    <li>Validate all DB resources tagged <code>map-migrated: yes</code> for MAP credit capture</li>
+                    <li>Monitor cost anomaly threshold — production DBs will spike on initial provisioning; pre-register as scheduled exceptions</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="week-card">
+                <span class="week-badge">Week 6 · May 6–12</span>
+                <div class="week-focus-title">🔄 CDC Stabilization & Read Replica Optimization</div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--green)"></span> DB Expert Levers</div>
+                  <ul class="lever-list db">
+                    <li>Validate CDC replication lag ≤ 60s consistently; tune DMS task settings: <code>ParallelLoadBufferSize</code>, <code>CommitRate</code></li>
+                    <li>Right-size Aurora read replicas using <strong>Performance Insights</strong> — kill over-provisioned replicas burning cost unnecessarily</li>
+                    <li>Enable <strong>RDS Proxy</strong> on high-connection-count services — reduces connection overhead, enables costless connection pooling</li>
+                    <li>Implement DB parameter group tuning: reduce <code>innodb_buffer_pool_size</code> on undersized instances, tune <code>work_mem</code> on PostgreSQL</li>
+                  </ul>
+                </div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--amber)"></span> AWS Commercial Levers</div>
+                  <ul class="lever-list aws">
+                    <li>Review <strong>AWS Trusted Advisor</strong> "Cost Optimization" checks — act on idle DB instances, unattached EBS volumes, old snapshots</li>
+                    <li>Implement <strong>RDS snapshot lifecycle policies</strong> — retain only 7 days of automated snapshots during migration; prune manual snapshots</li>
+                    <li>Confirm <strong>Multi-AZ cost</strong> is justified — convert non-critical DBs to Single-AZ during migration window, restore post-cutover</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="week-card">
+                <span class="week-badge">Week 7 · May 13–19</span>
+                <div class="week-focus-title">🗃 Storage Tiering & Archival Migration</div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--green)"></span> DB Expert Levers</div>
+                  <ul class="lever-list db">
+                    <li>Migrate cold / archival database tables to <strong>S3 + Athena</strong> pattern — remove from RDS tier entirely (eliminate DB storage cost for static data)</li>
+                    <li>Implement <strong>S3 Intelligent-Tiering</strong> lifecycle policy: objects &gt;30 days → IA tier; &gt;90 days → Archive Instant Access</li>
+                    <li>Set <strong>S3 Glacier Instant Retrieval</strong> for compliance data archives — 68% cheaper than S3 Standard</li>
+                    <li>Audit and delete orphaned DB snapshots across all accounts — snapshots compound cost silently</li>
+                  </ul>
+                </div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--amber)"></span> AWS Commercial Levers</div>
+                  <ul class="lever-list aws">
+                    <li>First <strong>MAP credit reconciliation</strong> — verify credits applied to EC2, RDS, DMS line items in Cost Explorer</li>
+                    <li>Evaluate converting high-memory EC2 app tier to <strong>Graviton3 (M7g/R7g)</strong> — 20% better price/performance</li>
+                    <li>Review cross-AZ data transfer costs in VPC Flow Logs — restructure service placement to minimize AZ-crossing where possible</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WAVE 3 -->
+      <div class="wave-item">
+        <div class="wave-node wn-3">
+          <span class="wn-num">W3</span>
+          <span class="wn-label">OPTIMIZE</span>
+        </div>
+        <div class="wave-content">
+          <div class="wave-header" onclick="toggleWave(this)">
+            <span class="wave-title">Wave 3 — Application Migration & Cost Optimization Sprint</span>
+            <span class="wave-range">Weeks 8–9 · May 20 – Jun 2</span>
+            <span class="tag tag-purple">Pre Go-Live</span>
+            <span class="wave-chevron">▶</span>
+          </div>
+          <div class="wave-body">
+            <p><strong>Strategic Focus:</strong> Application-tier migration and aggressive right-sizing before the May 31 Go-Live milestone. Every over-provisioned resource that survives cutover becomes permanent COGS drag. AWS Compute Optimizer recommendations are treated as actionable directives, not advisory noise.</p>
+            <div class="week-grid">
+              <div class="week-card">
+                <span class="week-badge">Week 8 · May 20–26</span>
+                <div class="week-focus-title">⚡ Graviton3 Adoption & Right-Sizing</div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--green)"></span> DB Expert Levers</div>
+                  <ul class="lever-list db">
+                    <li>Execute final cutover for all remaining production DBs — DMS CDC to zero-lag, then promote RDS replica to primary</li>
+                    <li>Validate <code>db.r7g</code> Graviton3 production performance under full production load — rollback plan if p99 degrades &gt;5%</li>
+                    <li>Enable <strong>Aurora Serverless v2 autoscaling</strong> on eligible clusters — set aggressive ACU caps to prevent runaway scaling</li>
+                  </ul>
+                </div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--amber)"></span> AWS Commercial Levers</div>
+                  <ul class="lever-list aws">
+                    <li>Act on all <strong>Compute Optimizer</strong> rightsizing recommendations with ≥10% cost saving — mandatory team sign-off if declining</li>
+                    <li>Convert non-prod EC2 to <strong>Spot with Auto Scaling Groups</strong> using On-Demand base capacity = 1</li>
+                    <li>Activate <strong>EC2 Instance Scheduler</strong> for non-prod — shut down dev environments 8 PM – 7 AM (saves ~60% of non-prod EC2 cost)</li>
+                    <li>Purchase additional <strong>Savings Plans</strong> now that production shape is known — target 70% On-Demand coverage via Savings Plans</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="week-card">
+                <span class="week-badge">Week 9 · May 27 – Jun 2</span>
+                <div class="week-focus-title">🏁 Go-Live Prep & Bubble Compression</div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--green)"></span> DB Expert Levers</div>
+                  <ul class="lever-list db">
+                    <li>Disable all DMS replication tasks post-cutover — replication instances are significant cost if left running idle</li>
+                    <li>Terminate DMS replication instances within 24 hours of final task completion</li>
+                    <li>Begin decommissioning DC-side DB servers in coordination with colocation provider SLA</li>
+                    <li>Archive DC-side database backup tapes to <strong>S3 Glacier Deep Archive</strong> — lowest-cost long-term retention ($0.00099/GB/month)</li>
+                  </ul>
+                </div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--amber)"></span> AWS Commercial Levers</div>
+                  <ul class="lever-list aws">
+                    <li><strong>May 31 Go-Live</strong> — Begin DC decommissioning clock. Every day of delay = continued dual-run cost exposure</li>
+                    <li>File rack exit notices with colocation provider — trigger contractual decommissioning process</li>
+                    <li>Verify MAP credit burn rate in Cost Explorer — ensure credits are applying before commitment periods expire</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WAVE 4 -->
+      <div class="wave-item">
+        <div class="wave-node wn-4">
+          <span class="wn-num">W4</span>
+          <span class="wn-label">GO-LIVE</span>
+        </div>
+        <div class="wave-content">
+          <div class="wave-header" onclick="toggleWave(this)">
+            <span class="wave-title">Wave 4 — Post Go-Live Stabilization & Continuous Optimization</span>
+            <span class="wave-range">Weeks 10–11 · Jun 3–16</span>
+            <span class="tag tag-amber">Stabilize</span>
+            <span class="wave-chevron">▶</span>
+          </div>
+          <div class="wave-body">
+            <p><strong>Strategic Focus:</strong> Validate production stability on AWS, close the migration bubble by aggressively decommissioning DC assets, and embed continuous cost optimization into engineering team rituals — transitioning from "migration mode" to "steady-state FinOps mode."</p>
+            <div class="week-grid">
+              <div class="week-card">
+                <span class="week-badge">Week 10 · Jun 3–9</span>
+                <div class="week-focus-title">📉 Bubble Close & DC Wind-Down</div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--green)"></span> DB Expert Levers</div>
+                  <ul class="lever-list db">
+                    <li>Execute <strong>Aurora I/O cost audit</strong> — compare actual I/O billing vs I/O-Optimized break-even point per cluster</li>
+                    <li>Run <strong>AWS Database Activity Streams</strong> audit to identify dormant schemas consuming storage unnecessarily</li>
+                    <li>Validate backup retention policies — ensure RDS automated backups are set correctly (7 days production, 3 days non-prod)</li>
+                  </ul>
+                </div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--amber)"></span> AWS Commercial Levers</div>
+                  <ul class="lever-list aws">
+                    <li>Formally close DC circuits and network connections that are no longer needed — Direct Connect ports not in use still incur charges</li>
+                    <li>Review <strong>NAT Gateway</strong> costs in VPC — often the #1 hidden cost driver; evaluate PrivateLink or VPC Endpoints as replacement</li>
+                    <li>Complete <strong>second MAP credit reconciliation</strong> and project remaining credit runway vs. actual spend velocity</li>
+                    <li>Issue Divya's <strong>June 15 customer communication</strong> about the scheduled maintenance window</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="week-card">
+                <span class="week-badge">Week 11 · Jun 10–16</span>
+                <div class="week-focus-title">📣 Customer Comms & Pre-Maintenance Prep</div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--green)"></span> DB Expert Levers</div>
+                  <ul class="lever-list db">
+                    <li>Pre-stage DB failover runbooks for June 30 maintenance window — validate multi-AZ automatic failover timing</li>
+                    <li>Test Aurora fast failover — target &lt;30 seconds RTO for all Tier-1 databases</li>
+                    <li>Snapshot all production DBs 24 hours before maintenance window as rollback point</li>
+                  </ul>
+                </div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--amber)"></span> AWS Commercial Levers</div>
+                  <ul class="lever-list aws">
+                    <li>Pre-purchase <strong>Savings Plans top-up</strong> based on 10-week production actuals — optimize coverage rate</li>
+                    <li>Conduct <strong>Trusted Advisor Premium</strong> full scan — act on all "Cost Optimization" and "Performance" flags</li>
+                    <li>Benchmark COGS: AWS run-rate vs pre-migration DC cost. Generate reduction % for executive report.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WAVE 5 -->
+      <div class="wave-item">
+        <div class="wave-node wn-5">
+          <span class="wn-num">W5</span>
+          <span class="wn-label">DECOM</span>
+        </div>
+        <div class="wave-content">
+          <div class="wave-header" onclick="toggleWave(this)">
+            <span class="wave-title">Wave 5 — Maintenance Window, Full Decommission & FinOps Steady State</span>
+            <span class="wave-range">Week 12 · Jun 17–23 + Maint Window Jun 30</span>
+            <span class="tag tag-rose">Final Phase</span>
+            <span class="wave-chevron">▶</span>
+          </div>
+          <div class="wave-body">
+            <p><strong>Strategic Focus:</strong> Execute the June 30th Maintenance Window (10:30 PM–12:30 AM) as the final DC infrastructure cutover event. Achieve full DC rack exit. Transition to steady-state AWS FinOps operations with monthly cadence replacing the weekly migration war-room.</p>
+            <div class="week-grid">
+              <div class="week-card">
+                <span class="week-badge">Week 12 · Jun 17–23</span>
+                <div class="week-focus-title">🔧 Maintenance Window Execution</div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--green)"></span> DB Expert Levers</div>
+                  <ul class="lever-list db">
+                    <li>Jun 30, 10:30 PM — Freeze DC-side DB writes, execute final DMS sync, promote AWS RDS as authoritative primary</li>
+                    <li>Verify all connection strings updated in application configs — no service should reference DC DB endpoints post-window</li>
+                    <li>Run full integrity check on AWS databases post-cutover — row counts, constraint validation, index health</li>
+                    <li>Power down DC DB servers — initiate hardware decommissioning with colocation provider</li>
+                  </ul>
+                </div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--amber)"></span> AWS Commercial Levers</div>
+                  <ul class="lever-list aws">
+                    <li>Post-window: cancel all DC-related recurring costs — colocation contracts, cross-connect circuits, power allocations</li>
+                    <li>Terminate all remaining DC-facing Direct Connect connections no longer needed post-decommission</li>
+                    <li>Generate <strong>final Migration Bubble Cost Report</strong> — total dual-run period cost vs. projected; share with Eswar and exec team</li>
+                    <li>Transition weekly COGS review to <strong>monthly FinOps review cadence</strong> — embed FinOps champions as permanent cost owners</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="week-card">
+                <span class="week-badge">Post Jun 30 · Steady State</span>
+                <div class="week-focus-title">♻️ FinOps Steady State Activation</div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--green)"></span> DB Expert Levers</div>
+                  <ul class="lever-list db">
+                    <li>Implement <strong>Aurora auto-pause</strong> on all dev/test Aurora Serverless clusters (zero ACU billing when idle)</li>
+                    <li>Schedule quarterly <strong>DB right-sizing reviews</strong> using 90-day CloudWatch utilization data</li>
+                    <li>Implement <strong>S3 Lifecycle Rules</strong> to transition DB exports automatically — Standard → IA (30d) → Glacier (90d)</li>
+                  </ul>
+                </div>
+                <div class="lever-block">
+                  <div class="lever-label"><span class="lcolor" style="background:var(--amber)"></span> AWS Commercial Levers</div>
+                  <ul class="lever-list aws">
+                    <li>Annual <strong>Savings Plans renewal review</strong> — evaluate converting flexible Compute SPs to EC2 Instance SPs (higher discount)</li>
+                    <li>Implement <strong>AWS Cost Anomaly Detection</strong> ML models trained on 90 days of steady-state data — retire manual 15% rule for non-critical paths</li>
+                    <li>Publish quarterly <strong>FinOps Scorecard</strong> — COGS per workload, Savings Plan coverage %, Compute Optimizer adoption rate</li>
+                    <li>Target: DC fully dark by <strong>July 5, 2026</strong> — zero colocation charges from this date</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div> <!-- /wave-timeline -->
+  </section>
+
+  <!-- Portal Preview -->
+  <section class="section-block fadein d3" id="portal-preview">
+    <div class="sec-heading">
+      <div class="sec-icon bg-indigo">🖥️</div>
+      <div class="sec-heading-text">
+        <div class="sec-num">§ 03 · PORTAL DESIGN</div>
+        <div class="sec-title">FinOps Command Center — Dashboard Preview</div>
+      </div>
+      <span class="tag tag-indigo">UI/UX Spec</span>
+    </div>
+
+    <div class="portal-frame">
+      <div class="portal-topbar">
+        <div class="portal-dots"><span></span><span></span><span></span></div>
+        <div class="portal-title">Mimecast · FinOps Command Center · Eswar · AWS Migration Dashboard</div>
+        <div class="portal-status">● LIVE</div>
+      </div>
+      <div class="portal-layout">
+        <!-- Portal sidenav mock -->
+        <div class="portal-sidenav">
+          <div class="portal-nav-group">Overview</div>
+          <div class="portal-nav-item active">📊 Executive Data Plane</div>
+          <div class="portal-nav-item">⚙️ Engineering Control</div>
+          <div class="portal-nav-item">🏷 Cost Allocation</div>
+          <div class="portal-nav-group">Operations</div>
+          <div class="portal-nav-item">🔔 Alerts (3)</div>
+          <div class="portal-nav-item">📦 DC Decommission</div>
+          <div class="portal-nav-item">📅 Migration Timeline</div>
+          <div class="portal-nav-group">Intelligence</div>
+          <div class="portal-nav-item">🤖 Optimizer</div>
+          <div class="portal-nav-item">📈 Reports</div>
+        </div>
+        <!-- Portal content mock -->
+        <div class="portal-main-area">
+          <div class="pane-label">Executive Data Plane — Week 5 of 12 · Budget Tracking</div>
+          <div class="portal-kpi-mini">
+            <div class="pkpi">
+              <div class="pk-label">Weekly AWS Burn Rate</div>
+              <div class="pk-val" style="color:var(--amber)">$84K</div>
+              <div class="pk-sub">↑ 12% vs last week (DB migration)</div>
+              <div class="pk-bar" style="background:linear-gradient(90deg,var(--amber),transparent);width:72%"></div>
+            </div>
+            <div class="pkpi">
+              <div class="pk-label">MAP Credits Used</div>
+              <div class="pk-val" style="color:var(--green)">$410K</div>
+              <div class="pk-sub">of $2.5M secured · 16.4%</div>
+              <div class="pk-bar" style="background:linear-gradient(90deg,var(--green),transparent);width:16%"></div>
+            </div>
+            <div class="pkpi">
+              <div class="pk-label">DC Cost (Bubble)</div>
+              <div class="pk-val" style="color:var(--rose)">$210K</div>
+              <div class="pk-sub">Dual-run week 5 of target ≤8</div>
+              <div class="pk-bar" style="background:linear-gradient(90deg,var(--rose),transparent);width:62%"></div>
+            </div>
+            <div class="pkpi">
+              <div class="pk-label">DB Migration Progress</div>
+              <div class="pk-val" style="color:var(--blue)">68%</div>
+              <div class="pk-sub">17 of 25 DBs migrated</div>
+              <div class="pk-bar" style="background:linear-gradient(90deg,var(--blue),transparent);width:68%"></div>
+            </div>
+          </div>
+          <!-- Charts row -->
+          <div class="portal-charts">
+            <div class="portal-chart-box">
+              <div class="chart-title">💰 COGS by Team (Weekly)</div>
+              <div class="bar-chart">
+                <div class="bar-row">
+                  <span class="bar-label">Arjun · Infra</span>
+                  <div class="bar-track"><div class="bar-fill" style="width:82%;background:linear-gradient(90deg,#0ea5e9,#38bdf8)"></div></div>
+                  <span class="bar-val">$31K</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label">Bala · AppSvc</span>
+                  <div class="bar-track"><div class="bar-fill" style="width:55%;background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div></div>
+                  <span class="bar-val">$21K</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label">Cheran · FinOps</span>
+                  <div class="bar-track"><div class="bar-fill" style="width:32%;background:linear-gradient(90deg,#10b981,#34d399)"></div></div>
+                  <span class="bar-val">$12K</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label">DMS · Migration</span>
+                  <div class="bar-track"><div class="bar-fill" style="width:26%;background:linear-gradient(90deg,#8b5cf6,#a78bfa)"></div></div>
+                  <span class="bar-val">$10K</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label">Platform · CI/CD</span>
+                  <div class="bar-track"><div class="bar-fill" style="width:21%;background:linear-gradient(90deg,#ec4899,#f472b6)"></div></div>
+                  <span class="bar-val">$8K</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label">Shared Svc</span>
+                  <div class="bar-track"><div class="bar-fill" style="width:5%;background:linear-gradient(90deg,#64748b,#94a3b8)"></div></div>
+                  <span class="bar-val">$2K</span>
+                </div>
+              </div>
+            </div>
+            <div class="portal-chart-box">
+              <div class="chart-title">🔔 Live Alert Feed</div>
+              <div class="alert-feed" style="margin-top:4px;">
+                <div class="alert-item">
+                  <span class="alert-sev crit"></span>
+                  <span class="alert-msg"><strong>+22% spike</strong> — EC2 DMS r7g.4xlarge cluster over-provisioned (WAV2 DMS)</span>
+                  <span class="alert-team">Team·Arjun</span>
+                </div>
+                <div class="alert-item">
+                  <span class="alert-sev warn"></span>
+                  <span class="alert-msg"><strong>RDS io2 volume</strong> — 3 volumes not yet migrated to gp3 (est. $1.2K/wk savings)</span>
+                  <span class="alert-team">DB·Ops</span>
+                </div>
+                <div class="alert-item">
+                  <span class="alert-sev warn"></span>
+                  <span class="alert-msg"><strong>NAT Gateway</strong> — $4,200 this week; review PrivateLink candidates</span>
+                  <span class="alert-team">Team·Bala</span>
+                </div>
+                <div class="alert-item">
+                  <span class="alert-sev ok"></span>
+                  <span class="alert-msg">MAP credits verified on 42 EC2 + 17 RDS resources ✓</span>
+                  <span class="alert-team">FinOps</span>
+                </div>
+                <div class="alert-item">
+                  <span class="alert-sev ok"></span>
+                  <span class="alert-msg">Savings Plan coverage at 71% — target 70% ✓</span>
+                  <span class="alert-team">FinOps</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pane Specs -->
+  <section class="section-block fadein d4" id="portal-panes">
+    <div class="sec-heading">
+      <div class="sec-icon bg-cyan">🧩</div>
+      <div class="sec-heading-text">
+        <div class="sec-num">§ 04 · PORTAL PANE SPECIFICATIONS</div>
+        <div class="sec-title">Feature Set by Dashboard View</div>
+      </div>
+      <span class="tag tag-blue">6 Panes Defined</span>
+    </div>
+    <div class="pane-grid">
+
+      <div class="pane-spec p-exec">
+        <div class="pane-spec-icon">📊</div>
+        <div class="pane-spec-name">Executive Data Plane</div>
+        <div class="pane-spec-sub">High-level cost + migration health for Eswar and leadership</div>
+        <div class="widget-list">
+          <div class="widget-item"><span class="wi-icon">💰</span> Weekly AWS Burn Rate vs Budget<span class="wi-badge wb-live">LIVE</span></div>
+          <div class="widget-item"><span class="wi-icon">💳</span> MAP Credits Secured vs Consumed<span class="wi-badge wb-live">LIVE</span></div>
+          <div class="widget-item"><span class="wi-icon">🔥</span> Migration Bubble Duration + Cost<span class="wi-badge wb-live">LIVE</span></div>
+          <div class="widget-item"><span class="wi-icon">🏁</span> DC Decommission Progress (% racked exited)<span class="wi-badge wb-live">LIVE</span></div>
+          <div class="widget-item"><span class="wi-icon">📉</span> Projected COGS Reduction at 12 months<span class="wi-badge wb-new">CALC</span></div>
+          <div class="widget-item"><span class="wi-icon">⏱</span> Wave Completion Timeline (Gantt strip)<span class="wi-badge wb-live">LIVE</span></div>
+        </div>
+      </div>
+
+      <div class="pane-spec p-eng">
+        <div class="pane-spec-icon">⚙️</div>
+        <div class="pane-spec-name">Engineering Control Plane</div>
+        <div class="pane-spec-sub">Technical FinOps metrics for DB and infra engineering leads</div>
+        <div class="widget-list">
+          <div class="widget-item"><span class="wi-icon">📐</span> Right-Sizing Recommendations (Compute Optimizer)<span class="wi-badge wb-alert">ACTION</span></div>
+          <div class="widget-item"><span class="wi-icon">😴</span> Idle / Zombie Resource Heatmap<span class="wi-badge wb-alert">ACTION</span></div>
+          <div class="widget-item"><span class="wi-icon">🗄</span> DB Utilization: CPU, I/O, Connections, Storage (%)<span class="wi-badge wb-live">LIVE</span></div>
+          <div class="widget-item"><span class="wi-icon">⚡</span> Graviton3 Adoption Rate (% of fleet)<span class="wi-badge wb-live">LIVE</span></div>
+          <div class="widget-item"><span class="wi-icon">💾</span> EBS gp3 Migration Status (% converted from io2)<span class="wi-badge wb-live">LIVE</span></div>
+          <div class="widget-item"><span class="wi-icon">🔄</span> DMS Replication Lag (seconds, per task)<span class="wi-badge wb-live">LIVE</span></div>
+        </div>
+      </div>
+
+      <div class="pane-spec p-cost">
+        <div class="pane-spec-icon">🏷</div>
+        <div class="pane-spec-name">Cost Allocation & Tagging</div>
+        <div class="pane-spec-sub">Attribution layer — cost per team, product line, and service</div>
+        <div class="widget-list">
+          <div class="widget-item"><span class="wi-icon">🥧</span> Spend by Product Line (interactive donuts)<span class="wi-badge wb-live">LIVE</span></div>
+          <div class="widget-item"><span class="wi-icon">📊</span> Cost per Team (bar chart, weekly trend)<span class="wi-badge wb-live">LIVE</span></div>
+          <div class="widget-item"><span class="wi-icon">🏷</span> Tagging Compliance %  (untagged resources flag)<span class="wi-badge wb-warn">WARN</span></div>
+          <div class="widget-item"><span class="wi-icon">🧾</span> Cost by Environment (prod / staging / dev / test)<span class="wi-badge wb-live">LIVE</span></div>
+          <div class="widget-item"><span class="wi-icon">🔍</span> Tag Drift Detection — resources missing required tags<span class="wi-badge wb-alert">ACTION</span></div>
+          <div class="widget-item"><span class="wi-icon">📋</span> Chargeback / Showback Report export (CSV/PDF)<span class="wi-badge wb-new">REPORT</span></div>
+        </div>
+      </div>
+
+      <div class="pane-spec p-alert">
+        <div class="pane-spec-icon">🔔</div>
+        <div class="pane-spec-name">Alert & Anomaly Center</div>
+        <div class="pane-spec-sub">Real-time feed — 15% spike detection, idle resources, SLA breaches</div>
+        <div class="widget-list">
+          <div class="widget-item"><span class="wi-icon">⚡</span> 15% Daily Spike Alert Feed (team-attributed)<span class="wi-badge wb-live">LIVE</span></div>
+          <div class="widget-item"><span class="wi-icon">🔴</span> Critical Alert Queue (≥25% spike · 4hr SLA)<span class="wi-badge wb-warn">SLA</span></div>
+          <div class="widget-item"><span class="wi-icon">🕰</span> Alert Acknowledgment Tracker (Champion response time)<span class="wi-badge wb-live">LIVE</span></div>
+          <div class="widget-item"><span class="wi-icon">📅</span> Scheduled Exception Registry (pre-approved spikes)<span class="wi-badge wb-new">MANAGE</span></div>
+          <div class="widget-item"><span class="wi-icon">📧</span> Slack + Email alert routing configuration<span class="wi-badge wb-new">CONFIG</span></div>
+          <div class="widget-item"><span class="wi-icon">🤖</span> ML Anomaly Detector (post 90-day steady state)<span class="wi-badge wb-new">COMING</span></div>
+        </div>
+      </div>
+
+      <div class="pane-spec p-decom">
+        <div class="pane-spec-icon">📦</div>
+        <div class="pane-spec-name">DC Decommission Tracker</div>
+        <div class="pane-spec-sub">Bubble clock — tracks every asset still running in the DC costing money</div>
+        <div class="widget-list">
+          <div class="widget-item"><span class="wi-icon">🖥</span> DC Server Count: Total / Decommed / Remaining<span class="wi-badge wb-live">LIVE</span></div>
+          <div class="widget-item"><span class="wi-icon">🔌</span> Active Colocation Circuits & Monthly Cost<span class="wi-badge wb-live">LIVE</span></div>
+          <div class="widget-item"><span class="wi-icon">⏱</span> Bubble Duration Timer (days since Apr 1 + dual-run cost)<span class="wi-badge wb-live">LIVE</span></div>
+          <div class="widget-item"><span class="wi-icon">📋</span> Rack Exit Checklist per Workload<span class="wi-badge wb-live">LIVE</span></div>
+          <div class="widget-item"><span class="wi-icon">📅</span> Target Full Dark Date: July 5, 2026<span class="wi-badge wb-alert">TARGET</span></div>
+          <div class="widget-item"><span class="wi-icon">💲</span> Daily Dual-Run Cost Burn (DC portion only)<span class="wi-badge wb-warn">WATCH</span></div>
+        </div>
+      </div>
+
+      <div class="pane-spec p-tag">
+        <div class="pane-spec-icon">📈</div>
+        <div class="pane-spec-name">Savings Intelligence</div>
+        <div class="pane-spec-sub">Optimization opportunity pipeline — actionable, ranked, assigned</div>
+        <div class="widget-list">
+          <div class="widget-item"><span class="wi-icon">🎯</span> Savings Plan Coverage % (target ≥ 70%)<span class="wi-badge wb-live">LIVE</span></div>
+          <div class="widget-item"><span class="wi-icon">📐</span> Compute Optimizer: Top 10 rightsizing actions<span class="wi-badge wb-alert">ACTION</span></div>
+          <div class="widget-item"><span class="wi-icon">💾</span> S3 Tiering Savings Tracker (IA + Glacier migration)<span class="wi-badge wb-live">LIVE</span></div>
+          <div class="widget-item"><span class="wi-icon">⛔</span> Spot Instance Candidate Pipeline<span class="wi-badge wb-new">SUGGEST</span></div>
+          <div class="widget-item"><span class="wi-icon">🗓</span> RI / SP Renewal Calendar (expiry alerts T−30d)<span class="wi-badge wb-alert">ACTION</span></div>
+          <div class="widget-item"><span class="wi-icon">📊</span> Quarterly FinOps Scorecard (PDF export)<span class="wi-badge wb-new">REPORT</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Migration Bubble Risk Table -->
+  <section class="section-block fadein d5" id="bubble-risk">
+    <div class="sec-heading">
+      <div class="sec-icon bg-rose">⚡</div>
+      <div class="sec-heading-text">
+        <div class="sec-num">§ 05 · APPENDIX</div>
+        <div class="sec-title">Migration Bubble Risk Register & Mitigation</div>
+      </div>
+      <span class="tag tag-rose">Risk Management</span>
+    </div>
+    <div class="card">
+      <table class="strategy-table">
+        <thead>
+          <tr>
+            <th>Risk</th>
+            <th>Impact</th>
+            <th>Probability</th>
+            <th>FinOps Mitigation</th>
+            <th>Owner</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>DB Migration Delay</strong><br><span style="font-size:12px;color:var(--muted)">DMS CDC lag prevents cutover</span></td>
+            <td><span style="color:var(--rose);font-weight:700;">HIGH</span> — extends bubble by weeks</td>
+            <td><span style="color:var(--amber);">MEDIUM</span></td>
+            <td>Daily lag monitoring; pre-approved fallback to mysqldump + S3 transfer if DMS throughput insufficient</td>
+            <td>DB Ops</td>
+          </tr>
+          <tr>
+            <td><strong>Graviton3 Incompatibility</strong><br><span style="font-size:12px;color:var(--muted)">ARM binary issues in prod DB</span></td>
+            <td><span style="color:var(--amber);">MEDIUM</span> — forced fallback to x86</td>
+            <td><span style="color:var(--green);">LOW</span></td>
+            <td>Non-prod validation in Wave 1 mandatory before prod purchase; x86 RI held as backup commitment</td>
+            <td>DB Ops</td>
+          </tr>
+          <tr>
+            <td><strong>Egress Cost Explosion</strong><br><span style="font-size:12px;color:var(--muted)">Unforeseen outbound data transfer</span></td>
+            <td><span style="color:var(--rose);font-weight:700;">HIGH</span> — $0.09/GB at scale is material</td>
+            <td><span style="color:var(--amber);">MEDIUM</span></td>
+            <td>VPC Flow Log cost tagging; CloudFront for public egress; PrivateLink for service-to-service; Direct Connect for DC-to-AWS bulk</td>
+            <td>Cheran</td>
+          </tr>
+          <tr>
+            <td><strong>MAP Credit Misattribution</strong><br><span style="font-size:12px;color:var(--muted)">Credits not applying to billed resources</span></td>
+            <td><span style="color:var(--rose);font-weight:700;">HIGH</span> — forfeited $2.5M mitigation</td>
+            <td><span style="color:var(--green);">LOW</span></td>
+            <td>Weekly MAP credit audit in Cost Explorer; dedicated <code>map-migrated</code> tag enforced via SCP from day 1</td>
+            <td>Cheran</td>
+          </tr>
+          <tr>
+            <td><strong>Aurora Serverless ACU Runaway</strong><br><span style="font-size:12px;color:var(--muted)">Autoscaling above cost budget</span></td>
+            <td><span style="color:var(--amber);">MEDIUM</span> — budget impact depends on ACU max setting</td>
+            <td><span style="color:var(--amber);">MEDIUM</span></td>
+            <td>Set conservative <code>max_acu</code> cap per environment; Cost Anomaly alert triggers at 15% spike; daily monitoring in Wave 2</td>
+            <td>DB Ops</td>
+          </tr>
+          <tr>
+            <td><strong>DC Exit Delay</strong><br><span style="font-size:12px;color:var(--muted)">Colocation contract terms delay rack exit</span></td>
+            <td><span style="color:var(--rose);font-weight:700;">HIGH</span> — every extra week = ~$210K dual-run cost</td>
+            <td><span style="color:var(--amber);">MEDIUM</span></td>
+            <td>Serve colocation exit notices by May 31 (120-day notice some providers); Eswar to engage procurement now</td>
+            <td>Eswar</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <div style="border-top:1px solid var(--border); margin-top:40px; padding-top:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div>
+      <div style="font-size:13px; font-weight:700; color:#fff;">Mimecast · AWS Migration FinOps Strategy</div>
+      <div style="font-size:12px; color:var(--dim); font-family:var(--font-mono);">Principal Cloud Architect &amp; Lead FinOps Strategist · Eswar · April 2026</div>
+    </div>
+    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+      <span class="tag tag-blue">12 Weeks</span>
+      <span class="tag tag-green">6 Waves</span>
+      <span class="tag tag-amber">AWS MAP</span>
+      <span class="tag tag-purple">FinOps Excellence</span>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  function toggleWave(header) {
+    const isOpen = header.classList.contains('open');
+    const body = header.nextElementSibling;
+    if (isOpen) {
+      header.classList.remove('open');
+      body.classList.remove('open');
+    } else {
+      header.classList.add('open');
+      body.classList.add('open');
+    }
+  }
+
+  // Highlight active nav on scroll
+  const sections = document.querySelectorAll('.section-block, .hero');
+  const navLinks = document.querySelectorAll('.nav-item');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        navLinks.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { threshold: 0.25 });
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

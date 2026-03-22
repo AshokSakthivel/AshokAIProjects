@@ -9,7 +9,7 @@ export default function ChatInput({ onSend, disabled }) {
       <input
         className="chat-input"
         type="text"
-        placeholder="Enter a city name (e.g. New York, Mumbai, London)..."
+        placeholder="Ask me about movies in any city (e.g. 'What's playing in Tokyo tonight?')..."
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKey}

@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #0a0f1e;
+  color: #e2e8f0;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0d1424; }
+::-webkit-scrollbar-thumb { background: #2d3f6b; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3b5197; }
+
+/* Gantt bar hover glow */
+.gantt-bar {
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+.gantt-bar:hover {
+  filter: brightness(1.25);
+  transform: scaleY(1.08);
+  cursor: pointer;
+}
+
+/* Tooltip fade */
+.tooltip {
+  animation: fadeIn 0.12s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Milestone pulse */
+.milestone-marker {
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}

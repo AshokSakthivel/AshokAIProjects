@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Engineering Excellence Strategy · Ashok Sakthivel · Sr. Director of Engineering</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:      #05080f;
+      --bg-card:      #0b1120;
+      --bg-panel:     #0f1828;
+      --bg-hover:     #152035;
+      --border:       #182840;
+      --border-light: #243d5e;
+      --blue:   #38bdf8;
+      --indigo: #818cf8;
+      --green:  #34d399;
+      --amber:  #fbbf24;
+      --rose:   #fb7185;
+      --pink:   #f472b6;
+      --purple: #c084fc;
+      --cyan:   #22d3ee;
+      --teal:   #2dd4bf;
+      --orange: #fb923c;
+      --text:   #e2e8f0;
+      --muted:  #94a3b8;
+      --dim:    #475569;
+      --mono:   'Courier New', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg-deep);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.75;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(129,140,248,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(129,140,248,0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── Sidebar ──────────────────────────────────────────────────────── */
+    .sidenav {
+      position: fixed; left: 0; top: 0; bottom: 0; width: 222px;
+      background: rgba(5,8,15,0.96);
+      border-right: 1px solid var(--border);
+      padding: 0; z-index: 100;
+      display: flex; flex-direction: column;
+      backdrop-filter: blur(10px);
+      overflow-y: auto;
+    }
+    .sn-logo {
+      padding: 22px 18px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sn-logo .name { font-size: 13px; font-weight: 800; color: #fff; }
+    .sn-logo .role { font-size: 10px; color: var(--indigo); font-family: var(--mono); margin-top: 2px; }
+    .sn-logo .init {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 34px; height: 34px; border-radius: 8px;
+      background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+      font-size: 14px; font-weight: 800; color: #fff; margin-bottom: 8px;
+    }
+
+    .sn-group { font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); padding: 14px 18px 4px; font-family: var(--mono); }
+    .sn-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 18px; font-size: 12px; font-weight: 500; color: var(--muted);
+      text-decoration: none; border-left: 2px solid transparent;
+      transition: all 0.2s; cursor: pointer;
+    }
+    .sn-item:hover { color: var(--indigo); background: rgba(129,140,248,0.06); }
+    .sn-item.active { color: var(--indigo); border-left-color: var(--indigo); background: rgba(129,140,248,0.09); font-weight: 700; }
+    .sn-icon { font-size: 13px; width: 16px; text-align: center; }
+
+    @media (max-width: 900px) { .sidenav { display: none; } }
+
+    /* ── Main ─────────────────────────────────────────────────────────── */
+    .main { margin-left: 222px; padding: 0 44px 80px; position: relative; z-index: 1; }
+    @media (max-width: 900px) { .main { margin-left: 0; padding: 0 16px 60px; } }
+
+    /* ── Hero ─────────────────────────────────────────────────────────── */
+    .hero { padding: 48px 0 36px; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg,rgba(129,140,248,.12),rgba(192,132,252,.08));
+      border: 1px solid rgba(129,140,248,.25); border-radius: 6px;
+      padding: 4px 14px; font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--indigo); font-family: var(--mono); margin-bottom: 18px;
+    }
+    .hero-eyebrow .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)} }
+
+    .hero h1 { font-size: 30px; font-weight: 800; line-height: 1.25; color: #fff; margin-bottom: 12px; max-width: 760px; }
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(90deg, var(--indigo), var(--purple), var(--pink));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hero p { font-size: 15px; color: var(--muted); max-width: 660px; margin-bottom: 24px; }
+    .hero-chips { display: flex; flex-wrap: wrap; gap: 16px; }
+    .hchip { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--muted); }
+    .hchip strong { color: var(--text); }
+
+    /* ── Section Structure ────────────────────────────────────────────── */
+    .sec { margin-bottom: 44px; scroll-margin-top: 30px; }
+    .sec-hd {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 24px; padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sec-ico {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .ib  { background: rgba(56,189,248,.12); }
+    .ii  { background: rgba(129,140,248,.12); }
+    .ig  { background: rgba(52,211,153,.12); }
+    .ia  { background: rgba(251,191,36,.12); }
+    .ir  { background: rgba(251,113,133,.12); }
+    .ip  { background: rgba(192,132,252,.12); }
+    .it  { background: rgba(45,212,191,.12); }
+    .io  { background: rgba(251,146,60,.12); }
+
+    .sec-hd-text { flex: 1; }
+    .sec-num { font-size: 10px; font-family: var(--mono); color: var(--dim); margin-bottom: 2px; }
+    .sec-title { font-size: 20px; font-weight: 700; color: #fff; }
+
+    .tag {
+      font-size: 11px; font-weight: 600; padding: 3px 10px;
+      border-radius: 20px; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap;
+    }
+    .tb  { background:rgba(56,189,248,.13);  color:var(--blue);   border:1px solid rgba(56,189,248,.25); }
+    .ti  { background:rgba(129,140,248,.13); color:var(--indigo); border:1px solid rgba(129,140,248,.25); }
+    .tg  { background:rgba(52,211,153,.13);  color:var(--green);  border:1px solid rgba(52,211,153,.25); }
+    .ta  { background:rgba(251,191,36,.13);  color:var(--amber);  border:1px solid rgba(251,191,36,.25); }
+    .tr  { background:rgba(251,113,133,.13); color:var(--rose);   border:1px solid rgba(251,113,133,.25); }
+    .tp  { background:rgba(192,132,252,.13); color:var(--purple); border:1px solid rgba(192,132,252,.25); }
+    .tt  { background:rgba(45,212,191,.13);  color:var(--teal);   border:1px solid rgba(45,212,191,.25); }
+
+    /* ── Cards ────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 22px;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: var(--border-light); }
+
+    code {
+      font-family: var(--mono); font-size: 11px;
+      background: rgba(255,255,255,0.07); padding: 1px 5px;
+      border-radius: 3px; color: var(--cyan);
+    }
+    strong { color: #fff; font-weight: 600; }
+    p { color: var(--muted); margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+    hr.div { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
+
+    /* ── KPI Row ──────────────────────────────────────────────────────── */
+    .kpi-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 13px; margin-bottom: 28px; }
+    @media (max-width: 1100px) { .kpi-row { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 600px)  { .kpi-row { grid-template-columns: 1fr; } }
+    .kc {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px; position: relative; overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .kc:hover { transform: translateY(-2px); border-color: var(--border-light); }
+    .kc::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; }
+    .kc.cb::after  { background: linear-gradient(90deg,var(--blue),transparent); }
+    .kc.ci::after  { background: linear-gradient(90deg,var(--indigo),transparent); }
+    .kc.cg::after  { background: linear-gradient(90deg,var(--green),transparent); }
+    .kc.ca::after  { background: linear-gradient(90deg,var(--amber),transparent); }
+    .kc.cr::after  { background: linear-gradient(90deg,var(--rose),transparent); }
+    .kc.cp::after  { background: linear-gradient(90deg,var(--purple),transparent); }
+    .kc.ct::after  { background: linear-gradient(90deg,var(--teal),transparent); }
+    .kc.co::after  { background: linear-gradient(90deg,var(--orange),transparent); }
+    .kl  { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; }
+    .kv  { font-size: 24px; font-weight: 800; color: #fff; line-height: 1; margin-bottom: 5px; }
+    .ks  { font-size: 12px; color: var(--muted); }
+    .ki  { position: absolute; top: 14px; right: 14px; font-size: 20px; opacity: 0.25; }
+
+    /* ── Phase Timeline ───────────────────────────────────────────────── */
+    .phase-timeline { display: flex; flex-direction: column; gap: 0; position: relative; }
+    .phase-timeline::before {
+      content: ''; position: absolute; left: 28px; top: 0; bottom: 0; width: 2px;
+      background: linear-gradient(to bottom, var(--indigo), var(--purple), var(--teal), var(--green));
+    }
+
+    .phase-item { position: relative; padding-left: 72px; padding-bottom: 32px; }
+    .phase-item:last-child { padding-bottom: 0; }
+    .phase-node {
+      position: absolute; left: 0; top: 0;
+      width: 58px; height: 58px; border-radius: 12px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      border: 2px solid; font-weight: 800; font-family: var(--mono); z-index: 1;
+    }
+    .phase-node .pn-num { font-size: 16px; line-height: 1; margin-bottom: 2px; }
+    .phase-node .pn-lbl { font-size: 9px; opacity: 0.8; letter-spacing: 0.05em; }
+    .pn0 { background:rgba(129,140,248,.1); border-color:var(--indigo); color:var(--indigo); }
+    .pn1 { background:rgba(192,132,252,.1); border-color:var(--purple); color:var(--purple); }
+    .pn2 { background:rgba(45,212,191,.1);  border-color:var(--teal);   color:var(--teal);   }
+    .pn3 { background:rgba(52,211,153,.1);  border-color:var(--green);  color:var(--green);  }
+
+    .phase-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden; transition: border-color 0.2s;
+    }
+    .phase-card:hover { border-color: var(--border-light); }
+    .phase-hd {
+      padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+      cursor: pointer; user-select: none; transition: background 0.2s;
+    }
+    .phase-hd:hover { background: rgba(255,255,255,0.025); }
+    .phase-hd.open  { background: rgba(255,255,255,0.02); }
+    .ph-title { font-size: 15px; font-weight: 700; color: #fff; flex: 1; }
+    .ph-range { font-size: 11px; font-family: var(--mono); color: var(--dim); white-space: nowrap; }
+    .ph-chev  { font-size: 12px; color: var(--dim); transition: transform 0.25s; }
+    .phase-hd.open .ph-chev { transform: rotate(90deg); }
+
+    .phase-body { display: none; padding: 0 20px 20px; }
+    .phase-body.open { display: block; }
+
+    .pillar-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 13px; margin-top: 16px; }
+    @media (max-width: 800px) { .pillar-grid { grid-template-columns: 1fr; } }
+    .pillar {
+      background: var(--bg-panel); border: 1px solid var(--border);
+      border-radius: 9px; padding: 15px;
+      transition: border-color 0.2s;
+    }
+    .pillar:hover { border-color: var(--border-light); }
+    .pillar-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--dim); font-family: var(--mono); display: flex; align-items: center; gap: 5px;
+      margin-bottom: 8px;
+    }
+    .plc { width: 6px; height: 6px; border-radius: 50%; }
+    ul.plist { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    ul.plist li {
+      display: flex; align-items: flex-start; gap: 7px;
+      font-size: 12px; color: var(--muted); line-height: 1.5;
+    }
+    ul.plist li::before { content: '▸'; font-size: 10px; margin-top: 3px; flex-shrink: 0; }
+    ul.plist.blue li::before   { color: var(--blue); }
+    ul.plist.indigo li::before { color: var(--indigo); }
+    ul.plist.green li::before  { color: var(--green); }
+    ul.plist.amber li::before  { color: var(--amber); }
+    ul.plist.teal li::before   { color: var(--teal); }
+    ul.plist.purple li::before { color: var(--purple); }
+
+    /* ── DORA Gauge Row ───────────────────────────────────────────────── */
+    .dora-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+    @media (max-width: 900px) { .dora-row { grid-template-columns: repeat(2,1fr); } }
+
+    .dora-card {
+      background: var(--bg-panel); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px; text-align: center;
+      transition: border-color 0.2s, transform 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .dora-card:hover { border-color: var(--border-light); transform: translateY(-2px); }
+    .dora-icon { font-size: 24px; margin-bottom: 8px; }
+    .dora-name { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .dora-target { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+    .dora-bar-track {
+      height: 6px; background: rgba(255,255,255,0.07);
+      border-radius: 3px; overflow: hidden; margin-bottom: 6px;
+    }
+    .dora-bar-fill { height: 100%; border-radius: 3px; }
+    .dora-level {
+      font-size: 11px; font-weight: 700; padding: 2px 8px;
+      border-radius: 10px; display: inline-block;
+    }
+    .dl-elite { background:rgba(52,211,153,.15); color:var(--green); border:1px solid rgba(52,211,153,.3); }
+    .dl-high  { background:rgba(56,189,248,.15); color:var(--blue);  border:1px solid rgba(56,189,248,.3); }
+    .dl-med   { background:rgba(251,191,36,.15); color:var(--amber); border:1px solid rgba(251,191,36,.3); }
+    .dl-low   { background:rgba(251,113,133,.15);color:var(--rose);  border:1px solid rgba(251,113,133,.3); }
+
+    /* ── Portal Frame ─────────────────────────────────────────────────── */
+    .portal-frame {
+      background: var(--bg-card); border: 1px solid var(--border-light);
+      border-radius: 14px; overflow: hidden;
+      box-shadow: 0 0 40px rgba(129,140,248,0.06);
+    }
+    .portal-bar {
+      background: linear-gradient(135deg,#080f20,#0d183a);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 22px; display: flex; align-items: center; gap: 12px;
+    }
+    .pdots { display: flex; gap: 7px; }
+    .pdots span { width: 11px; height: 11px; border-radius: 50%; }
+    .pdots span:nth-child(1) { background: #ff5f57; }
+    .pdots span:nth-child(2) { background: #febc2e; }
+    .pdots span:nth-child(3) { background: #28c840; }
+    .ptitle { flex: 1; text-align: center; font-size: 12px; color: var(--muted); font-family: var(--mono); }
+    .pstatus { font-size: 11px; color: var(--green); }
+
+    .portal-layout { display: grid; grid-template-columns: 185px 1fr; min-height: 500px; }
+    @media (max-width: 700px) { .portal-layout { grid-template-columns: 1fr; } }
+
+    .portal-nav {
+      background: rgba(0,0,0,0.22); border-right: 1px solid var(--border);
+      padding: 14px 0;
+    }
+    .pnav-group { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); padding: 10px 14px 3px; font-family: var(--mono); }
+    .pnav-item {
+      padding: 8px 14px; font-size: 12px; font-weight: 500; color: var(--muted);
+      display: flex; align-items: center; gap: 8px;
+      border-left: 2px solid transparent; transition: all 0.2s; cursor: pointer;
+    }
+    .pnav-item:hover { color: var(--indigo); background: rgba(129,140,248,0.05); }
+    .pnav-item.active { color: var(--indigo); border-left-color: var(--indigo); background: rgba(129,140,248,0.09); font-weight: 700; }
+
+    .portal-content { padding: 18px; }
+    .pc-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); font-family: var(--mono); margin-bottom: 12px; }
+
+    .mini-kpi { display: grid; grid-template-columns: repeat(4,1fr); gap: 9px; margin-bottom: 14px; }
+    @media (max-width: 900px) { .mini-kpi { grid-template-columns: repeat(2,1fr); } }
+    .mkpi {
+      background: var(--bg-panel); border: 1px solid var(--border);
+      border-radius: 8px; padding: 11px;
+    }
+    .mkpi .ml { font-size: 10px; color: var(--dim); margin-bottom: 5px; }
+    .mkpi .mv { font-size: 18px; font-weight: 800; color: #fff; }
+    .mkpi .ms { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .mkpi .mb { height: 3px; border-radius: 2px; margin-top: 7px; }
+
+    .portal-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+    @media (max-width: 700px) { .portal-charts { grid-template-columns: 1fr; } }
+    .pchart {
+      background: var(--bg-panel); border: 1px solid var(--border);
+      border-radius: 9px; padding: 13px;
+    }
+    .pc-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 11px; }
+
+    .bar-chart { display: flex; flex-direction: column; gap: 7px; }
+    .bar-row { display: flex; align-items: center; gap: 8px; }
+    .bar-lbl { font-size: 11px; color: var(--muted); width: 72px; flex-shrink: 0; text-align: right; }
+    .bar-trk { flex: 1; height: 12px; background: rgba(255,255,255,0.05); border-radius: 6px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 6px; }
+    .bar-val { font-size: 11px; color: var(--muted); width: 34px; text-align: right; }
+
+    .alert-feed { display: flex; flex-direction: column; gap: 6px; }
+    .af-item {
+      display: flex; align-items: center; gap: 9px;
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      border-radius: 6px; padding: 8px 11px; font-size: 12px;
+    }
+    .af-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .af-dot.g { background: var(--green); }
+    .af-dot.a { background: var(--amber); }
+    .af-dot.r { background: var(--rose); animation: blink 1.5s infinite; }
+    .af-msg { flex: 1; color: var(--text); }
+    .af-tag { font-family: var(--mono); font-size: 10px; color: var(--dim); }
+
+    /* ── Pane Spec Grid ───────────────────────────────────────────────── */
+    .spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    @media (max-width: 640px) { .spec-grid { grid-template-columns: 1fr; } }
+    .spec-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px; position: relative; overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .spec-card:hover { border-color: var(--border-light); transform: translateY(-2px); }
+    .spec-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+    .sc1::before { background:linear-gradient(90deg,var(--indigo),var(--purple)); }
+    .sc2::before { background:linear-gradient(90deg,var(--teal),var(--green)); }
+    .sc3::before { background:linear-gradient(90deg,var(--amber),var(--orange)); }
+    .sc4::before { background:linear-gradient(90deg,var(--rose),var(--pink)); }
+    .sc5::before { background:linear-gradient(90deg,var(--blue),var(--cyan)); }
+    .sc6::before { background:linear-gradient(90deg,var(--green),var(--teal)); }
+
+    .spec-icon { font-size: 26px; margin-bottom: 9px; }
+    .spec-name { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .spec-sub  { font-size: 12px; color: var(--muted); margin-bottom: 13px; }
+
+    .widget-list { display: flex; flex-direction: column; gap: 6px; }
+    .wi {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; color: var(--muted);
+      background: var(--bg-panel); border: 1px solid var(--border);
+      border-radius: 6px; padding: 7px 10px;
+    }
+    .wi .wii { font-size: 13px; flex-shrink: 0; }
+    .wbadge {
+      margin-left: auto; font-size: 10px; font-weight: 700;
+      padding: 1px 7px; border-radius: 10px; white-space: nowrap;
+    }
+    .wbl  { background:rgba(56,189,248,.14);  color:var(--blue);   border:1px solid rgba(56,189,248,.25); }
+    .wbg  { background:rgba(52,211,153,.14);  color:var(--green);  border:1px solid rgba(52,211,153,.25); }
+    .wba  { background:rgba(251,191,36,.14);  color:var(--amber);  border:1px solid rgba(251,191,36,.25); }
+    .wbr  { background:rgba(251,113,133,.14); color:var(--rose);   border:1px solid rgba(251,113,133,.25); }
+    .wbp  { background:rgba(192,132,252,.14); color:var(--purple); border:1px solid rgba(192,132,252,.25); }
+    .wbt  { background:rgba(45,212,191,.14);  color:var(--teal);   border:1px solid rgba(45,212,191,.25); }
+
+    /* ── Debt Visualization ───────────────────────────────────────────── */
+    .viz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    @media (max-width: 700px) { .viz-grid { grid-template-columns: 1fr; } }
+    .viz-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px; transition: border-color 0.2s;
+    }
+    .viz-card:hover { border-color: var(--border-light); }
+    .viz-title { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+    .viz-sub   { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+
+    /* Conway heat squares */
+    .conway-grid {
+      display: grid; grid-template-columns: repeat(6,1fr); gap: 5px;
+    }
+    .cw-cell {
+      aspect-ratio: 1; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.7);
+      cursor: pointer; transition: transform 0.15s;
+    }
+    .cw-cell:hover { transform: scale(1.15); }
+    .cw-high  { background: rgba(251,113,133,0.55); border: 1px solid rgba(251,113,133,0.5); }
+    .cw-med   { background: rgba(251,191,36,0.45);  border: 1px solid rgba(251,191,36,0.4); }
+    .cw-low   { background: rgba(52,211,153,0.40);  border: 1px solid rgba(52,211,153,0.35); }
+    .cw-zero  { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color:var(--dim); }
+
+    /* Debt sunburst rings */
+    .debt-rings { display: flex; flex-direction: column; gap: 9px; }
+    .dr-row { display: flex; align-items: center; gap: 10px; }
+    .dr-label { font-size: 12px; color: var(--muted); width: 110px; flex-shrink: 0; }
+    .dr-track  { flex: 1; height: 18px; background: rgba(255,255,255,0.04); border-radius: 9px; overflow: hidden; }
+    .dr-fill   { height: 100%; border-radius: 9px; display: flex; align-items: center; padding-left: 10px; }
+    .dr-fill span { font-size: 10px; font-weight: 700; color: #fff; }
+    .dr-cost   { font-size: 11px; color: var(--muted); width: 44px; text-align: right; }
+
+    /* Velocity sparkline fake */
+    .spark-row { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; align-items: flex-end; height: 52px; }
+    .spark-bar { background: rgba(129,140,248,0.4); border-radius: 3px 3px 0 0; transition: background 0.2s; }
+    .spark-bar:hover { background: rgba(129,140,248,0.8); }
+    .spark-days { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-top: 4px; }
+    .spark-day  { font-size: 9px; color: var(--dim); text-align: center; font-family: var(--mono); }
+
+    /* ── Risk Table ───────────────────────────────────────────────────── */
+    table.rtable { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table.rtable thead tr { background: var(--bg-panel); }
+    table.rtable th {
+      padding: 10px 14px; text-align: left;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--dim); border-bottom: 1px solid var(--border); font-family: var(--mono);
+    }
+    table.rtable td {
+      padding: 11px 14px; border-bottom: 1px solid var(--border);
+      color: var(--text); vertical-align: top;
+    }
+    table.rtable tr:last-child td { border-bottom: none; }
+    table.rtable tr:hover td { background: var(--bg-hover); }
+
+    .pill {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 2px 9px; border-radius: 20px;
+    }
+    .pil-g  { background:rgba(52,211,153,.14); color:var(--green); border:1px solid rgba(52,211,153,.3); }
+    .pil-a  { background:rgba(251,191,36,.14); color:var(--amber); border:1px solid rgba(251,191,36,.3); }
+    .pil-r  { background:rgba(251,113,133,.14);color:var(--rose);  border:1px solid rgba(251,113,133,.3); }
+
+    /* ── Fade anim ────────────────────────────────────────────────────── */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+    .fi { animation: fadeUp 0.45s ease both; }
+    .d1{animation-delay:.05s} .d2{animation-delay:.10s} .d3{animation-delay:.15s}
+    .d4{animation-delay:.20s} .d5{animation-delay:.25s} .d6{animation-delay:.30s}
+  </style>
+</head>
+<body>
+
+<!-- ── Sidebar ──────────────────────────────────────────────────────────── -->
+<nav class="sidenav">
+  <div class="sn-logo">
+    <div class="init">AS</div>
+    <div class="name">Ashok Sakthivel</div>
+    <div class="role">// Sr. Director of Engineering</div>
+  </div>
+  <div class="sn-group">Strategy</div>
+  <a class="sn-item active" href="#overview"><span class="sn-icon">🏠</span> Executive Brief</a>
+  <a class="sn-item" href="#north-star"><span class="sn-icon">⭐</span> North Star Metrics</a>
+  <div class="sn-group">Excellence Roadmap</div>
+  <a class="sn-item" href="#roadmap"><span class="sn-icon">📅</span> Day 0–30 · Instrument</a>
+  <a class="sn-item" href="#roadmap"><span class="sn-icon">📅</span> Day 31–60 · Quality Gates</a>
+  <a class="sn-item" href="#roadmap"><span class="sn-icon">📅</span> Day 61–90 · Automate</a>
+  <a class="sn-item" href="#roadmap"><span class="sn-icon">📅</span> Q2+ · Culture Flywheel</a>
+  <div class="sn-group">Portal Design</div>
+  <a class="sn-item" href="#portal-preview"><span class="sn-icon">🖥️</span> SEI Control Center</a>
+  <a class="sn-item" href="#portal-panes"><span class="sn-icon">🧩</span> Pane Specifications</a>
+  <a class="sn-item" href="#golden-path"><span class="sn-icon">🛤️</span> Golden Path Repo</a>
+  <div class="sn-group">Intelligence</div>
+  <a class="sn-item" href="#viz"><span class="sn-icon">📊</span> Visualization Lab</a>
+  <a class="sn-item" href="#antipatterns"><span class="sn-icon">🚫</span> Anti-Pattern Registry</a>
+</nav>
+
+<!-- ── Main ─────────────────────────────────────────────────────────────── -->
+<main class="main">
+
+  <!-- Hero -->
+  <section class="hero fi" id="overview">
+    <div class="hero-eyebrow">
+      <span class="pulse"></span>
+      SEI · Engineering Excellence Initiative · March 2026
+    </div>
+    <h1>Engineering <em>Excellence</em> Strategy<br>& SEI Command Center Design</h1>
+    <p>
+      A data-driven 90-day roadmap and portal architecture to shift Mimecast engineering from
+      subjective quality judgments to objective, metric-led operational excellence — owned
+      federally by all Tech Leads, without micromanagement.
+    </p>
+    <div class="hero-chips">
+      <div class="hchip"><span>👤</span><strong>Author:</strong>&nbsp;Ashok Sakthivel, Sr. Director of Engineering</div>
+      <div class="hchip"><span>📅</span><strong>Launch:</strong>&nbsp;April 1, 2026</div>
+      <div class="hchip"><span>🏁</span><strong>Model:</strong>&nbsp;Federated Tech Lead Ownership</div>
+      <div class="hchip"><span>🎯</span><strong>Framework:</strong>&nbsp;DORA + SEI + Golden Path</div>
+      <div class="hchip"><span>🔬</span><strong>North Star:</strong>&nbsp;Elite DORA Performance by Q3 2026</div>
+    </div>
+  </section>
+
+  <hr class="div">
+
+  <!-- Why This Matters -->
+  <section class="sec fi d1" id="why">
+    <div class="sec-hd">
+      <div class="sec-ico ii">🧭</div>
+      <div class="sec-hd-text">
+        <div class="sec-num">§ 00 · FOUNDATION</div>
+        <div class="sec-title">The Problem We're Solving</div>
+      </div>
+      <span class="tag ti">Strategic Context</span>
+    </div>
+    <div class="card" style="margin-bottom:14px;">
+      <p style="font-size:15px; color:var(--text); margin-bottom:16px;">
+        <strong>The Micromanagement Trap vs. The Measurement Gap.</strong> Engineering organizations fail in one of two ways:
+        either they have no visibility into quality signals and fly blind, or they instrument everything and create
+        a surveillance culture that destroys psychological safety. This initiative avoids both failure modes.
+      </p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div style="background:var(--bg-panel); border:1px solid rgba(251,113,133,.25); border-radius:8px; padding:14px;">
+          <div style="font-size:11px; color:var(--rose); font-weight:700; font-family:var(--mono); margin-bottom:7px;">THE OLD WAY ✗</div>
+          <ul class="plist amber">
+            <li>Gut-feel code reviews with no baseline</li>
+            <li>JIRA velocity as the only metric</li>
+            <li>Post-incident blame, not systemic learning</li>
+            <li>Toil accumulates silently until burnout</li>
+            <li>Tech debt as a feeling, not a cost</li>
+          </ul>
+        </div>
+        <div style="background:var(--bg-panel); border:1px solid rgba(52,211,153,.25); border-radius:8px; padding:14px;">
+          <div style="font-size:11px; color:var(--green); font-weight:700; font-family:var(--mono); margin-bottom:7px;">THE NEW WAY ✓</div>
+          <ul class="plist green">
+            <li>DORA metrics as shared organizational health signals</li>
+            <li>PR cycle time as a flow bottleneck indicator</li>
+            <li>Blameless postmortems feeding the SEI database</li>
+            <li>Toil budget enforced via SLO + alert fatigue tracking</li>
+            <li>Tech debt as a quantified sprint capacity cost</li>
+          </ul>
+        </div>
+        <div style="background:var(--bg-panel); border:1px solid rgba(129,140,248,.25); border-radius:8px; padding:14px;">
+          <div style="font-size:11px; color:var(--indigo); font-weight:700; font-family:var(--mono); margin-bottom:7px;">OWNERSHIP MODEL</div>
+          <ul class="plist indigo">
+            <li>Federated: each Tech Lead owns their team's data</li>
+            <li>Aggregate: Ashok sees org-wide trends, not individuals</li>
+            <li>Pull, not push: TLs pull insights for retrospectives</li>
+            <li>Shield, not sword: metrics used to remove blockers</li>
+            <li>Quarterly excellence reviews, not daily surveillance</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- North Star Metrics -->
+  <section class="sec fi d2" id="north-star">
+    <div class="sec-hd">
+      <div class="sec-ico ip">⭐</div>
+      <div class="sec-hd-text">
+        <div class="sec-num">§ 01 · NORTH STAR KPIs</div>
+        <div class="sec-title">DORA + SEI Target State — Q3 2026</div>
+      </div>
+      <span class="tag tp">Elite Performance Targets</span>
+    </div>
+    <div class="kpi-row" style="margin-bottom:20px;">
+      <div class="kc cb">
+        <div class="ki">🚀</div>
+        <div class="kl">Deployment Frequency</div>
+        <div class="kv" style="color:var(--blue);">Daily+</div>
+        <div class="ks">Multiple deploys per day (Elite tier)</div>
+      </div>
+      <div class="kc ci">
+        <div class="ki">⏱</div>
+        <div class="kl">Lead Time for Changes</div>
+        <div class="kv" style="color:var(--indigo);">&lt; 1hr</div>
+        <div class="ks">Commit → production (Elite tier)</div>
+      </div>
+      <div class="kc cg">
+        <div class="ki">🔧</div>
+        <div class="kl">Mean Time to Restore</div>
+        <div class="kv" style="color:var(--green);">&lt; 1hr</div>
+        <div class="ks">Incident detection to full recovery</div>
+      </div>
+      <div class="kc ca">
+        <div class="ki">💥</div>
+        <div class="kl">Change Failure Rate</div>
+        <div class="kv" style="color:var(--amber);">&lt; 5%</div>
+        <div class="ks">% deployments causing incidents</div>
+      </div>
+    </div>
+    <div class="dora-row" style="margin-bottom:20px;">
+      <div class="dora-card">
+        <div class="dora-icon">🔄</div>
+        <div class="dora-name">PR Cycle Time</div>
+        <div class="dora-target">Target: &lt; 4 hours</div>
+        <div class="dora-bar-track"><div class="dora-bar-fill" style="width:65%;background:linear-gradient(90deg,var(--indigo),var(--purple))"></div></div>
+        <span class="dora-level dl-high">SEI · High</span>
+      </div>
+      <div class="dora-card">
+        <div class="dora-icon">📉</div>
+        <div class="dora-name">Code Churn Rate</div>
+        <div class="dora-target">Target: &lt; 20% rework</div>
+        <div class="dora-bar-track"><div class="dora-bar-fill" style="width:80%;background:linear-gradient(90deg,var(--teal),var(--green))"></div></div>
+        <span class="dora-level dl-elite">SEI · Elite</span>
+      </div>
+      <div class="dora-card">
+        <div class="dora-icon">🧪</div>
+        <div class="dora-name">Test Coverage</div>
+        <div class="dora-target">Target: &gt; 80% critical paths</div>
+        <div class="dora-bar-track"><div class="dora-bar-fill" style="width:55%;background:linear-gradient(90deg,var(--amber),var(--orange))"></div></div>
+        <span class="dora-level dl-med">SEI · Medium</span>
+      </div>
+      <div class="dora-card">
+        <div class="dora-icon">😴</div>
+        <div class="dora-name">Pager Fatigue Index</div>
+        <div class="dora-target">Target: &lt; 5 on-call alerts/wk</div>
+        <div class="dora-bar-track"><div class="dora-bar-fill" style="width:45%;background:linear-gradient(90deg,var(--rose),var(--pink))"></div></div>
+        <span class="dora-level dl-low">SEI · Needs Work</span>
+      </div>
+    </div>
+    <div class="card">
+      <p><strong>Measurement Philosophy:</strong> These are <em>system health indicators</em>, not individual performance scores. No Tech Lead's headcount will be evaluated by their team's DORA metrics directly. They are used to identify systemic blockers — overly complex pipelines, insufficient test coverage, architectural coupling — that the Tech Lead is empowered to fix with budget and prioritization support from leadership.</p>
+    </div>
+  </section>
+
+  <!-- Roadmap -->
+  <section class="sec fi d2" id="roadmap">
+    <div class="sec-hd">
+      <div class="sec-ico ig">🗺️</div>
+      <div class="sec-hd-text">
+        <div class="sec-num">§ 02 · EXCELLENCE ROADMAP</div>
+        <div class="sec-title">The 90-Day + Q2 Execution Plan</div>
+      </div>
+      <span class="tag tg">Click Phases to Expand</span>
+    </div>
+    <div class="phase-timeline">
+
+      <!-- Phase 0 -->
+      <div class="phase-item">
+        <div class="phase-node pn0">
+          <span class="pn-num">0–30</span>
+          <span class="pn-lbl">DAYS</span>
+        </div>
+        <div class="phase-card">
+          <div class="phase-hd open" onclick="togglePhase(this)">
+            <span class="ph-title">Phase 1 — Instrument & Baseline · Days 0–30</span>
+            <span class="ph-range">Apr 1 – Apr 30, 2026</span>
+            <span class="tag ti">Foundation</span>
+            <span class="ph-chev">▶</span>
+          </div>
+          <div class="phase-body open">
+            <p><strong>Behavioral Shift:</strong> Move from "we assume quality is good" to "we have a factual baseline." No optimization without measurement. This phase is observation-only — no mandates, no targets, just data collection and calibration.</p>
+            <div class="pillar-grid">
+              <div class="pillar">
+                <div class="pillar-label"><span class="plc" style="background:var(--indigo)"></span> Quality & Architecture Levers</div>
+                <ul class="plist indigo">
+                  <li>Deploy <strong>standardized PR templates</strong> across all repos — sections: Description, Testing Evidence, Risk Assessment, Rollback Plan</li>
+                  <li>Instrument <strong>GitHub/GitLab webhooks</strong> into SEI data lake — capture PR open/merge timestamps, review comment counts, CI pass/fail</li>
+                  <li>Audit current test coverage per service — <code>jest --coverage</code>, <code>pytest-cov</code>, or equivalent; establish actuals without judgment</li>
+                  <li>Identify the top-3 most complex modules per team using <strong>cyclomatic complexity tools</strong> (<code>radon</code>, <code>sonarqube</code>)</li>
+                  <li>Establish <strong>ADR (Architecture Decision Record)</strong> format — retroactively document the top-5 most impactful past decisions per team</li>
+                </ul>
+              </div>
+              <div class="pillar">
+                <div class="pillar-label"><span class="plc" style="background:var(--teal)"></span> Data & Measurement Strategy</div>
+                <ul class="plist teal">
+                  <li>Stand up <strong>DORA metrics pipeline</strong> — connect deployment events from CI/CD to a central data store (BigQuery / Redshift)</li>
+                  <li>Capture baseline: Deployment Frequency, Lead Time, MTTR, Change Failure Rate — no targets yet, just actuals</li>
+                  <li>Instrument <strong>PR Cycle Time</strong>: opened → first review → approved → merged (4 sub-stages exposed separately)</li>
+                  <li>Begin <strong>Code Churn tracking</strong> — identify files with &gt;3 revisions in 30 days (indicator of unclear requirements or unstable interfaces)</li>
+                  <li>Instrument <strong>PagerDuty / OpsGenie</strong> alert volumes per team — pager fatigue baseline, MTTA (Mean Time to Acknowledge)</li>
+                </ul>
+              </div>
+              <div class="pillar">
+                <div class="pillar-label"><span class="plc" style="background:var(--purple)"></span> Federated Ownership Actions</div>
+                <ul class="plist purple">
+                  <li>Each Tech Lead runs a <strong>Day 15 Calibration Session</strong> — review raw data with team; discuss what looks wrong before acting</li>
+                  <li>Establish <strong>team-specific Engineering Excellence Backlog</strong> in Jira/Linear — quality work is tracked like feature work</li>
+                  <li>Create shared <strong>#eng-excellence Slack channel</strong> — TLs post weekly SEI snapshot; celebrate improvements, not just warn on regressions</li>
+                  <li>Nominate <strong>Quality Champions</strong> per team (1 engineer each) — hands-on partner to the TL for measurement and improvement work</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 2 -->
+      <div class="phase-item">
+        <div class="phase-node pn1">
+          <span class="pn-num">31–60</span>
+          <span class="pn-lbl">DAYS</span>
+        </div>
+        <div class="phase-card">
+          <div class="phase-hd" onclick="togglePhase(this)">
+            <span class="ph-title">Phase 2 — Quality Gates & Standards · Days 31–60</span>
+            <span class="ph-range">May 1 – May 31, 2026</span>
+            <span class="tag tp">Quality Enforcement</span>
+            <span class="ph-chev">▶</span>
+          </div>
+          <div class="phase-body">
+            <p><strong>Behavioral Shift:</strong> Shift from "quality review is a human judgment" to "quality gates are automated guardrails." Engineers get rapid, objective feedback from the pipeline itself — not from a code review comment two days later. Shift-left on security, reliability, and architectural integrity.</p>
+            <div class="pillar-grid">
+              <div class="pillar">
+                <div class="pillar-label"><span class="plc" style="background:var(--purple)"></span> Quality & Architecture Levers</div>
+                <ul class="plist purple">
+                  <li>Enforce <strong>SonarQube / CodeClimate quality gates</strong> in CI — block merge if code smell score regresses, coverage drops &gt;5%, or critical security issues found</li>
+                  <li>Deploy <strong>architectural linting</strong> via <code>ArchUnit</code> (Java) or <code>import-linter</code> (Python) — enforce layer isolation rules as code</li>
+                  <li>Implement <strong>shift-left security scanning</strong>: SAST via <code>Semgrep</code> or <code>CodeQL</code> in every PR pipeline; secrets detection via <code>Trufflehog</code></li>
+                  <li>Standardize <strong>golden CI/CD pipeline templates</strong> — teams adopt the Golden Path rather than building bespoke pipelines (reduces toil + inconsistency)</li>
+                  <li>Enforce <strong>dependency vulnerability scanning</strong> on every build — <code>Dependabot</code> or <code>Snyk</code> with SLA-gated merge blocking for CRITICAL CVEs</li>
+                </ul>
+              </div>
+              <div class="pillar">
+                <div class="pillar-label"><span class="plc" style="background:var(--teal)"></span> Data & Measurement Strategy</div>
+                <ul class="plist teal">
+                  <li>Set first <strong>DORA baseline targets</strong> per team — not org-wide mandates; each team sets their own 30-day improvement targets based on their baseline</li>
+                  <li>Track <strong>review thoroughness scores</strong>: comment-to-line-ratio, percentage of PRs merged with zero review comments (auto-merge risk flag)</li>
+                  <li>Instrument <strong>test flakiness</strong> — flaky tests erode trust in CI; track flake rate per suite; gate new flaky tests from merging</li>
+                  <li>Introduce <strong>Tech Debt Index</strong>: SonarQube debt minutes + churn rate + test gap combined score, surfaced weekly per team</li>
+                  <li>Begin <strong>incident attribution</strong> — link production incidents back to the deployment that caused them; feed into Change Failure Rate calculation</li>
+                </ul>
+              </div>
+              <div class="pillar">
+                <div class="pillar-label"><span class="plc" style="background:var(--green)"></span> Federated Ownership Actions</div>
+                <ul class="plist green">
+                  <li>Each TL publishes a <strong>Team Excellence Scorecard</strong> — distributed to their team every 2 weeks, reviewed in sprint retros</li>
+                  <li>First <strong>cross-team excellence sync</strong> — TLs share their most impactful quality improvement and one persisting blocker; no ranking or comparison</li>
+                  <li>Launch <strong>Golden Path adoption sprint</strong> — each team migrates one service to the standardized CI/CD pipeline template</li>
+                  <li>Introduce <strong>"15% time for quality"</strong> — sprint capacity policy: 15% of engineering capacity reserved for quality debt, test coverage, and tooling</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 3 -->
+      <div class="phase-item">
+        <div class="phase-node pn2">
+          <span class="pn-num">61–90</span>
+          <span class="pn-lbl">DAYS</span>
+        </div>
+        <div class="phase-card">
+          <div class="phase-hd" onclick="togglePhase(this)">
+            <span class="ph-title">Phase 3 — Automation & Operational Reliability · Days 61–90</span>
+            <span class="ph-range">Jun 1 – Jun 30, 2026</span>
+            <span class="tag tt">Reliability Engineering</span>
+            <span class="ph-chev">▶</span>
+          </div>
+          <div class="phase-body">
+            <p><strong>Behavioral Shift:</strong> Move from "we react to incidents" to "we proactively validate resilience." SLOs are owned by teams, not imposed from above. Chaos engineering graduates from fear-inducing to routine hygiene. MTTR drops because runbooks are automated, not because engineers are faster.</p>
+            <div class="pillar-grid">
+              <div class="pillar">
+                <div class="pillar-label"><span class="plc" style="background:var(--teal)"></span> Quality & Architecture Levers</div>
+                <ul class="plist teal">
+                  <li>Define and publish <strong>SLOs per service</strong> — availability, latency p99, error rate targets in <code>YAML</code> alongside service code (SLOs as code)</li>
+                  <li>Deploy <strong>Chaos Engineering Basics</strong> — adopt <code>Chaos Monkey</code> or <code>Gremlin Lite</code>; begin with non-prod kill tests; escalate to scheduled prod game days</li>
+                  <li>Automate <strong>runbook-driven incident response</strong> — PagerDuty runbook links in alerts; first-runbook-action must be executable, not a wiki link</li>
+                  <li>Enforce <strong>Feature Flags</strong> on all production changes — decouple deploy from release; enables immediate rollback without redeploy</li>
+                  <li>Implement <strong>contract testing</strong> for service interfaces — <code>Pact</code> or <code>Spring Cloud Contract</code>; catch breaking changes before integration</li>
+                </ul>
+              </div>
+              <div class="pillar">
+                <div class="pillar-label"><span class="plc" style="background:var(--blue)"></span> Data & Measurement Strategy</div>
+                <ul class="plist blue">
+                  <li>Track <strong>MTTR trends weekly</strong> — not as a judgment but as a signal: increasing MTTR → insufficient runbooks or missing observability; decreasing → automation working</li>
+                  <li>Measure <strong>SLO burn rate</strong> (error budget consumption) per service — surface in SEI portal as traffic-light indicator</li>
+                  <li>Deploy <strong>full-stack distributed tracing</strong> (<code>OpenTelemetry</code>) — connect user-facing latency to specific service call chains; enables surgical performance debugging</li>
+                  <li>Quantify <strong>toil hours</strong> per on-call cycle — manual tasks that could be automated; TL tracks and commits to reducing by 20% per quarter</li>
+                  <li>Run the first <strong>SEI Executive Review</strong> — Ashok presents org-wide trends to leadership; no individual team data exposed upward, only aggregate</li>
+                </ul>
+              </div>
+              <div class="pillar">
+                <div class="pillar-label"><span class="plc" style="background:var(--amber)"></span> Federated Ownership Actions</div>
+                <ul class="plist amber">
+                  <li>Each TL leads a <strong>Game Day / Chaos Drill</strong> with their team — document outcomes, feed findings into ADR repository</li>
+                  <li>TLs conduct <strong>quarterly architecture health reviews</strong> — evaluate coupling metrics, dependency graph changes, Golden Path adoption %</li>
+                  <li>Launch <strong>Excellence Champions Program</strong> — rotating 3-month appointment; champion leads one org-wide improvement initiative (test framework, observability tooling, etc.)</li>
+                  <li>Publish first <strong>Engineering Excellence Annual Report</strong> summary — before/after DORA state; shared at all-hands as a team success story</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase Q2+ -->
+      <div class="phase-item">
+        <div class="phase-node pn3">
+          <span class="pn-num">Q2+</span>
+          <span class="pn-lbl">CULTURE</span>
+        </div>
+        <div class="phase-card">
+          <div class="phase-hd" onclick="togglePhase(this)">
+            <span class="ph-title">Phase 4 — The Culture Flywheel · Q2 2026 and Beyond</span>
+            <span class="ph-range">Jul 1, 2026 → Continuous</span>
+            <span class="tag tg">Sustained Excellence</span>
+            <span class="ph-chev">▶</span>
+          </div>
+          <div class="phase-body">
+            <p><strong>Behavioral Shift:</strong> Engineering Excellence is no longer an initiative — it's how we work. Quality practices are self-enforcing through tooling, culture, and career incentives. The flywheel: better data → clearer blockers → faster resolution → better data.</p>
+            <div class="pillar-grid">
+              <div class="pillar">
+                <div class="pillar-label"><span class="plc" style="background:var(--green)"></span> Sustained Quality Practices</div>
+                <ul class="plist green">
+                  <li><strong>DORA Elite Certification</strong> — teams achieving Elite-tier across all 4 metrics get publicly recognized and serve as internal mentors</li>
+                  <li>Annual <strong>Architecture Review Board</strong> — cross-team review of ADR library, deprecated tech stack decisions, new Golden Path patterns</li>
+                  <li><strong>Tech Debt Quarterly Burn-Down</strong> — formal capacity allocation reviewed at portfolio planning; debt is a first-class product concern</li>
+                  <li>Integrate <strong>SEI metrics into hiring and onboarding</strong> — new engineers shown team's health dashboard; excellence standards set before day one</li>
+                </ul>
+              </div>
+              <div class="pillar">
+                <div class="pillar-label"><span class="plc" style="background:var(--blue)"></span> Advanced SEI Capabilities</div>
+                <ul class="plist blue">
+                  <li><strong>ML-assisted PR risk scoring</strong> — train model on historical change-failure data; surface high-risk PRs for deeper review automatically</li>
+                  <li><strong>Developer Experience (DevEx) Index</strong> — quarterly survey + objective metrics (build times, flake rates, onboarding cycle time) combined</li>
+                  <li><strong>Inner Source contribution tracking</strong> — measure cross-team code contributions; incentivize platform thinking over silo ownership</li>
+                  <li><strong>Cost-of-Quality dashboard</strong> — incident resolution cost + rework time quantified in engineering-hours per quarter</li>
+                </ul>
+              </div>
+              <div class="pillar">
+                <div class="pillar-label"><span class="plc" style="background:var(--indigo)"></span> Career & Culture Integration</div>
+                <ul class="plist indigo">
+                  <li>Excellence metrics embedded in <strong>IC promotion criteria</strong> — "owning quality improvement" is a promotable behavior, explicitly documented</li>
+                  <li><strong>Blameless postmortem culture</strong> codified — incident review template mandated; finding systemic causes = career positive, not negative</li>
+                  <li><strong>Engineering blog publication</strong> — each team publishes one technical post per quarter; builds external employer brand + internal knowledge transfer</li>
+                  <li><strong>Annual Engineering Excellence Summit</strong> — full-day internal conference; teams present their most impactful quality improvement stories</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /phase-timeline -->
+  </section>
+
+  <!-- Portal Preview -->
+  <section class="sec fi d3" id="portal-preview">
+    <div class="sec-hd">
+      <div class="sec-ico ii">🖥️</div>
+      <div class="sec-hd-text">
+        <div class="sec-num">§ 03 · PORTAL DESIGN</div>
+        <div class="sec-title">SEI Command Center — Dashboard Preview</div>
+      </div>
+      <span class="tag ti">UI/UX Prototype</span>
+    </div>
+
+    <div class="portal-frame">
+      <div class="portal-bar">
+        <div class="pdots"><span></span><span></span><span></span></div>
+        <div class="ptitle">Engineering Excellence Portal · SEI Control Center · Ashok Sakthivel · Week 12 of Q2</div>
+        <div class="pstatus">● LIVE</div>
+      </div>
+      <div class="portal-layout">
+        <div class="portal-nav">
+          <div class="pnav-group">Org Level</div>
+          <div class="pnav-item active">📊 SEI Control Center</div>
+          <div class="pnav-item">🌡 DORA Trends</div>
+          <div class="pnav-item">💸 Cost of Quality</div>
+          <div class="pnav-group">Teams</div>
+          <div class="pnav-item">👥 Team Alpha</div>
+          <div class="pnav-item">👥 Team Bravo</div>
+          <div class="pnav-item">👥 Team Charlie</div>
+          <div class="pnav-item">👥 Team Delta</div>
+          <div class="pnav-group">Golden Path</div>
+          <div class="pnav-item">🛤 ADR Library</div>
+          <div class="pnav-item">🔧 Pipeline Templates</div>
+          <div class="pnav-item">📦 Tech Stack Registry</div>
+          <div class="pnav-group">Intelligence</div>
+          <div class="pnav-item">🔔 Alerts (4)</div>
+          <div class="pnav-item">📈 Reports</div>
+        </div>
+        <div class="portal-content">
+          <div class="pc-label">SEI Control Center — Organization Overview · Q2 Week 12</div>
+          <div class="mini-kpi">
+            <div class="mkpi"><div class="ml">Deploy Frequency</div><div class="mv" style="color:var(--green)">8.4/day</div><div class="ms">↑ from 2.1/day (Q1)</div><div class="mb" style="background:linear-gradient(90deg,var(--green),transparent)"></div></div>
+            <div class="mkpi"><div class="ml">Lead Time P50</div><div class="mv" style="color:var(--blue)">2h 14m</div><div class="ms">↓ from 18h (Q1 baseline)</div><div class="mb" style="background:linear-gradient(90deg,var(--blue),transparent)"></div></div>
+            <div class="mkpi"><div class="ml">Change Failure Rate</div><div class="mv" style="color:var(--amber)">6.2%</div><div class="ms">Target &lt;5% · in progress</div><div class="mb" style="background:linear-gradient(90deg,var(--amber),transparent)"></div></div>
+            <div class="mkpi"><div class="ml">Mean Time to Restore</div><div class="mv" style="color:var(--indigo)">47min</div><div class="ms">↓ from 4.2h (Q1)</div><div class="mb" style="background:linear-gradient(90deg,var(--indigo),transparent)"></div></div>
+          </div>
+          <div class="portal-charts">
+            <div class="pchart">
+              <div class="pc-title">📊 PR Cycle Time by Team (hrs, 7-day avg)</div>
+              <div class="bar-chart">
+                <div class="bar-row"><span class="bar-lbl">Alpha</span><div class="bar-trk"><div class="bar-fill" style="width:28%;background:linear-gradient(90deg,var(--green),#34d39980)"></div></div><span class="bar-val" style="color:var(--green)">2.8h</span></div>
+                <div class="bar-row"><span class="bar-lbl">Bravo</span><div class="bar-trk"><div class="bar-fill" style="width:42%;background:linear-gradient(90deg,var(--blue),#38bdf880)"></div></div><span class="bar-val">4.2h</span></div>
+                <div class="bar-row"><span class="bar-lbl">Charlie</span><div class="bar-trk"><div class="bar-fill" style="width:70%;background:linear-gradient(90deg,var(--amber),#fbbf2480)"></div></div><span class="bar-val" style="color:var(--amber)">7.0h</span></div>
+                <div class="bar-row"><span class="bar-lbl">Delta</span><div class="bar-trk"><div class="bar-fill" style="width:58%;background:linear-gradient(90deg,var(--indigo),#818cf880)"></div></div><span class="bar-val">5.8h</span></div>
+                <div class="bar-row"><span class="bar-lbl">Echo</span><div class="bar-trk"><div class="bar-fill" style="width:85%;background:linear-gradient(90deg,var(--rose),#fb718580)"></div></div><span class="bar-val" style="color:var(--rose)">8.5h</span></div>
+              </div>
+            </div>
+            <div class="pchart">
+              <div class="pc-title">🔔 Live Alert Feed</div>
+              <div class="alert-feed">
+                <div class="af-item"><span class="af-dot r"></span><span class="af-msg"><strong>Echo team</strong> — CFR spiked to 18% this week; 3 consecutive deploys rolled back</span><span class="af-tag">TL·Echo</span></div>
+                <div class="af-item"><span class="af-dot a"></span><span class="af-msg"><strong>Charlie</strong> — PR cycle time &gt;7h for 4th consecutive day; possible review bottleneck</span><span class="af-tag">TL·Charlie</span></div>
+                <div class="af-item"><span class="af-dot a"></span><span class="af-msg"><strong>Delta</strong> — Test coverage dropped 8% after last sprint (68% → 60%); below gate threshold</span><span class="af-tag">Quality·Delta</span></div>
+                <div class="af-item"><span class="af-dot g"></span><span class="af-msg">Alpha team hit Elite Lead Time (&lt;1hr) for 7 consecutive days ✓</span><span class="af-tag">SEI·Alpha</span></div>
+                <div class="af-item"><span class="af-dot g"></span><span class="af-msg">Org-wide deploy frequency crossed 8/day threshold ✓ — Q2 target achieved</span><span class="af-tag">SEI·Org</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Portal Pane Specs -->
+  <section class="sec fi d4" id="portal-panes">
+    <div class="sec-hd">
+      <div class="sec-ico it">🧩</div>
+      <div class="sec-hd-text">
+        <div class="sec-num">§ 04 · PORTAL PANE SPECIFICATIONS</div>
+        <div class="sec-title">Feature Set by Dashboard View</div>
+      </div>
+      <span class="tag tb">6 Panes Defined</span>
+    </div>
+    <div class="spec-grid">
+
+      <div class="spec-card sc1">
+        <div class="spec-icon">📊</div>
+        <div class="spec-name">SEI Control Center · Org Overview</div>
+        <div class="spec-sub">Aggregate DORA + SEI health for Ashok and engineering leadership</div>
+        <div class="widget-list">
+          <div class="wi"><span class="wii">🚀</span> DORA 4 Metrics (sparkline + DORA tier badge)<span class="wbadge wbl">LIVE</span></div>
+          <div class="wi"><span class="wii">🔄</span> PR Cycle Time by Team (lollipop chart)<span class="wbadge wbl">LIVE</span></div>
+          <div class="wi"><span class="wii">📉</span> Code Churn Index (rolling 30-day, per squad)<span class="wbadge wbl">LIVE</span></div>
+          <div class="wi"><span class="wii">💸</span> Cost of Quality (eng-hrs in rework vs. new features)<span class="wbadge wbp">CALC</span></div>
+          <div class="wi"><span class="wii">🏆</span> DORA Elite Leaderboard (team-level, not individual)<span class="wbadge wbg">WEEK</span></div>
+          <div class="wi"><span class="wii">📋</span> Excellence Quarterly Report (PDF export)<span class="wbadge wbp">REPORT</span></div>
+        </div>
+      </div>
+
+      <div class="spec-card sc2">
+        <div class="spec-icon">👥</div>
+        <div class="spec-name">Team-Level Plane · Tech Lead View</div>
+        <div class="spec-sub">Bottleneck intelligence, coverage trends, on-call fatigue for each TL</div>
+        <div class="widget-list">
+          <div class="wi"><span class="wii">🧪</span> Test Coverage Trend (line chart, vs. last 4 sprints)<span class="wbadge wbl">LIVE</span></div>
+          <div class="wi"><span class="wii">😴</span> Pager Fatigue Index (alert volume + MTTA trend)<span class="wbadge wba">WATCH</span></div>
+          <div class="wi"><span class="wii">🔁</span> Rework Rate (% PRs re-opened after merge)<span class="wbadge wbl">LIVE</span></div>
+          <div class="wi"><span class="wii">🧮</span> Tech Debt Index (SonarQube debt + churn combined)<span class="wbadge wba">ALERT</span></div>
+          <div class="wi"><span class="wii">🔬</span> Flaky Test Tracker (count + trend, per suite)<span class="wbadge wba">ALERT</span></div>
+          <div class="wi"><span class="wii">🛡</span> SLO Burn Rate (error budget remaining %)<span class="wbadge wbl">LIVE</span></div>
+        </div>
+      </div>
+
+      <div class="spec-card sc3">
+        <div class="spec-icon">🛤️</div>
+        <div class="spec-name">Golden Path Repository</div>
+        <div class="spec-sub">Single source of truth for architectural decisions, patterns, and approved tooling</div>
+        <div class="widget-list">
+          <div class="wi"><span class="wii">📑</span> ADR Library (searchable, status: Proposed/Accepted/Deprecated)<span class="wbadge wbg">LIVE</span></div>
+          <div class="wi"><span class="wii">🔧</span> CI/CD Pipeline Templates (versioned, copy-to-repo button)<span class="wbadge wbg">LIVE</span></div>
+          <div class="wi"><span class="wii">📦</span> Approved Tech Stack Registry (with rationale + owner)<span class="wbadge wbg">LIVE</span></div>
+          <div class="wi"><span class="wii">🚫</span> Banned Patterns List (anti-patterns with migration guide)<span class="wbadge wba">WARN</span></div>
+          <div class="wi"><span class="wii">🏗</span> Service Bootstrap Template (new service in &lt;10 mins)<span class="wbadge wbt">NEW</span></div>
+          <div class="wi"><span class="wii">📊</span> Golden Path Adoption % (per team, per repo)<span class="wbadge wbl">LIVE</span></div>
+        </div>
+      </div>
+
+      <div class="spec-card sc4">
+        <div class="spec-icon">⚠️</div>
+        <div class="spec-name">Quality Gate & Alert Center</div>
+        <div class="spec-sub">Automated anomaly detection — actionable, not noise</div>
+        <div class="widget-list">
+          <div class="wi"><span class="wii">🔴</span> CFR Spike Feed (teams with failing deploy patterns)<span class="wbadge wbr">URGENT</span></div>
+          <div class="wi"><span class="wii">🛑</span> Security Vulnerability Queue (CRITICAL CVEs unpatched)<span class="wbadge wbr">SLA</span></div>
+          <div class="wi"><span class="wii">📉</span> Coverage Drop Detector (≥5% drop within a sprint)<span class="wbadge wba">ALERT</span></div>
+          <div class="wi"><span class="wii">🔄</span> Stale PR Tracker (PRs open &gt;3 days without review)<span class="wbadge wba">ALERT</span></div>
+          <div class="wi"><span class="wii">🧹</span> Zombie Resource Detector (unused branches, dead code modules)<span class="wbadge wbp">SUGGEST</span></div>
+          <div class="wi"><span class="wii">🏷</span> Missing ADR Detector (architectural changes without ADR entry)<span class="wbadge wba">GATE</span></div>
+        </div>
+      </div>
+
+      <div class="spec-card sc5">
+        <div class="spec-icon">📈</div>
+        <div class="spec-name">Developer Experience (DevEx) Index</div>
+        <div class="spec-sub">Psychological safety + objective flow metrics combined</div>
+        <div class="widget-list">
+          <div class="wi"><span class="wii">⚡</span> Build Time Trend (P50/P95 per repo, last 30 days)<span class="wbadge wbl">LIVE</span></div>
+          <div class="wi"><span class="wii">🎯</span> Focus Time Ratio (code time vs meetings, opt-in only)<span class="wbadge wbt">OPT-IN</span></div>
+          <div class="wi"><span class="wii">📝</span> Quarterly DevEx Survey Score (NPS-style)<span class="wbadge wbp">SURVEY</span></div>
+          <div class="wi"><span class="wii">🏁</span> Onboarding Time to First PR (new engineer ramp metric)<span class="wbadge wbl">LIVE</span></div>
+          <div class="wi"><span class="wii">🔁</span> Context-Switch Index (PR comment-to-merge latency vs review load)<span class="wbadge wbl">LIVE</span></div>
+          <div class="wi"><span class="wii">📊</span> Inner Source Contribution Map (cross-team PR heatmap)<span class="wbadge wbt">NEW</span></div>
+        </div>
+      </div>
+
+      <div class="spec-card sc6">
+        <div class="spec-icon">🏛</div>
+        <div class="spec-name">Architecture Intelligence</div>
+        <div class="spec-sub">Structural health, coupling analytics, and Conway's Law visibility</div>
+        <div class="widget-list">
+          <div class="wi"><span class="wii">🕸</span> Service Dependency Graph (interactive force-directed)<span class="wbadge wbl">LIVE</span></div>
+          <div class="wi"><span class="wii">🏗</span> Conway's Law Mismatch Map (team boundaries vs service coupling)<span class="wbadge wbp">INSIGHT</span></div>
+          <div class="wi"><span class="wii">📊</span> Cyclomatic Complexity Heatmap (per module, trending)<span class="wbadge wbl">LIVE</span></div>
+          <div class="wi"><span class="wii">💳</span> Tech Debt Burn-Down Chart (quarterly capacity allocation vs. actuals)<span class="wbadge wba">TRACK</span></div>
+          <div class="wi"><span class="wii">🔗</span> API Contract Drift Detector (breaking changes vs. Pact tests)<span class="wbadge wba">ALERT</span></div>
+          <div class="wi"><span class="wii">📑</span> ADR Compliance Score (architectural decisions vs. implementation)<span class="wbadge wbg">HEALTH</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Golden Path -->
+  <section class="sec fi d4" id="golden-path">
+    <div class="sec-hd">
+      <div class="sec-ico ia">🛤️</div>
+      <div class="sec-hd-text">
+        <div class="sec-num">§ 05 · GOLDEN PATH REPOSITORY</div>
+        <div class="sec-title">Architectural Standards & Approved Tooling Compendium</div>
+      </div>
+      <span class="tag ta">Standards Authority</span>
+    </div>
+    <div style="display:grid; grid-template-columns: repeat(3,1fr); gap:14px;">
+      <div class="card">
+        <div style="font-size:11px; color:var(--amber); font-weight:700; font-family:var(--mono); margin-bottom:10px;">⚙️ CI/CD GOLDEN PIPELINE</div>
+        <ul class="plist amber">
+          <li>Stage 1: <code>lint + format check</code> (fail-fast &lt;30s)</li>
+          <li>Stage 2: <code>unit + integration tests</code> (parallel, &lt;5min)</li>
+          <li>Stage 3: <code>SAST + secrets scan</code> (Semgrep + Trufflehog)</li>
+          <li>Stage 4: <code>container build + SBOM</code> (Syft + Grype)</li>
+          <li>Stage 5: <code>quality gate</code> (SonarQube; block on regress)</li>
+          <li>Stage 6: <code>deploy to staging</code> + smoke tests</li>
+          <li>Stage 7: <code>canary + feature flag</code> controlled prod release</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div style="font-size:11px; color:var(--teal); font-weight:700; font-family:var(--mono); margin-bottom:10px;">📦 APPROVED TECH STACK</div>
+        <ul class="plist teal">
+          <li><strong>Runtime:</strong> Node.js LTS, Python 3.12, Java 21 (LTS)</li>
+          <li><strong>Containers:</strong> Docker + Helm 3; OCI-compliant images only</li>
+          <li><strong>Observability:</strong> OpenTelemetry → Datadog / Grafana stack</li>
+          <li><strong>Service Mesh:</strong> Istio (approved); direct HTTP only with ADR</li>
+          <li><strong>API:</strong> REST + OpenAPI 3.1 mandatory; gRPC for internal only</li>
+          <li><strong>Auth:</strong> OAuth 2.0 + OIDC; no custom auth schemes</li>
+          <li><strong>DB:</strong> PostgreSQL 16 (primary); DynamoDB (key-value); Redis (cache)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div style="font-size:11px; color:var(--rose); font-weight:700; font-family:var(--mono); margin-bottom:10px;">🚫 ANTI-PATTERN REGISTRY</div>
+        <ul class="plist" style="--list-color: var(--rose);">
+          <li style="color:var(--muted)"><span style="color:var(--rose)">▸</span> Shared mutable database between services (distributed monolith)</li>
+          <li style="color:var(--muted)"><span style="color:var(--rose)">▸</span> Synchronous HTTP chains deeper than 3 hops (cascade failure risk)</li>
+          <li style="color:var(--muted)"><span style="color:var(--rose)">▸</span> Secrets in environment variables without vault injection</li>
+          <li style="color:var(--muted)"><span style="color:var(--rose)">▸</span> <code>latest</code> Docker image tags in any staging or production manifest</li>
+          <li style="color:var(--muted)"><span style="color:var(--rose)">▸</span> Test mocking of internal implementation (test to interface, not impl)</li>
+          <li style="color:var(--muted)"><span style="color:var(--rose)">▸</span> Monolithic test suites &gt;10 min without parallelization strategy</li>
+          <li style="color:var(--muted)"><span style="color:var(--rose)">▸</span> Architecture changes without an ADR entry in repository</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Visualization Lab -->
+  <section class="sec fi d5" id="viz">
+    <div class="sec-hd">
+      <div class="sec-ico ib">📊</div>
+      <div class="sec-hd-text">
+        <div class="sec-num">§ 06 · VISUALIZATION LAB</div>
+        <div class="sec-title">Infographic Recommendations for Tech Lead Storytelling</div>
+      </div>
+      <span class="tag tb">Communication Tools</span>
+    </div>
+    <div class="viz-grid">
+
+      <div class="viz-card">
+        <div class="viz-title">Conway's Law · Team-Service Coupling Heatmap</div>
+        <div class="viz-sub">Shows where service coupling does NOT align with team boundaries — each high-intensity cell is a coordination overhead hotspot.</div>
+        <div style="margin-bottom:10px;">
+          <div style="display:grid; grid-template-columns: 20px repeat(6,1fr); gap:4px; margin-bottom:4px;">
+            <div></div>
+            <div style="font-size:9px;color:var(--dim);text-align:center;">SvcA</div>
+            <div style="font-size:9px;color:var(--dim);text-align:center;">SvcB</div>
+            <div style="font-size:9px;color:var(--dim);text-align:center;">SvcC</div>
+            <div style="font-size:9px;color:var(--dim);text-align:center;">SvcD</div>
+            <div style="font-size:9px;color:var(--dim);text-align:center;">SvcE</div>
+            <div style="font-size:9px;color:var(--dim);text-align:center;">SvcF</div>
+          </div>
+          <div style="display:grid; grid-template-columns: 20px repeat(6,1fr); gap:4px;">
+            <div style="font-size:9px;color:var(--dim);writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;">Alpha</div>
+            <div class="cw-cell cw-low">L</div><div class="cw-cell cw-zero">—</div><div class="cw-cell cw-high">H</div><div class="cw-cell cw-med">M</div><div class="cw-cell cw-zero">—</div><div class="cw-cell cw-low">L</div>
+          </div>
+          <div style="display:grid; grid-template-columns: 20px repeat(6,1fr); gap:4px; margin-top:4px;">
+            <div style="font-size:9px;color:var(--dim);writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;">Bravo</div>
+            <div class="cw-cell cw-high">H</div><div class="cw-cell cw-med">M</div><div class="cw-cell cw-zero">—</div><div class="cw-cell cw-zero">—</div><div class="cw-cell cw-high">H</div><div class="cw-cell cw-med">M</div>
+          </div>
+          <div style="display:grid; grid-template-columns: 20px repeat(6,1fr); gap:4px; margin-top:4px;">
+            <div style="font-size:9px;color:var(--dim);writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;">Charlie</div>
+            <div class="cw-cell cw-zero">—</div><div class="cw-cell cw-high">H</div><div class="cw-cell cw-high">H</div><div class="cw-cell cw-low">L</div><div class="cw-cell cw-zero">—</div><div class="cw-cell cw-zero">—</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <span style="font-size:11px; color:var(--muted);display:flex;gap:5px;align-items:center;"><span style="width:10px;height:10px;border-radius:3px;background:rgba(251,113,133,0.55);display:inline-block"></span>High coupling = team boundary mismatch</span>
+          <span style="font-size:11px; color:var(--muted);display:flex;gap:5px;align-items:center;"><span style="width:10px;height:10px;border-radius:3px;background:rgba(52,211,153,0.40);display:inline-block"></span>Low = well-aligned ownership</span>
+        </div>
+      </div>
+
+      <div class="viz-card">
+        <div class="viz-title">Tech Debt Impact Visualization</div>
+        <div class="viz-sub">Quantifies debt as engineering capacity consumed — turns abstract "tech debt feeling" into a stakeholder-ready cost story.</div>
+        <div class="debt-rings">
+          <div class="dr-row">
+            <span class="dr-label">Legacy Auth Svc</span>
+            <div class="dr-track"><div class="dr-fill" style="width:72%;background:linear-gradient(90deg,rgba(251,113,133,.7),rgba(251,113,133,.3))"><span>72%</span></div></div>
+            <span class="dr-cost" style="color:var(--rose)">~38h/sprint</span>
+          </div>
+          <div class="dr-row">
+            <span class="dr-label">Monolith Gateway</span>
+            <div class="dr-track"><div class="dr-fill" style="width:58%;background:linear-gradient(90deg,rgba(251,191,36,.7),rgba(251,191,36,.3))"><span>58%</span></div></div>
+            <span class="dr-cost" style="color:var(--amber)">~22h/sprint</span>
+          </div>
+          <div class="dr-row">
+            <span class="dr-label">Billing Module</span>
+            <div class="dr-track"><div class="dr-fill" style="width:41%;background:linear-gradient(90deg,rgba(251,191,36,.5),rgba(251,191,36,.2))"><span>41%</span></div></div>
+            <span class="dr-cost" style="color:var(--amber)">~14h/sprint</span>
+          </div>
+          <div class="dr-row">
+            <span class="dr-label">Notification Svc</span>
+            <div class="dr-track"><div class="dr-fill" style="width:22%;background:linear-gradient(90deg,rgba(52,211,153,.5),rgba(52,211,153,.2))"><span>22%</span></div></div>
+            <span class="dr-cost" style="color:var(--green)">~8h/sprint</span>
+          </div>
+          <div class="dr-row">
+            <span class="dr-label">Search Indexer</span>
+            <div class="dr-track"><div class="dr-fill" style="width:12%;background:linear-gradient(90deg,rgba(52,211,153,.4),rgba(52,211,153,.1))"><span>12%</span></div></div>
+            <span class="dr-cost" style="color:var(--green)">~4h/sprint</span>
+          </div>
+        </div>
+        <div style="margin-top:12px; font-size:12px; color:var(--muted);">
+          <strong style="color:var(--rose);">Total debt service cost: ~86 eng-hours/sprint</strong> (~21% of total org capacity). This is the FinOps argument for tech debt: it's not abstract, it's a recurring invoice.
+        </div>
+      </div>
+
+      <div class="viz-card">
+        <div class="viz-title">Velocity Stability Sparklines</div>
+        <div class="viz-sub">7-day deployment frequency bars reveal rhythm vs. chaos patterns. Stable teams have consistent bar heights. Chaotic teams have extreme spikes followed by zero-deploy silence (batch-and-ship anti-pattern).</div>
+        <div style="margin-bottom:6px; font-size:11px; color:var(--muted);">Alpha (stable — Golden Path adopted):</div>
+        <div class="spark-row">
+          <div class="spark-bar" style="height:70%;background:rgba(52,211,153,0.5)"></div>
+          <div class="spark-bar" style="height:80%;background:rgba(52,211,153,0.5)"></div>
+          <div class="spark-bar" style="height:65%;background:rgba(52,211,153,0.5)"></div>
+          <div class="spark-bar" style="height:90%;background:rgba(52,211,153,0.7)"></div>
+          <div class="spark-bar" style="height:75%;background:rgba(52,211,153,0.5)"></div>
+          <div class="spark-bar" style="height:85%;background:rgba(52,211,153,0.5)"></div>
+          <div class="spark-bar" style="height:70%;background:rgba(52,211,153,0.5)"></div>
+        </div>
+        <div class="spark-days"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+        <div style="margin:12px 0 6px; font-size:11px; color:var(--muted);">Echo (batch-and-ship anti-pattern):</div>
+        <div class="spark-row">
+          <div class="spark-bar" style="height:5%;background:rgba(251,113,133,0.3)"></div>
+          <div class="spark-bar" style="height:5%;background:rgba(251,113,133,0.3)"></div>
+          <div class="spark-bar" style="height:5%;background:rgba(251,113,133,0.3)"></div>
+          <div class="spark-bar" style="height:100%;background:rgba(251,113,133,0.8)"></div>
+          <div class="spark-bar" style="height:5%;background:rgba(251,113,133,0.3)"></div>
+          <div class="spark-bar" style="height:5%;background:rgba(251,113,133,0.3)"></div>
+          <div class="spark-bar" style="height:5%;background:rgba(251,113,133,0.3)"></div>
+        </div>
+        <div class="spark-days"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+      </div>
+
+      <div class="viz-card">
+        <div class="viz-title">Four-Quadrant Prioritization Matrix</div>
+        <div class="viz-sub">For Tech Leads communicating quality backlog to product stakeholders — positions debt items by business impact vs. engineering effort.</div>
+        <div style="position:relative; width:100%; aspect-ratio:1; border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--bg-panel);">
+          <div style="position:absolute; inset:0; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr;">
+            <div style="border-right:1px dashed var(--border); border-bottom:1px dashed var(--border); padding:8px; display:flex; flex-direction:column; justify-content:flex-start; gap:4px;">
+              <div style="font-size:9px; color:var(--rose); font-weight:700; font-family:var(--mono);">HIGH IMPACT / LOW EFFORT</div>
+              <div style="font-size:10px; color:var(--text); background:rgba(251,113,133,0.15); border-radius:4px; padding:3px 6px;">Auth Svc decomp</div>
+              <div style="font-size:10px; color:var(--text); background:rgba(251,113,133,0.15); border-radius:4px; padding:3px 6px;">gp3 volume migration</div>
+            </div>
+            <div style="border-bottom:1px dashed var(--border); padding:8px; display:flex; flex-direction:column; justify-content:flex-start; gap:4px;">
+              <div style="font-size:9px; color:var(--amber); font-weight:700; font-family:var(--mono);">HIGH IMPACT / HIGH EFFORT</div>
+              <div style="font-size:10px; color:var(--text); background:rgba(251,191,36,0.12); border-radius:4px; padding:3px 6px;">Monolith strangler</div>
+              <div style="font-size:10px; color:var(--text); background:rgba(251,191,36,0.12); border-radius:4px; padding:3px 6px;">Full OTel integration</div>
+            </div>
+            <div style="border-right:1px dashed var(--border); padding:8px; display:flex; flex-direction:column; justify-content:flex-start; gap:4px;">
+              <div style="font-size:9px; color:var(--green); font-weight:700; font-family:var(--mono);">LOW IMPACT / LOW EFFORT</div>
+              <div style="font-size:10px; color:var(--text); background:rgba(52,211,153,0.1); border-radius:4px; padding:3px 6px;">Dependency upgrades</div>
+              <div style="font-size:10px; color:var(--text); background:rgba(52,211,153,0.1); border-radius:4px; padding:3px 6px;">README cleanup</div>
+            </div>
+            <div style="padding:8px; display:flex; flex-direction:column; justify-content:flex-start; gap:4px;">
+              <div style="font-size:9px; color:var(--dim); font-weight:700; font-family:var(--mono);">LOW IMPACT / HIGH EFFORT</div>
+              <div style="font-size:10px; color:var(--text); background:rgba(255,255,255,0.04); border-radius:4px; padding:3px 6px;">Framework migration</div>
+              <div style="font-size:10px; color:var(--text); background:rgba(255,255,255,0.04); border-radius:4px; padding:3px 6px;">Full test rewrite</div>
+            </div>
+          </div>
+          <div style="position:absolute;top:50%;left:4px;right:4px;height:1px;background:var(--border);pointer-events:none;"></div>
+          <div style="position:absolute;left:50%;top:4px;bottom:4px;width:1px;background:var(--border);pointer-events:none;"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Anti-Pattern Registry -->
+  <section class="sec fi d5" id="antipatterns">
+    <div class="sec-hd">
+      <div class="sec-ico ir">🚫</div>
+      <div class="sec-hd-text">
+        <div class="sec-num">§ 07 · ANTI-PATTERN REGISTRY</div>
+        <div class="sec-title">Excellence Anti-Patterns & Organizational Risk Register</div>
+      </div>
+      <span class="tag tr">Risk Management</span>
+    </div>
+    <div class="card">
+      <table class="rtable">
+        <thead>
+          <tr>
+            <th>Anti-Pattern</th>
+            <th>Signal in SEI Data</th>
+            <th>Org Risk Level</th>
+            <th>Corrective Lever</th>
+            <th>Owner</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>The MTTR Mask</strong><br><span style="font-size:12px;color:var(--muted)">Closing incidents fast by reverting, not fixing root cause</span></td>
+            <td>MTTR improves; incident recurrence rate stays high; same services page repeatedly</td>
+            <td><span class="pill pil-r">CRITICAL</span></td>
+            <td>Mandatory blameless postmortem with "fix or accept" decision; track recurring incident rate separately from MTTR</td>
+            <td>TL + SRE</td>
+          </tr>
+          <tr>
+            <td><strong>Hero Culture Dependency</strong><br><span style="font-size:12px;color:var(--muted)">One engineer "saves" every incident or release</span></td>
+            <td>Pager alerts concentrated on 1–2 engineers; deployer diversity &lt;30%; bus factor = 1 per service</td>
+            <td><span class="pill pil-r">HIGH</span></td>
+            <td>Rotating on-call enforcement; pair deployments; bus factor tracked as first-class SEI metric</td>
+            <td>Tech Lead</td>
+          </tr>
+          <tr>
+            <td><strong>Metric Gaming</strong><br><span style="font-size:12px;color:var(--muted)">Deploying trivial changes to inflate deployment frequency</span></td>
+            <td>Deployment frequency spikes; PR size drops to &lt;5 lines on average; no associated feature JIRA tickets</td>
+            <td><span class="pill pil-a">MEDIUM</span></td>
+            <td>Track meaningful deployment ratio (PRs linked to user-value tickets); DORA treated as system signal, not individual KPI</td>
+            <td>Ashok + TL</td>
+          </tr>
+          <tr>
+            <td><strong>Coverage Theater</strong><br><span style="font-size:12px;color:var(--muted)">High coverage % with low-value assertion-free tests</span></td>
+            <td>Coverage &gt;80% but CFR remains high; mutation testing score low; incident post-mortems cite "missing test for this path"</td>
+            <td><span class="pill pil-a">MEDIUM</span></td>
+            <td>Introduce mutation testing score (PiTest, Mutmut) alongside line coverage; enforce test quality, not just quantity</td>
+            <td>Quality Champion</td>
+          </tr>
+          <tr>
+            <td><strong>ADR Amnesia</strong><br><span style="font-size:12px;color:var(--muted)">Architecture decisions made but never recorded; patterns diverge silently</span></td>
+            <td>ADR library stale (&gt;6 months without new entry); new services diverge from approved tech stack; Golden Path adoption &lt;60%</td>
+            <td><span class="pill pil-a">MEDIUM</span></td>
+            <td>ADR creation required in PR template for any new service or technology introduction; quarterly ADR review in Architecture sync</td>
+            <td>Tech Lead</td>
+          </tr>
+          <tr>
+            <td><strong>Toil Accumulation</strong><br><span style="font-size:12px;color:var(--muted)">Manual on-call tasks grow faster than automation capacity</span></td>
+            <td>Pager Fatigue Index rising quarter-over-quarter; on-call rotation declining (engineers opting out); toil hours &gt;30% of on-call cycle</td>
+            <td><span class="pill pil-r">HIGH</span></td>
+            <td>15% of sprint capacity mandatory for toil reduction; each toil task documented and assigned an automation owner; track toil-hours closed per quarter</td>
+            <td>TL + SRE</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <div style="border-top:1px solid var(--border); margin-top:40px; padding-top:22px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div>
+      <div style="font-size:13px; font-weight:700; color:#fff;">Engineering Excellence Strategy · Mimecast</div>
+      <div style="font-size:12px; color:var(--dim); font-family:var(--mono);">Ashok Sakthivel · Sr. Director of Engineering · April 2026</div>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <span class="tag ti">DORA Elite Target</span>
+      <span class="tag tg">90-Day Roadmap</span>
+      <span class="tag tp">SEI Command Center</span>
+      <span class="tag tt">Golden Path</span>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  function togglePhase(hd) {
+    const isOpen = hd.classList.contains('open');
+    const body = hd.nextElementSibling;
+    if (isOpen) { hd.classList.remove('open'); body.classList.remove('open'); }
+    else        { hd.classList.add('open');    body.classList.add('open'); }
+  }
+
+  const sections = document.querySelectorAll('.sec, .hero');
+  const navLinks = document.querySelectorAll('.sn-item');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+      }
+    });
+  }, { threshold: 0.2 });
+  sections.forEach(s => io.observe(s));
+</script>
+</body>
+</html>

@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stakeholder Partnership & Cross-Functional Alignment — Ashok Sakthivel</title>
+<style>
+  :root {
+    --bg: #05080f;
+    --card: #0b1120;
+    --panel: #0f1828;
+    --border: #1a2540;
+    --blue: #38bdf8;
+    --indigo: #818cf8;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --rose: #fb7185;
+    --purple: #c084fc;
+    --teal: #2dd4bf;
+    --cyan: #22d3ee;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --sidebar: 222px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  nav#sidebar {
+    width: var(--sidebar); min-width: var(--sidebar);
+    background: var(--card); border-right: 1px solid var(--border);
+    position: fixed; top: 0; left: 0; height: 100vh;
+    overflow-y: auto; padding: 28px 0; display: flex; flex-direction: column; gap: 4px; z-index: 100;
+  }
+  .nav-brand { padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+  .nav-brand .logo { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--indigo); }
+  .nav-brand .sub { font-size: 10px; color: var(--muted); margin-top: 3px; }
+  nav#sidebar a {
+    display: block; padding: 9px 20px; font-size: 12.5px; color: var(--muted);
+    text-decoration: none; border-left: 3px solid transparent;
+    transition: color .2s, border-color .2s, background .2s;
+  }
+  nav#sidebar a:hover { color: var(--text); }
+  nav#sidebar a.active { color: var(--indigo); border-left-color: var(--indigo); background: rgba(129,140,248,.07); }
+  .nav-section { padding: 14px 20px 4px; font-size: 9.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+
+  /* ── MAIN ── */
+  main { margin-left: var(--sidebar); flex: 1; padding: 0 48px 80px; max-width: 1100px; }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 64px 0 48px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 64px;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(129,140,248,.12); border: 1px solid rgba(129,140,248,.25);
+    color: var(--indigo); font-size: 11px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; padding: 5px 14px; border-radius: 999px; margin-bottom: 22px;
+  }
+  .hero h1 { font-size: clamp(28px,4vw,44px); font-weight: 800; line-height: 1.15; margin-bottom: 16px; }
+  .hero h1 span { color: var(--indigo); }
+  .hero p { font-size: 15px; color: var(--muted); max-width: 680px; line-height: 1.7; margin-bottom: 24px; }
+  .hero-meta { display: flex; gap: 28px; flex-wrap: wrap; }
+  .hero-meta span { font-size: 12px; color: var(--muted); }
+  .hero-meta strong { color: var(--text); }
+
+  /* ── SECTION HEADINGS ── */
+  .sec { margin-bottom: 56px; }
+  .sec-header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
+  .sec-num { font-size: 11px; font-weight: 800; letter-spacing: .12em; color: var(--indigo); background: rgba(129,140,248,.1); border: 1px solid rgba(129,140,248,.2); padding: 3px 10px; border-radius: 4px; }
+  .sec-title { font-size: 22px; font-weight: 700; }
+
+  /* ── KPI CARDS ── */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 16px; }
+  .kpi-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; position: relative; overflow: hidden;
+  }
+  .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .kpi-card.c-indigo::before { background: var(--indigo); }
+  .kpi-card.c-teal::before { background: var(--teal); }
+  .kpi-card.c-amber::before { background: var(--amber); }
+  .kpi-card.c-green::before { background: var(--green); }
+  .kpi-card.c-rose::before { background: var(--rose); }
+  .kpi-card.c-purple::before { background: var(--purple); }
+  .kpi-card.c-cyan::before { background: var(--cyan); }
+  .kpi-card.c-blue::before { background: var(--blue); }
+  .kpi-label { font-size: 11px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 10px; }
+  .kpi-val { font-size: 28px; font-weight: 800; line-height: 1; margin-bottom: 6px; }
+  .kpi-val.c-indigo { color: var(--indigo); }
+  .kpi-val.c-teal { color: var(--teal); }
+  .kpi-val.c-amber { color: var(--amber); }
+  .kpi-val.c-green { color: var(--green); }
+  .kpi-val.c-rose { color: var(--rose); }
+  .kpi-val.c-purple { color: var(--purple); }
+  .kpi-val.c-cyan { color: var(--cyan); }
+  .kpi-val.c-blue { color: var(--blue); }
+  .kpi-sub { font-size: 11px; color: var(--muted); }
+
+  /* ── PROBLEM FRAMING ── */
+  .problem-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .problem-cell {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 22px;
+  }
+  .problem-cell .ph { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 14px; padding: 3px 8px; border-radius: 4px; display: inline-block; }
+  .ph-red { color: var(--rose); background: rgba(251,113,133,.1); border: 1px solid rgba(251,113,133,.2); }
+  .ph-amber { color: var(--amber); background: rgba(251,191,36,.1); border: 1px solid rgba(251,191,36,.2); }
+  .ph-green { color: var(--green); background: rgba(52,211,153,.1); border: 1px solid rgba(52,211,153,.2); }
+  .problem-cell ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .problem-cell li { font-size: 13px; color: var(--muted); line-height: 1.5; padding-left: 14px; position: relative; }
+  .problem-cell li::before { content: '›'; position: absolute; left: 0; color: var(--indigo); }
+
+  /* ── ACCORDION PHASES ── */
+  .phase-list { display: flex; flex-direction: column; gap: 12px; }
+  .phase-item { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .phase-trigger {
+    width: 100%; background: none; border: none; color: var(--text);
+    display: flex; align-items: center; gap: 18px; padding: 20px 24px;
+    cursor: pointer; text-align: left; transition: background .15s;
+  }
+  .phase-trigger:hover { background: rgba(255,255,255,.03); }
+  .phase-node {
+    width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 18px; flex-shrink: 0;
+  }
+  .pn0 { background: rgba(129,140,248,.15); border: 2px solid var(--indigo); }
+  .pn1 { background: rgba(192,132,252,.15); border: 2px solid var(--purple); }
+  .pn2 { background: rgba(45,212,191,.15); border: 2px solid var(--teal); }
+  .pn3 { background: rgba(52,211,153,.15); border: 2px solid var(--green); }
+  .phase-meta { flex: 1; }
+  .phase-meta .days { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 3px; }
+  .days-0 { color: var(--indigo); }
+  .days-1 { color: var(--purple); }
+  .days-2 { color: var(--teal); }
+  .days-3 { color: var(--green); }
+  .phase-meta .ptitle { font-size: 16px; font-weight: 700; }
+  .phase-meta .psub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .phase-arrow { font-size: 18px; color: var(--muted); transition: transform .25s; flex-shrink: 0; }
+  .phase-item.open .phase-arrow { transform: rotate(90deg); }
+  .phase-body {
+    max-height: 0; overflow: hidden;
+    transition: max-height .35s ease;
+    border-top: 1px solid transparent;
+  }
+  .phase-item.open .phase-body {
+    max-height: 1400px;
+    border-top-color: var(--border);
+  }
+  .phase-inner { padding: 24px 24px 24px 86px; }
+  .phase-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .pcol-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; }
+  .pcol-indigo { color: var(--indigo); }
+  .pcol-purple { color: var(--purple); }
+  .pcol-teal { color: var(--teal); }
+  .pcol-green { color: var(--green); }
+  .pcol-amber { color: var(--amber); }
+  .pcol-rose { color: var(--rose); }
+  .pcol-cyan { color: var(--cyan); }
+  .phase-inner ul { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  .phase-inner li { font-size: 13.5px; color: var(--muted); padding-left: 16px; position: relative; line-height: 1.5; }
+  .phase-inner li::before { content: '▸'; position: absolute; left: 0; font-size: 10px; top: 3px; opacity: .6; }
+  .phase-inner li strong { color: var(--text); }
+  .phase-highlight {
+    margin-top: 18px; padding: 14px 18px;
+    border-left: 3px solid var(--indigo); background: rgba(129,140,248,.06);
+    border-radius: 0 8px 8px 0;
+  }
+  .phase-highlight p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .phase-highlight strong { color: var(--indigo); }
+
+  /* ── PORTAL FRAME ── */
+  .portal-wrap {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+  }
+  .portal-chrome {
+    background: #060c18; padding: 10px 16px; display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+  .url-bar {
+    flex: 1; background: rgba(255,255,255,.05); border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px 12px; font-size: 11px; color: var(--muted); margin: 0 12px;
+  }
+  .portal-body { display: grid; grid-template-columns: 180px 1fr; height: 460px; }
+  .portal-nav {
+    background: #060c18; border-right: 1px solid var(--border);
+    padding: 16px 0; display: flex; flex-direction: column; gap: 2px;
+  }
+  .portal-nav-section { padding: 12px 14px 3px; font-size: 8.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .pnav-item {
+    padding: 8px 14px; font-size: 11.5px; color: var(--muted); cursor: default;
+    display: flex; align-items: center; gap: 8px; border-left: 2px solid transparent;
+    transition: color .15s;
+  }
+  .pnav-item.active { color: var(--indigo); border-left-color: var(--indigo); background: rgba(129,140,248,.07); }
+  .portal-content { overflow: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+  .portal-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+  .portal-tile {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px;
+  }
+  .pt-label { font-size: 9.5px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 6px; }
+  .pt-val { font-size: 22px; font-weight: 800; }
+  .pt-sub { font-size: 10px; color: var(--muted); margin-top: 3px; }
+  .portal-wide { grid-column: span 2; }
+  .rag-list { display: flex; flex-direction: column; gap: 8px; }
+  .rag-row { display: flex; align-items: center; gap: 10px; font-size: 11.5px; }
+  .rag-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .rag-g { background: var(--green); }
+  .rag-a { background: var(--amber); }
+  .rag-r { background: var(--rose); }
+  .rag-label { flex: 1; color: var(--text); }
+  .rag-meta { color: var(--muted); font-size: 10px; }
+  .async-feed { display: flex; flex-direction: column; gap: 8px; }
+  .async-item { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; }
+  .ai-title { font-size: 11.5px; color: var(--text); margin-bottom: 2px; }
+  .ai-meta { font-size: 10px; color: var(--muted); display: flex; gap: 10px; }
+  .ai-status { font-size: 9.5px; font-weight: 700; padding: 1px 7px; border-radius: 999px; }
+  .s-pending { background: rgba(251,191,36,.15); color: var(--amber); }
+  .s-resolved { background: rgba(52,211,153,.15); color: var(--green); }
+  .s-open { background: rgba(129,140,248,.15); color: var(--indigo); }
+  .value-stream-bar {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px; grid-column: span 4;
+  }
+  .vsb-title { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+  .vs-flow { display: flex; align-items: center; gap: 0; overflow: auto; }
+  .vs-node {
+    display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0;
+  }
+  .vs-box {
+    background: var(--card); border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 10px; font-size: 10px; color: var(--text); white-space: nowrap; text-align: center;
+  }
+  .vs-ct { font-size: 9px; color: var(--muted); }
+  .vs-arrow { color: var(--muted); font-size: 14px; padding: 0 6px; flex-shrink: 0; }
+  .vs-box.active { border-color: var(--indigo); background: rgba(129,140,248,.08); color: var(--indigo); }
+
+  /* ── SPEC GRID ── */
+  .spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .spec-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 22px;
+  }
+  .spec-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+  .spec-icon { font-size: 26px; line-height: 1; }
+  .spec-card-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .spec-card-sub { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+  .spec-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .tag { font-size: 10.5px; padding: 3px 9px; border-radius: 999px; }
+  .tag-indigo { background: rgba(129,140,248,.12); color: var(--indigo); border: 1px solid rgba(129,140,248,.2); }
+  .tag-teal { background: rgba(45,212,191,.12); color: var(--teal); border: 1px solid rgba(45,212,191,.2); }
+  .tag-amber { background: rgba(251,191,36,.12); color: var(--amber); border: 1px solid rgba(251,191,36,.2); }
+  .tag-green { background: rgba(52,211,153,.12); color: var(--green); border: 1px solid rgba(52,211,153,.2); }
+  .tag-rose { background: rgba(251,113,133,.12); color: var(--rose); border: 1px solid rgba(251,113,133,.2); }
+  .tag-purple { background: rgba(192,132,252,.12); color: var(--purple); border: 1px solid rgba(192,132,252,.2); }
+  .tag-cyan { background: rgba(34,211,238,.12); color: var(--cyan); border: 1px solid rgba(34,211,238,.2); }
+
+  /* ── GLOBAL STRATEGY ── */
+  .tz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .tz-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 22px; }
+  .tz-title { font-size: 13px; font-weight: 700; color: var(--teal); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .tz-card ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .tz-card li { font-size: 13px; color: var(--muted); line-height: 1.5; padding-left: 14px; position: relative; }
+  .tz-card li::before { content: '→'; position: absolute; left: 0; color: var(--teal); font-size: 11px; }
+  .async-protocol {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px;
+  }
+  .atp-title { font-size: 13px; font-weight: 700; color: var(--purple); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .atp-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+  .atp-cell { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+  .atp-cell-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+  .atp-cell-body { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+  /* ── VIZ LAB ── */
+  .viz-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 16px; }
+  .viz-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .viz-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 16px; }
+
+  /* RACI Heat Matrix */
+  .raci-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .raci-table th { padding: 6px 10px; text-align: center; color: var(--muted); font-weight: 600; font-size: 10px; border-bottom: 1px solid var(--border); }
+  .raci-table td { padding: 7px 10px; text-align: center; border-bottom: 1px solid rgba(26,37,64,.5); font-size: 11px; }
+  .raci-table td:first-child { text-align: left; color: var(--text); }
+  .rc { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 4px; font-weight: 700; font-size: 10px; }
+  .rc-R { background: rgba(129,140,248,.2); color: var(--indigo); }
+  .rc-A { background: rgba(213,63,140,.2); color: var(--rose); }
+  .rc-C { background: rgba(251,191,36,.2); color: var(--amber); }
+  .rc-I { background: rgba(100,116,139,.15); color: var(--muted); }
+
+  /* Decision Velocity Sparkline */
+  .sparkline-wrap { display: flex; flex-direction: column; gap: 10px; }
+  .spark-row { display: flex; align-items: center; gap: 10px; font-size: 11px; }
+  .spark-label { width: 80px; color: var(--muted); font-size: 10.5px; flex-shrink: 0; }
+  .spark-bar-bg { flex: 1; height: 8px; background: rgba(255,255,255,.05); border-radius: 999px; overflow: hidden; }
+  .spark-bar { height: 100%; border-radius: 999px; }
+  .spark-val { width: 36px; text-align: right; color: var(--text); font-weight: 700; font-size: 11px; }
+
+  /* OKR Donut */
+  .donut-row { display: flex; align-items: center; justify-content: space-around; }
+  .donut-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .donut-circle {
+    width: 64px; height: 64px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800; position: relative;
+  }
+  .donut-ring {
+    position: absolute; inset: 0; border-radius: 50%;
+  }
+  .donut-val { position: relative; z-index: 1; }
+  .donut-label { font-size: 10px; color: var(--muted); text-align: center; }
+
+  /* Value stream horizontal flow */
+  .vs-full-flow { display: flex; align-items: stretch; gap: 0; width: 100%; margin-top: 8px; }
+  .vsf-stage {
+    flex: 1; background: var(--panel); border: 1px solid var(--border);
+    padding: 10px 8px; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 4px; position: relative; text-align: center;
+  }
+  .vsf-stage:not(:last-child)::after {
+    content: '▶'; position: absolute; right: -10px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); font-size: 10px; z-index: 2;
+  }
+  .vsf-label { font-size: 10px; color: var(--text); font-weight: 600; }
+  .vsf-ct { font-size: 9px; color: var(--muted); }
+  .vsf-stage.active { border-color: var(--teal); background: rgba(45,212,191,.07); }
+  .vsf-stage.active .vsf-label { color: var(--teal); }
+  .vsf-stage:first-child { border-radius: 8px 0 0 8px; }
+  .vsf-stage:last-child { border-radius: 0 8px 8px 0; }
+  .vsf-stage:last-child::after { display: none; }
+
+  /* ── RISK TABLE ── */
+  .risk-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .risk-table thead th { padding: 10px 14px; text-align: left; color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; border-bottom: 1px solid var(--border); }
+  .risk-table tbody tr { border-bottom: 1px solid rgba(26,37,64,.6); transition: background .15s; }
+  .risk-table tbody tr:hover { background: rgba(255,255,255,.02); }
+  .risk-table td { padding: 13px 14px; vertical-align: top; }
+  .risk-name { font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .risk-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .sev { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+  .sev-h { background: rgba(251,113,133,.15); color: var(--rose); border: 1px solid rgba(251,113,133,.2); }
+  .sev-m { background: rgba(251,191,36,.15); color: var(--amber); border: 1px solid rgba(251,191,36,.2); }
+  .sev-l { background: rgba(52,211,153,.15); color: var(--green); border: 1px solid rgba(52,211,153,.2); }
+  .mitigation { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .mitigation strong { color: var(--teal); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fu { opacity: 0; animation: fadeUp .55s ease forwards; }
+  .d1 { animation-delay: .08s; }
+  .d2 { animation-delay: .16s; }
+  .d3 { animation-delay: .24s; }
+  .d4 { animation-delay: .32s; }
+  .d5 { animation-delay: .40s; }
+  .d6 { animation-delay: .48s; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     SIDEBAR NAV
+══════════════════════════════════════════ -->
+<nav id="sidebar">
+  <div class="nav-brand">
+    <div class="logo">Stakeholder Partnership</div>
+    <div class="sub">Cross-Functional Alignment · 2026</div>
+  </div>
+  <div class="nav-section">Framework</div>
+  <a href="#overview" class="active">📋 Overview</a>
+  <a href="#problem">🔍 The Challenge</a>
+  <a href="#northstar">🎯 North Star KPIs</a>
+  <div class="nav-section">Playbook</div>
+  <a href="#phase0">📡 Days 0–30: Listen &amp; Map</a>
+  <a href="#phase1">🌉 Days 31–60: Build Bridges</a>
+  <a href="#phase2">⚙️ Days 61–90: Embed &amp; Automate</a>
+  <a href="#phase3">🚀 Q2+: Sustained Partnership</a>
+  <div class="nav-section">Portal</div>
+  <a href="#portal">🖥️ Portal Preview</a>
+  <a href="#panes">📐 Pane Specifications</a>
+  <div class="nav-section">Strategy</div>
+  <a href="#global">🌍 Global Collab Strategy</a>
+  <a href="#viz">📊 Visualization Lab</a>
+  <a href="#antipatterns">⚠️ Anti-Pattern Registry</a>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     MAIN CONTENT
+══════════════════════════════════════════ -->
+<main>
+
+  <!-- HERO -->
+  <section class="hero" id="overview">
+    <div class="hero-badge fu d1">🤝 Organisational Alignment</div>
+    <h1 class="fu d2">Stakeholder Partnership &amp;<br /><span>Cross-Functional Alignment</span></h1>
+    <p class="fu d3">A strategic playbook for dismantling engineering silos, bridging the UK–US timezone gap, and transitioning from a feature-factory model to a value-delivery organisation — spanning Product, Architecture, Security, Finance, and Regional Engineering Leaders.</p>
+    <div class="hero-meta fu d4">
+      <span><strong>Author</strong> Ashok Sakthivel</span>
+      <span><strong>Role</strong> Sr. Director of Engineering</span>
+      <span><strong>Location</strong> Bangalore 🇮🇳</span>
+      <span><strong>Scope</strong> Global (UK + US + IN)</span>
+      <span><strong>Horizon</strong> 30–60–90 Day + Q2+</span>
+    </div>
+  </section>
+
+  <!-- §00 THE CHALLENGE -->
+  <section class="sec fu" id="problem">
+    <div class="sec-header">
+      <span class="sec-num">§ 00</span>
+      <span class="sec-title">The Challenge: Silos &amp; Timezone Debt</span>
+    </div>
+    <div class="problem-grid">
+      <div class="problem-cell">
+        <span class="ph ph-red">❌ Today's Reality</span>
+        <ul>
+          <li>Product teams define scope without engineering architecture input</li>
+          <li>Security reviews bolted on at the end of every sprint</li>
+          <li>Finance allocated budgets devoid of per-team ROI context</li>
+          <li>UK–US decisions blocked in async dead-zones (no 48hr SLA)</li>
+          <li>Regional Engineering leaders (US &amp; UK) operate as independent fiefdoms</li>
+          <li>Shared metrics don't exist — each team has its own definition of "done"</li>
+        </ul>
+      </div>
+      <div class="problem-cell">
+        <span class="ph ph-amber">⚡ Root Causes</span>
+        <ul>
+          <li><strong>Timezone Debt:</strong> Only 2–4 hr overlap between London &amp; EST teams</li>
+          <li><strong>Loudest Voice Wins:</strong> Senior opinions override data-driven decisions, silencing quieter but better-informed voices</li>
+          <li><strong>OKR Lip Service:</strong> OKRs written but never referenced in sprint planning</li>
+          <li><strong>Feature-Factory Trap:</strong> Velocity celebrated; business outcomes ignored</li>
+          <li><strong>Invisible Architecture:</strong> No shared ADR repository; tribal knowledge silos</li>
+          <li><strong>Trust Deficit:</strong> Cross-team escalations default to politics, not data</li>
+        </ul>
+      </div>
+      <div class="problem-cell">
+        <span class="ph ph-green">✅ Target State</span>
+        <ul>
+          <li>Every initiative has a Product + Engineering + Security shared OKR</li>
+          <li>Shift-left security sign-off embedded in sprint 1 of every initiative</li>
+          <li>Async Decision Log as single source of truth — 48hr resolution SLA</li>
+          <li>UK–US overlap window reserved for synchronous governance only</li>
+          <li>Stakeholder Health NPS ≥ 80 across all partner groups</li>
+          <li>Fortnightly cross-functional retrospectives with published action items</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- §01 NORTH STAR KPIs -->
+  <section class="sec fu" id="northstar">
+    <div class="sec-header">
+      <span class="sec-num">§ 01</span>
+      <span class="sec-title">North Star KPIs</span>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card c-indigo">
+        <div class="kpi-label">Stakeholder NPS</div>
+        <div class="kpi-val c-indigo">≥ 80</div>
+        <div class="kpi-sub">Quarterly survey across all partner groups</div>
+      </div>
+      <div class="kpi-card c-teal">
+        <div class="kpi-label">Async Decision Latency</div>
+        <div class="kpi-val c-teal">≤ 48h</div>
+        <div class="kpi-sub">P90 resolution SLA from Decision Log</div>
+      </div>
+      <div class="kpi-card c-green">
+        <div class="kpi-label">OKR Alignment Score</div>
+        <div class="kpi-val c-green">≥ 90%</div>
+        <div class="kpi-sub">Engineering OKRs tracing to Product OKRs</div>
+      </div>
+      <div class="kpi-card c-amber">
+        <div class="kpi-label">Security Sign-off Lead Time</div>
+        <div class="kpi-val c-amber">≤ 3 days</div>
+        <div class="kpi-sub">From security review request to approval</div>
+      </div>
+      <div class="kpi-card c-rose">
+        <div class="kpi-label">Cross-Functional RAG: Green</div>
+        <div class="kpi-val c-rose">≥ 85%</div>
+        <div class="kpi-sub">% of active initiatives rated Green in portals</div>
+      </div>
+      <div class="kpi-card c-purple">
+        <div class="kpi-label">Timezone Blocker Events</div>
+        <div class="kpi-val c-purple">→ 0</div>
+        <div class="kpi-sub">Decisions stalled purely due to timezone gaps</div>
+      </div>
+      <div class="kpi-card c-cyan">
+        <div class="kpi-label">Feature-to-Value Ratio</div>
+        <div class="kpi-val c-cyan">3:1</div>
+        <div class="kpi-sub">Outcome-linked features vs pure feature requests</div>
+      </div>
+      <div class="kpi-card c-blue">
+        <div class="kpi-label">Silo Incidents</div>
+        <div class="kpi-val c-blue">↓ 70%</div>
+        <div class="kpi-sub">Cross-functional escalations vs baseline Q1</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §02 ALIGNMENT PLAYBOOK -->
+  <section class="sec fu" id="phase0">
+    <div class="sec-header">
+      <span class="sec-num">§ 02</span>
+      <span class="sec-title">The 30-60-90 Alignment Playbook</span>
+    </div>
+    <div class="phase-list">
+
+      <!-- Phase 0: Days 0-30 -->
+      <div class="phase-item open" id="phase0-item">
+        <button class="phase-trigger" onclick="togglePhase(this)">
+          <div class="phase-node pn0">📡</div>
+          <div class="phase-meta">
+            <div class="days days-0">Days 0–30</div>
+            <div class="ptitle">Listen &amp; Map</div>
+            <div class="psub">Stakeholder discovery · Relationship baseline · OKR inventory</div>
+          </div>
+          <span class="phase-arrow">›</span>
+        </button>
+        <div class="phase-body">
+          <div class="phase-inner">
+            <div class="phase-cols">
+              <div>
+                <p class="pcol-title pcol-indigo">🗣️ Stakeholder Discovery</p>
+                <ul>
+                  <li><strong>1-on-1 listening tours</strong> with CPO, CTO, CISO, CFO, &amp; Regional VPs</li>
+                  <li>Document each stakeholder's <strong>top 3 pain points</strong> and success criteria</li>
+                  <li>Map <strong>influence vs. interest</strong> matrix for all key partners</li>
+                  <li>Identify hidden decision-makers (informal power brokers)</li>
+                  <li>Assign alignment owners per stakeholder group within engineering leadership</li>
+                </ul>
+              </div>
+              <div>
+                <p class="pcol-title pcol-indigo">📋 Inventory &amp; Baseline</p>
+                <ul>
+                  <li>Audit all current OKRs — map engineering OKRs to Product OKRs line-by-line</li>
+                  <li>Catalogue all async communication channels (Slack, email, Confluence, Jira)</li>
+                  <li>Measure current <strong>async decision latency</strong> as Q1 baseline</li>
+                  <li>Document current security review touchpoints per SDLC stage</li>
+                  <li>Run Stakeholder Health NPS survey — establish Day 0 score</li>
+                </ul>
+              </div>
+            </div>
+            <div class="phase-cols" style="margin-top:16px">
+              <div>
+                <p class="pcol-title pcol-amber">⏰ Timezone Gap Analysis</p>
+                <ul>
+                  <li>Map current recurring meetings against London / EST / Bangalore windows</li>
+                  <li>Identify meetings with <strong>zero useful overlap</strong> attendees</li>
+                  <li>Quantify async dead-zones: decisions blocked &gt;48h due to timezone</li>
+                  <li>Interview UK &amp; US regional leads — document top friction points</li>
+                </ul>
+              </div>
+              <div>
+                <p class="pcol-title pcol-rose">🎯 Define the Partnership Charter</p>
+                <ul>
+                  <li>Draft <strong>Cross-Functional Partnership Charter</strong> — shared values &amp; norms</li>
+                  <li>Establish RACI for all recurring governance ceremonies</li>
+                  <li>Agree on Decision Record format with all stakeholder groups</li>
+                  <li>Publish shared definition of "value delivered" (not features shipped)</li>
+                </ul>
+              </div>
+            </div>
+            <div class="phase-highlight">
+              <p><strong>Days 0–30 Output:</strong> Stakeholder Heat Map (influence × interest), Timezone Blocker Report, OKR Alignment Gap Report, Stakeholder Health NPS baseline, Draft Partnership Charter v1.0</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 1: Days 31-60 -->
+      <div class="phase-item" id="phase1-item">
+        <button class="phase-trigger" onclick="togglePhase(this)">
+          <div class="phase-node pn1">🌉</div>
+          <div class="phase-meta">
+            <div class="days days-1">Days 31–60</div>
+            <div class="ptitle">Build Bridge Cadences</div>
+            <div class="psub">Joint OKR planning · Shift-Left Security · FinOps Council · Architecture Board</div>
+          </div>
+          <span class="phase-arrow">›</span>
+        </button>
+        <div class="phase-body">
+          <div class="phase-inner">
+            <div class="phase-cols">
+              <div>
+                <p class="pcol-title pcol-purple">📅 Governance Cadences</p>
+                <ul>
+                  <li><strong>Joint OKR Planning Session</strong> (bi-quarterly) — Product + Engineering + Finance co-authors</li>
+                  <li><strong>Shift-Left Security Council</strong> (monthly) — CISO + Eng Leads, sprint 1 sign-off workflow</li>
+                  <li><strong>FinOps Cost Review Board</strong> (monthly) — CFO + Cloud Eng, per-team cost accountability</li>
+                  <li><strong>Global Architecture Review Board</strong> (bi-weekly) — US + UK + IN architects, shared ADR repo</li>
+                  <li><strong>Value Stream Review</strong> (weekly) — flow metrics, cycle time, outcome vs. output ratio</li>
+                </ul>
+              </div>
+              <div>
+                <p class="pcol-title pcol-purple">🔗 Protocol Design</p>
+                <ul>
+                  <li>Launch <strong>Async Decision Log</strong> in Confluence with 48hr SLA enforcement</li>
+                  <li>Timezone-Aware Meeting Policy: overlapping hours = synchronous only; all others = async</li>
+                  <li>Introduce <strong>Decision Records (ADR-style)</strong> for all cross-functional architectural choices</li>
+                  <li>Loom video mandate for complex decisions requiring high-context communication</li>
+                  <li>Weekly async leadership standup — written, 3 bullets max per team lead</li>
+                </ul>
+              </div>
+            </div>
+            <div class="phase-cols" style="margin-top:16px">
+              <div>
+                <p class="pcol-title pcol-teal">🛡️ Security Partnership</p>
+                <ul>
+                  <li>Embed Security Champion in each product squad</li>
+                  <li>Define <strong>Threat Model Lite</strong> template for sprint 1 discovery phase</li>
+                  <li>Publish Security Sign-off SLA: 3-day target from request to approval</li>
+                  <li>Create shared Security Posture Dashboard (visible to all stakeholders)</li>
+                </ul>
+              </div>
+              <div>
+                <p class="pcol-title pcol-amber">💰 Finance Partnership</p>
+                <ul>
+                  <li>Implement <strong>Per-Team Cloud Cost Allocation Tags</strong> in AWS/Azure</li>
+                  <li>Monthly engineering cost narrative: "we spent X, we delivered Y value"</li>
+                  <li>Introduce <strong>ROI scorecard</strong> for top-5 strategic initiatives per quarter</li>
+                  <li>Joint FinOps anomaly response runbook with Finance on-call rotation</li>
+                </ul>
+              </div>
+            </div>
+            <div class="phase-highlight">
+              <p><strong>Days 31–60 Output:</strong> 5 recurring governance cadences live, Async Decision Log operational, Security Champions assigned, FinOps cost tags deployed, Partnership Charter v2.0 ratified by all stakeholders</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 2: Days 61-90 -->
+      <div class="phase-item" id="phase2-item">
+        <button class="phase-trigger" onclick="togglePhase(this)">
+          <div class="phase-node pn2">⚙️</div>
+          <div class="phase-meta">
+            <div class="days days-2">Days 61–90</div>
+            <div class="ptitle">Embed &amp; Automate</div>
+            <div class="psub">Portal launch · Cross-functional retrospectives · Value stream mapping · OKR health tracking</div>
+          </div>
+          <span class="phase-arrow">›</span>
+        </button>
+        <div class="phase-body">
+          <div class="phase-inner">
+            <div class="phase-cols">
+              <div>
+                <p class="pcol-title pcol-teal">🖥️ Single Source of Truth Portal</p>
+                <ul>
+                  <li>Launch <strong>Stakeholder Partnership Portal</strong> — all RAG initiative statuses live</li>
+                  <li>Integrate OKR Alignment Tracker, Async Decision Log, Security Posture, FinOps view</li>
+                  <li>Auto-publish fortnightly cross-functional retrospective action items</li>
+                  <li>Portal visible to CPO, CISO, CFO, Regional VPs — no login friction (SSO)</li>
+                  <li>Ambassador dashboard per regional site (UK / US / IN)</li>
+                </ul>
+              </div>
+              <div>
+                <p class="pcol-title pcol-teal">🔄 Retrospective &amp; Feedback Loops</p>
+                <ul>
+                  <li><strong>Cross-functional retros</strong> fortnightly — Product + Engineering + Security + Finance</li>
+                  <li>Action item tracking in portal with owner + due date + RAG status</li>
+                  <li>Quarterly Stakeholder NPS resurvey — compare vs. Day 0 baseline</li>
+                  <li>Anti-pattern escalation board — visible to all, reviewed monthly by Ashok</li>
+                  <li>Partnership Charter reviewed and updated quarterly</li>
+                </ul>
+              </div>
+            </div>
+            <div class="phase-cols" style="margin-top:16px">
+              <div>
+                <p class="pcol-title pcol-green">📈 Value Stream Mapping</p>
+                <ul>
+                  <li>Run <strong>VSM workshop</strong> with all stakeholder groups — map ideation → ROI cycle time</li>
+                  <li>Identify top 3 flow bottlenecks blocking value delivery</li>
+                  <li>Publish Value Stream Efficiency Score (target: &gt;60% flow efficiency)</li>
+                  <li>Automate cycle time tracking via Jira + GitHub metrics pipeline</li>
+                </ul>
+              </div>
+              <div>
+                <p class="pcol-title pcol-cyan">🤖 OKR Health Automation</p>
+                <ul>
+                  <li>Weekly automated OKR alignment score published to portal</li>
+                  <li>Alert on any initiative with OKR traceability gap &gt;2 sprints</li>
+                  <li>Monthly OKR Health review with CPO — compare delivery vs. stated outcomes</li>
+                  <li>Gamification: team leaderboard for OKR alignment scores (non-punitive)</li>
+                </ul>
+              </div>
+            </div>
+            <div class="phase-highlight">
+              <p><strong>Days 61–90 Output:</strong> Stakeholder Partnership Portal live (SSO), Value Stream Efficiency baseline published, OKR automation pipeline active, first cross-functional retro complete, NPS delta vs. Q1 baseline measured</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 3: Q2+ -->
+      <div class="phase-item" id="phase3-item">
+        <button class="phase-trigger" onclick="togglePhase(this)">
+          <div class="phase-node pn3">🚀</div>
+          <div class="phase-meta">
+            <div class="days days-3">Q2+ Sustained</div>
+            <div class="ptitle">Sustained Partnership Culture</div>
+            <div class="psub">Embedded norms · Continuous alignment · Cross-functional career pathing</div>
+          </div>
+          <span class="phase-arrow">›</span>
+        </button>
+        <div class="phase-body">
+          <div class="phase-inner">
+            <div class="phase-cols">
+              <div>
+                <p class="pcol-title pcol-green">🌱 Cultural Norms</p>
+                <ul>
+                  <li>"Outcome over Output" as a hiring and promotion filter — embedded in perf frameworks</li>
+                  <li>Cross-functional rotation program: engineers spend 1 sprint in Product discovery</li>
+                  <li>Security Champions promoted to <strong>Security Guild</strong> with quarterly summits</li>
+                  <li>FinOps accountability embedded in team-level OKR scoring</li>
+                  <li>Value Stream Map reviewed &amp; refined every 6 months</li>
+                </ul>
+              </div>
+              <div>
+                <p class="pcol-title pcol-green">📊 Continuous Measurement</p>
+                <ul>
+                  <li>Quarterly Stakeholder NPS with published delta trend</li>
+                  <li>Annual Cross-Functional Alignment Report distributed to Exec stakeholders</li>
+                  <li>DORA metrics integrated into Stakeholder Partnership Portal</li>
+                  <li>OKR Alignment Score target raised to ≥ 95% by Q3</li>
+                  <li>Zero timezone blocker events for 2 consecutive quarters = milestone celebration</li>
+                </ul>
+              </div>
+            </div>
+            <div class="phase-highlight">
+              <p><strong>Q2+ Target:</strong> Stakeholder NPS ≥ 80 · OKR Alignment ≥ 90% · Async Decision Latency P90 ≤ 48h · Security Sign-off Lead Time ≤ 3 days · Zero silo escalations for 30 consecutive days</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- §03 PORTAL PREVIEW -->
+  <section class="sec fu" id="portal">
+    <div class="sec-header">
+      <span class="sec-num">§ 03</span>
+      <span class="sec-title">Stakeholder Partnership Portal — Preview</span>
+    </div>
+    <div class="portal-wrap">
+      <div class="portal-chrome">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <div class="url-bar">🔒 partnership.engineering.internal / command-center</div>
+      </div>
+      <div class="portal-body">
+        <!-- Sidebar nav -->
+        <div class="portal-nav">
+          <div class="portal-nav-section">Command</div>
+          <div class="pnav-item active">🗺️ Global Command</div>
+          <div class="pnav-item">🌊 Value Stream</div>
+          <div class="portal-nav-section">Alignment</div>
+          <div class="pnav-item">🎯 OKR Tracker</div>
+          <div class="pnav-item">📋 Decision Log</div>
+          <div class="portal-nav-section">Compliance</div>
+          <div class="pnav-item">💰 FinOps Hub</div>
+          <div class="pnav-item">🛡️ Security Posture</div>
+          <div class="portal-nav-section">Health</div>
+          <div class="pnav-item">❤️ Stakeholder NPS</div>
+          <div class="pnav-item">🌍 Regional View</div>
+        </div>
+        <!-- Content area -->
+        <div class="portal-content">
+          <!-- KPI row -->
+          <div class="portal-row">
+            <div class="portal-tile">
+              <div class="pt-label">Stakeholder NPS</div>
+              <div class="pt-val" style="color:var(--green)">72</div>
+              <div class="pt-sub">↑ 14 pts vs Q1</div>
+            </div>
+            <div class="portal-tile">
+              <div class="pt-label">Async Latency P90</div>
+              <div class="pt-val" style="color:var(--amber)">61h</div>
+              <div class="pt-sub">Target: ≤ 48h</div>
+            </div>
+            <div class="portal-tile">
+              <div class="pt-label">OKR Alignment</div>
+              <div class="pt-val" style="color:var(--indigo)">78%</div>
+              <div class="pt-sub">Target: ≥ 90%</div>
+            </div>
+            <div class="portal-tile">
+              <div class="pt-label">Security Lead Time</div>
+              <div class="pt-val" style="color:var(--teal)">4.2d</div>
+              <div class="pt-sub">Target: ≤ 3 days</div>
+            </div>
+          </div>
+          <!-- Value stream -->
+          <div class="value-stream-bar">
+            <div class="vsb-title">Value Stream — Idea → ROI · Live Flow Efficiency: 54%</div>
+            <div class="vs-full-flow">
+              <div class="vsf-stage">
+                <div class="vsf-label">Ideation</div>
+                <div class="vsf-ct">5.2d avg</div>
+              </div>
+              <div class="vsf-stage active">
+                <div class="vsf-label">Arch Review</div>
+                <div class="vsf-ct">3.1d avg</div>
+              </div>
+              <div class="vsf-stage">
+                <div class="vsf-label">Engineering</div>
+                <div class="vsf-ct">18.4d avg</div>
+              </div>
+              <div class="vsf-stage">
+                <div class="vsf-label">Security S/O</div>
+                <div class="vsf-ct">4.2d avg</div>
+              </div>
+              <div class="vsf-stage">
+                <div class="vsf-label">Staging</div>
+                <div class="vsf-ct">2.8d avg</div>
+              </div>
+              <div class="vsf-stage">
+                <div class="vsf-label">ROI Measure</div>
+                <div class="vsf-ct">7.0d avg</div>
+              </div>
+            </div>
+          </div>
+          <!-- RAG + Async feed -->
+          <div class="portal-row">
+            <div class="portal-tile portal-wide">
+              <div class="pt-label">Initiative RAG Status</div>
+              <div class="rag-list" style="margin-top:8px">
+                <div class="rag-row"><div class="rag-dot rag-g"></div><div class="rag-label">Message Archiver API v3 — Security Refactor</div><div class="rag-meta">Green · UK Lead</div></div>
+                <div class="rag-row"><div class="rag-dot rag-a"></div><div class="rag-label">Cloud Cost Optimisation — Q2 FinOps Initiative</div><div class="rag-meta">Amber · US Lead</div></div>
+                <div class="rag-row"><div class="rag-dot rag-g"></div><div class="rag-label">Multi-Tenant Data Pipeline Modernisation</div><div class="rag-meta">Green · IN Lead</div></div>
+                <div class="rag-row"><div class="rag-dot rag-r"></div><div class="rag-label">UK–US OKR Joint Planning Session Alignment</div><div class="rag-meta">Red · Blocked · Timezone</div></div>
+                <div class="rag-row"><div class="rag-dot rag-g"></div><div class="rag-label">Platform Engineering Internal Developer Portal</div><div class="rag-meta">Green · IN Lead</div></div>
+              </div>
+            </div>
+            <div class="portal-tile portal-wide">
+              <div class="pt-label">Async Decision Log — Recent</div>
+              <div class="async-feed" style="margin-top:8px">
+                <div class="async-item">
+                  <div class="ai-title">ADR-0042 · S3 Object Lock for archiver compliance</div>
+                  <div class="ai-meta"><span>Raised: UK Arch</span><span>1h ago</span><span class="ai-status s-pending">⏳ Pending</span></div>
+                </div>
+                <div class="async-item">
+                  <div class="ai-title">PRD-Q2-07 · Federated Search UX scope freeze</div>
+                  <div class="ai-meta"><span>Raised: Product</span><span>14h ago</span><span class="ai-status s-resolved">✅ Resolved</span></div>
+                </div>
+                <div class="async-item">
+                  <div class="ai-title">SEC-0019 · Third-party OAuth2 library upgrade</div>
+                  <div class="ai-meta"><span>Raised: Security</span><span>36h ago</span><span class="ai-status s-open">🔵 In Review</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §04 PANE SPECIFICATIONS -->
+  <section class="sec fu" id="panes">
+    <div class="sec-header">
+      <span class="sec-num">§ 04</span>
+      <span class="sec-title">Portal Pane Specifications</span>
+    </div>
+    <div class="spec-grid">
+      <div class="spec-card">
+        <div class="spec-head">
+          <div class="spec-icon">🌊</div>
+          <div>
+            <div class="spec-card-title">Value Stream Plane</div>
+            <div class="spec-card-sub">End-to-end flow visualisation from Ideation through Architecture Review, Engineering Build, Security Sign-off, Staging, to ROI Measurement. Cycle time per stage with bottleneck flagging.</div>
+          </div>
+        </div>
+        <div class="spec-tags">
+          <span class="tag tag-indigo">Flow Efficiency %</span>
+          <span class="tag tag-teal">Cycle Time per Stage</span>
+          <span class="tag tag-amber">Bottleneck Heatmap</span>
+          <span class="tag tag-rose">WIP Limits</span>
+        </div>
+      </div>
+      <div class="spec-card">
+        <div class="spec-head">
+          <div class="spec-icon">🗺️</div>
+          <div>
+            <div class="spec-card-title">Global Command Center</div>
+            <div class="spec-card-sub">Initiative RAG status dashboard across all active cross-functional workstreams. Timezone blocker flags, regional lead ownership, and last-updated timestamps.</div>
+          </div>
+        </div>
+        <div class="spec-tags">
+          <span class="tag tag-green">RAG Status Matrix</span>
+          <span class="tag tag-rose">Timezone Blockers</span>
+          <span class="tag tag-indigo">Regional Ownership</span>
+          <span class="tag tag-amber">Escalation Feed</span>
+        </div>
+      </div>
+      <div class="spec-card">
+        <div class="spec-head">
+          <div class="spec-icon">💰</div>
+          <div>
+            <div class="spec-card-title">FinOps &amp; Security Hub</div>
+            <div class="spec-card-sub">Cloud spend vs. allocated budget by team with 15% spike alerts. Security sign-off queue, compliance posture score, and upcoming security review calendar.</div>
+          </div>
+        </div>
+        <div class="spec-tags">
+          <span class="tag tag-amber">Spend vs Budget</span>
+          <span class="tag tag-rose">15% Spike Alert</span>
+          <span class="tag tag-teal">Security Posture</span>
+          <span class="tag tag-purple">Compliance Score</span>
+        </div>
+      </div>
+      <div class="spec-card">
+        <div class="spec-head">
+          <div class="spec-icon">📋</div>
+          <div>
+            <div class="spec-card-title">Async Decision Log</div>
+            <div class="spec-card-sub">ADR and PRD decision records with timezone-stamped context, 48hr SLA countdown, stakeholder approvals required, and Loom video attachments for complex decisions.</div>
+          </div>
+        </div>
+        <div class="spec-tags">
+          <span class="tag tag-indigo">ADR Tracker</span>
+          <span class="tag tag-teal">48hr SLA Timer</span>
+          <span class="tag tag-green">Approval Matrix</span>
+          <span class="tag tag-cyan">Loom Video Links</span>
+        </div>
+      </div>
+      <div class="spec-card">
+        <div class="spec-head">
+          <div class="spec-icon">🎯</div>
+          <div>
+            <div class="spec-card-title">OKR Alignment Tracker</div>
+            <div class="spec-card-sub">Product OKR → Engineering OKR traceability matrix. Alignment score per team. Sprint-level outcome tagging. Quarterly OKR health trend and gap alerts.</div>
+          </div>
+        </div>
+        <div class="spec-tags">
+          <span class="tag tag-indigo">Alignment Score %</span>
+          <span class="tag tag-green">Outcome Tagging</span>
+          <span class="tag tag-rose">Gap Alerts</span>
+          <span class="tag tag-amber">Q Trend</span>
+        </div>
+      </div>
+      <div class="spec-card">
+        <div class="spec-head">
+          <div class="spec-icon">❤️</div>
+          <div>
+            <div class="spec-card-title">Stakeholder Health Dashboard</div>
+            <div class="spec-card-sub">NPS scores per partner group (Product, Security, Finance, UK Eng, US Eng), sentiment trends, relationship friction log, and fortnightly retro action item completion rate.</div>
+          </div>
+        </div>
+        <div class="spec-tags">
+          <span class="tag tag-rose">NPS by Group</span>
+          <span class="tag tag-indigo">Sentiment Trend</span>
+          <span class="tag tag-teal">Retro Completion %</span>
+          <span class="tag tag-purple">Friction Log</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §05 GLOBAL COLLABORATION -->
+  <section class="sec fu" id="global">
+    <div class="sec-header">
+      <span class="sec-num">§ 05</span>
+      <span class="sec-title">Global Collaboration Strategy</span>
+    </div>
+    <div class="tz-grid">
+      <div class="tz-card">
+        <div class="tz-title">🕐 UK–US Overlap Window Protocol</div>
+        <ul>
+          <li><strong>Overlap: 2 PM–5 PM London / 9 AM–12 PM EST</strong> — reserved for synchronous governance only</li>
+          <li>No new features discussed in overlap window — only decisions, escalations, OKR reviews</li>
+          <li>Bangalore available for both UK morning sync (8:30 AM IST = 3 AM GMT) and US overlap (9 PM IST)</li>
+          <li>All synchronous meetings time-boxed to 45 min with mandatory async summary published &lt;2h post-meeting</li>
+          <li>Emergency escalation bridge: designated on-call decision-maker per region for &lt;4h response</li>
+        </ul>
+      </div>
+      <div class="tz-card">
+        <div class="tz-title">📬 Async-First Decision Framework</div>
+        <ul>
+          <li><strong>48-hour SLA</strong> for all non-critical decisions raised in Async Decision Log</li>
+          <li>Decision Record format: Context → Options → Recommendation → Rationale → Approvers</li>
+          <li>All approvers must provide explicit ✅ or ❌ with written rationale — no silent approvals</li>
+          <li>Auto-escalate to Ashok after 36h without quorum — prevents decision rot</li>
+          <li>All decisions indexed in portal — searchable, auditable, timezone-stamped</li>
+        </ul>
+      </div>
+    </div>
+    <div class="async-protocol">
+      <div class="atp-title">🎬 High-Context Async Communication Standards</div>
+      <div class="atp-grid">
+        <div class="atp-cell">
+          <div class="atp-cell-label" style="color:var(--indigo)">📹 Loom Mandate</div>
+          <div class="atp-cell-body">Any decision requiring &gt;3 paragraphs of written context must be accompanied by a ≤5 min Loom video. Ensures nuance, tone, and intent are preserved across timezone gaps.</div>
+        </div>
+        <div class="atp-cell">
+          <div class="atp-cell-label" style="color:var(--teal)">📝 Written Standup</div>
+          <div class="atp-cell-body">Engineering leads publish a weekly written standup: Top 3 wins · Top 2 risks · 1 ask. Posted by Friday 5 PM local time. No meeting required. Ashok reviews and responds in Decision Log within 24h.</div>
+        </div>
+        <div class="atp-cell">
+          <div class="atp-cell-label" style="color:var(--amber)">⚡ Escalation Runbook</div>
+          <div class="atp-cell-body">P1 escalations bypass async: dedicated escalation channel with acknowledged read-receipt SLA of &lt;30 min during business hours (any region). Non-P1 must use Decision Log.</div>
+        </div>
+        <div class="atp-cell">
+          <div class="atp-cell-label" style="color:var(--purple)">🌍 Cultural Briefings</div>
+          <div class="atp-cell-body">Quarterly 30-min "How We Work" cross-cultural briefings for all regional leads. Covers communication styles, decision-making norms, and bank holiday collision planning.</div>
+        </div>
+        <div class="atp-cell">
+          <div class="atp-cell-label" style="color:var(--rose)">📅 No-Meeting Zones</div>
+          <div class="atp-cell-body">Wednesday afternoons (all regions) designated as deep-work no-meeting blocks. Monday mornings (Bangalore) protected for async catch-up. Enforced via calendar policy.</div>
+        </div>
+        <div class="atp-cell">
+          <div class="atp-cell-label" style="color:var(--cyan)">🤝 Relationship Rituals</div>
+          <div class="atp-cell-body">Monthly virtual "Coffee Roulette" — random 1-on-1 pairing across regions. Annual in-person summit (rotating location: London → Boston → Bangalore) for relationship capital investment.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §06 VISUALIZATION LAB -->
+  <section class="sec fu" id="viz">
+    <div class="sec-header">
+      <span class="sec-num">§ 06</span>
+      <span class="sec-title">Visualization Lab</span>
+    </div>
+    <div class="viz-grid">
+
+      <!-- RACI Heat Matrix -->
+      <div class="viz-card">
+        <div class="viz-title">🧊 Stakeholder RACI Matrix</div>
+        <table class="raci-table">
+          <thead>
+            <tr>
+              <th style="text-align:left">Activity</th>
+              <th>Product</th>
+              <th>Eng</th>
+              <th>Security</th>
+              <th>Finance</th>
+              <th>UK Lead</th>
+              <th>US Lead</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>OKR Definition</td>
+              <td><span class="rc rc-A">A</span></td>
+              <td><span class="rc rc-R">R</span></td>
+              <td><span class="rc rc-C">C</span></td>
+              <td><span class="rc rc-C">C</span></td>
+              <td><span class="rc rc-I">I</span></td>
+              <td><span class="rc rc-I">I</span></td>
+            </tr>
+            <tr>
+              <td>Security Review</td>
+              <td><span class="rc rc-I">I</span></td>
+              <td><span class="rc rc-C">C</span></td>
+              <td><span class="rc rc-R">R</span></td>
+              <td><span class="rc rc-I">I</span></td>
+              <td><span class="rc rc-C">C</span></td>
+              <td><span class="rc rc-C">C</span></td>
+            </tr>
+            <tr>
+              <td>FinOps Anomaly</td>
+              <td><span class="rc rc-I">I</span></td>
+              <td><span class="rc rc-R">R</span></td>
+              <td><span class="rc rc-I">I</span></td>
+              <td><span class="rc rc-A">A</span></td>
+              <td><span class="rc rc-C">C</span></td>
+              <td><span class="rc rc-C">C</span></td>
+            </tr>
+            <tr>
+              <td>Arch Decision (ADR)</td>
+              <td><span class="rc rc-C">C</span></td>
+              <td><span class="rc rc-R">R</span></td>
+              <td><span class="rc rc-C">C</span></td>
+              <td><span class="rc rc-I">I</span></td>
+              <td><span class="rc rc-A">A</span></td>
+              <td><span class="rc rc-A">A</span></td>
+            </tr>
+            <tr>
+              <td>Release Sign-off</td>
+              <td><span class="rc rc-A">A</span></td>
+              <td><span class="rc rc-R">R</span></td>
+              <td><span class="rc rc-C">C</span></td>
+              <td><span class="rc rc-I">I</span></td>
+              <td><span class="rc rc-I">I</span></td>
+              <td><span class="rc rc-I">I</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Decision Velocity Sparklines -->
+      <div class="viz-card">
+        <div class="viz-title">⚡ Async Decision Velocity — By Stakeholder Group</div>
+        <div class="sparkline-wrap">
+          <div class="spark-row">
+            <div class="spark-label">Product</div>
+            <div class="spark-bar-bg"><div class="spark-bar" style="width:85%;background:var(--green)"></div></div>
+            <div class="spark-val" style="color:var(--green)">22h</div>
+          </div>
+          <div class="spark-row">
+            <div class="spark-label">Architecture</div>
+            <div class="spark-bar-bg"><div class="spark-bar" style="width:70%;background:var(--teal)"></div></div>
+            <div class="spark-val" style="color:var(--teal)">31h</div>
+          </div>
+          <div class="spark-row">
+            <div class="spark-label">Security</div>
+            <div class="spark-bar-bg"><div class="spark-bar" style="width:52%;background:var(--amber)"></div></div>
+            <div class="spark-val" style="color:var(--amber)">61h</div>
+          </div>
+          <div class="spark-row">
+            <div class="spark-label">Finance</div>
+            <div class="spark-bar-bg"><div class="spark-bar" style="width:60%;background:var(--amber)"></div></div>
+            <div class="spark-val" style="color:var(--amber)">48h</div>
+          </div>
+          <div class="spark-row">
+            <div class="spark-label">UK Eng</div>
+            <div class="spark-bar-bg"><div class="spark-bar" style="width:38%;background:var(--rose)"></div></div>
+            <div class="spark-val" style="color:var(--rose)">78h</div>
+          </div>
+          <div class="spark-row">
+            <div class="spark-label">US Eng</div>
+            <div class="spark-bar-bg"><div class="spark-bar" style="width:78%;background:var(--indigo)"></div></div>
+            <div class="spark-val" style="color:var(--indigo)">26h</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;padding:10px 12px;background:rgba(251,191,36,.07);border-left:3px solid var(--amber);border-radius:0 6px 6px 0;font-size:11.5px;color:var(--muted)">
+          ⚠️ <strong style="color:var(--amber)">UK Engineering</strong> exceeds 48h SLA — timezone async protocol escalation triggered
+        </div>
+      </div>
+
+      <!-- OKR Donut -->
+      <div class="viz-card">
+        <div class="viz-title">🎯 OKR Alignment by Partner Group</div>
+        <div class="donut-row">
+          <div class="donut-item">
+            <div class="donut-circle" style="background:conic-gradient(var(--green) 0% 88%, rgba(255,255,255,.07) 88%);box-shadow:0 0 0 6px rgba(52,211,153,.08)">
+              <div class="donut-val" style="color:var(--green)">88%</div>
+            </div>
+            <div class="donut-label">Product</div>
+          </div>
+          <div class="donut-item">
+            <div class="donut-circle" style="background:conic-gradient(var(--indigo) 0% 78%, rgba(255,255,255,.07) 78%);box-shadow:0 0 0 6px rgba(129,140,248,.08)">
+              <div class="donut-val" style="color:var(--indigo)">78%</div>
+            </div>
+            <div class="donut-label">Architecture</div>
+          </div>
+          <div class="donut-item">
+            <div class="donut-circle" style="background:conic-gradient(var(--amber) 0% 62%, rgba(255,255,255,.07) 62%);box-shadow:0 0 0 6px rgba(251,191,36,.08)">
+              <div class="donut-val" style="color:var(--amber)">62%</div>
+            </div>
+            <div class="donut-label">Security</div>
+          </div>
+          <div class="donut-item">
+            <div class="donut-circle" style="background:conic-gradient(var(--rose) 0% 45%, rgba(255,255,255,.07) 45%);box-shadow:0 0 0 6px rgba(251,113,133,.08)">
+              <div class="donut-val" style="color:var(--rose)">45%</div>
+            </div>
+            <div class="donut-label">Finance</div>
+          </div>
+          <div class="donut-item">
+            <div class="donut-circle" style="background:conic-gradient(var(--teal) 0% 71%, rgba(255,255,255,.07) 71%);box-shadow:0 0 0 6px rgba(45,212,191,.08)">
+              <div class="donut-val" style="color:var(--teal)">71%</div>
+            </div>
+            <div class="donut-label">UK Eng</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;text-align:center;font-size:11px;color:var(--muted)">
+          Finance (45%) and Security (62%) require accelerated OKR alignment sprint — flagged for immediate intervention
+        </div>
+      </div>
+
+      <!-- Timezone Overlap Clock -->
+      <div class="viz-card">
+        <div class="viz-title">🌍 Timezone Collaboration Windows</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Showing current day (Mon) — shaded = available overlap</div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:5px">🇬🇧 London (GMT+1)</div>
+            <div style="display:flex;height:18px;border-radius:4px;overflow:hidden;width:100%">
+              <div style="flex:0 0 37.5%;background:rgba(255,255,255,.05)"></div>
+              <div style="flex:0 0 37.5%;background:rgba(52,211,153,.25);border-left:2px solid var(--green)"></div>
+              <div style="flex:1;background:rgba(255,255,255,.05)"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:3px"><span>8 AM</span><span>2 PM</span><span>5 PM</span><span>11 PM</span></div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:5px">🇺🇸 EST (GMT-5)</div>
+            <div style="display:flex;height:18px;border-radius:4px;overflow:hidden;width:100%">
+              <div style="flex:0 0 12.5%;background:rgba(255,255,255,.05)"></div>
+              <div style="flex:0 0 37.5%;background:rgba(52,211,153,.25);border-left:2px solid var(--green)"></div>
+              <div style="flex:1;background:rgba(255,255,255,.05)"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:3px"><span>3 AM</span><span>9 AM</span><span>12 PM</span><span>6 PM</span></div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:5px">🇮🇳 Bangalore (IST)</div>
+            <div style="display:flex;height:18px;border-radius:4px;overflow:hidden;width:100%">
+              <div style="flex:0 0 45%;background:rgba(129,140,248,.2);border-left:2px solid var(--indigo)"></div>
+              <div style="flex:0 0 20%;background:rgba(255,255,255,.05)"></div>
+              <div style="flex:1;background:rgba(129,140,248,.2)"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:3px"><span>8:30 AM</span><span>2 PM</span><span>5 PM</span><span>10:30 PM</span></div>
+          </div>
+          <div style="background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.2);border-radius:6px;padding:10px;font-size:11px;color:var(--muted)">
+            ✅ <strong style="color:var(--green)">Overlap Window:</strong> 2:00–5:00 PM London / 9:00 AM–12:00 PM EST · Reserve for Governance Only
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- §07 ANTI-PATTERN REGISTRY -->
+  <section class="sec fu" id="antipatterns">
+    <div class="sec-header">
+      <span class="sec-num">§ 07</span>
+      <span class="sec-title">Partnership Anti-Pattern Registry</span>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+      <table class="risk-table">
+        <thead>
+          <tr>
+            <th>Anti-Pattern</th>
+            <th>Severity</th>
+            <th>Root Cause</th>
+            <th>Mitigation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="risk-name">📢 Loudest Voice Wins</div>
+              <div class="risk-desc">Decisions driven by seniority or volume rather than data — engineering roadmap overridden by the most vocal voice in the room</div>
+            </td>
+            <td><span class="sev sev-h">High</span></td>
+            <td style="font-size:12px;color:var(--muted)">Lack of data-driven decision culture; no shared metrics baseline; psychological safety deficit</td>
+            <td><div class="mitigation"><strong>Decision Log with mandatory data citation.</strong> OKR-linked prioritisation framework. Structured PRFAQ format for all scope changes. Ashok models data-first decision-making publicly.</div></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="risk-name">⏰ Timezone Debt</div>
+              <div class="risk-desc">Decisions stall indefinitely because no stakeholder is available across UK/US/IN simultaneously — async channel ignored</div>
+            </td>
+            <td><span class="sev sev-h">High</span></td>
+            <td style="font-size:12px;color:var(--muted)">No formal async protocol; over-reliance on synchronous meetings; no 48h SLA enforcement</td>
+            <td><div class="mitigation"><strong>Async Decision Log with 48h SLA + auto-escalation.</strong> Overlap window governance. Loom mandate for &gt;3-paragraph context decisions. Portal timezone blocker flag.</div></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="risk-name">📋 OKR Lip Service</div>
+              <div class="risk-desc">OKRs written in planning, never referenced in sprints — velocity chased over outcomes; features shipped without ROI traceability</div>
+            </td>
+            <td><span class="sev sev-h">High</span></td>
+            <td style="font-size:12px;color:var(--muted)">OKRs not integrated into JIRA; no sprint-level outcome tagging; team incentives misaligned to output</td>
+            <td><div class="mitigation"><strong>OKR Alignment Tracker with sprint-level tagging.</strong> Gap alerts &gt;2 sprints without OKR link. Quarterly OKR review with CPO. Performance framework updated to include outcome delivery.</div></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="risk-name">🔒 Security Bolted On</div>
+              <div class="risk-desc">Security review requested at sprint-10 just before release — too late for architectural changes; delivery risk from remediation</div>
+            </td>
+            <td><span class="sev sev-h">High</span></td>
+            <td style="font-size:12px;color:var(--muted)">Security team not included in discovery phase; no security champions in squads; no shift-left mandate</td>
+            <td><div class="mitigation"><strong>Security Champion per squad.</strong> Threat Model Lite in sprint 1. Shift-Left Security Council (monthly). Security sign-off SLA: 3 days from formal request — not after delivery.</div></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="risk-name">🌪️ Stakeholder Whiplash</div>
+              <div class="risk-desc">Priority changes weekly from multiple senior stakeholders without reconciliation — engineering teams context-switch constantly; morale erodes</div>
+            </td>
+            <td><span class="sev sev-m">Medium</span></td>
+            <td style="font-size:12px;color:var(--muted)">No formal escalation path for competing priorities; stakeholders have direct access to team leads bypassing Ashok</td>
+            <td><div class="mitigation"><strong>Single prioritisation queue owned by Ashok.</strong> "Priority change" decision record with business rationale required. Two-week cooldown policy: no priority flip within active sprint without P1 rationale.</div></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="risk-name">🔇 Silent Architecture Drift</div>
+              <div class="risk-desc">Regional engineering teams (UK/US) make independent architecture decisions without cross-border review — leading to divergent stacks and integration debt</div>
+            </td>
+            <td><span class="sev sev-m">Medium</span></td>
+            <td style="font-size:12px;color:var(--muted)">No shared ADR repository; Global Architecture Review Board not established; tribal knowledge siloed regionally</td>
+            <td><div class="mitigation"><strong>Global Architecture Review Board (bi-weekly).</strong> Mandatory ADR for all cross-service decisions. Shared architecture principles published. Regional architecture leads rotate as GARB chair quarterly.</div></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="risk-name">💸 Finance Blindness</div>
+              <div class="risk-desc">Engineering ships features with no awareness of per-team cloud cost impact — FinOps spikes attributed to "infrastructure team" with no accountability</div>
+            </td>
+            <td><span class="sev sev-m">Medium</span></td>
+            <td style="font-size:12px;color:var(--muted)">No per-team cost allocation tags; FinOps dashboard not visible to engineering leads; no cost narrative in sprint review</td>
+            <td><div class="mitigation"><strong>Per-team AWS cost allocation tags from Day 31.</strong> Monthly FinOps Cost Review Board. Cost narrative added to sprint review. Teams own their cloud budget lines in OKRs.</div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // ── ACCORDION ──
+  function togglePhase(btn) {
+    const item = btn.closest('.phase-item');
+    const isOpen = item.classList.contains('open');
+    // close all
+    document.querySelectorAll('.phase-item.open').forEach(el => el.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+
+  // ── SIDEBAR ACTIVE HIGHLIGHT ──
+  const sections = document.querySelectorAll('section[id], div[id]');
+  const navLinks = document.querySelectorAll('#sidebar a');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const match = document.querySelector(`#sidebar a[href="#${e.target.id}"]`);
+        if (match) match.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -60% 0px' });
+  sections.forEach(s => io.observe(s));
+</script>
+</body>
+</html>

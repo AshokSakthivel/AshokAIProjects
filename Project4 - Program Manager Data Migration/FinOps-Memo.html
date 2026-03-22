@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinOps Command Center — Internal Memo | March 23, 2026</title>
+  <style>
+    /* ── Reset & Base ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:      #0a0f1e;
+      --bg-card:      #0f172a;
+      --bg-panel:     #131c30;
+      --bg-hover:     #1e2d48;
+      --border:       #1e3a5f;
+      --border-light: #2a4a72;
+      --accent-blue:  #38bdf8;
+      --accent-indigo:#818cf8;
+      --accent-green: #34d399;
+      --accent-amber: #fbbf24;
+      --accent-rose:  #fb7185;
+      --accent-pink:  #f472b6;
+      --text-primary: #e2e8f0;
+      --text-muted:   #94a3b8;
+      --text-dim:     #64748b;
+      --glow-blue:    0 0 20px rgba(56,189,248,0.15);
+      --glow-indigo:  0 0 20px rgba(129,140,248,0.15);
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Animated Grid Background ──────────────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Layout ─────────────────────────────────────────────────────────── */
+    .page-wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* ── Top Banner ─────────────────────────────────────────────────────── */
+    .top-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(135deg, #0c1a36, #0f2347);
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      padding: 12px 20px;
+      margin-bottom: 32px;
+      box-shadow: var(--glow-blue);
+    }
+    .top-banner .badge {
+      background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .top-banner .stamp {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.04em;
+    }
+    .top-banner .confidential {
+      margin-left: auto;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--accent-amber);
+      text-transform: uppercase;
+      opacity: 0.9;
+    }
+
+    /* ── Memo Header ─────────────────────────────────────────────────────── */
+    .memo-header {
+      background: linear-gradient(135deg, #0c1f3d 0%, #0a172e 100%);
+      border: 1px solid var(--border-light);
+      border-radius: 14px;
+      padding: 36px 40px 32px;
+      margin-bottom: 32px;
+      box-shadow: var(--glow-indigo);
+      position: relative;
+      overflow: hidden;
+    }
+    .memo-header::before {
+      content: 'FINOPS';
+      position: absolute;
+      right: -20px;
+      top: 50%;
+      transform: translateY(-50%) rotate(90deg);
+      font-size: 80px;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      color: rgba(56,189,248,0.04);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .memo-type {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent-blue);
+      margin-bottom: 10px;
+      font-family: 'Courier New', monospace;
+    }
+    .memo-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.3;
+      margin-bottom: 24px;
+    }
+    .memo-title span {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-indigo));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Memo metadata grid */
+    .memo-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 32px;
+    }
+    @media (max-width: 600px) { .memo-meta { grid-template-columns: 1fr; } }
+    .meta-row {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      font-size: 14px;
+    }
+    .meta-label {
+      font-weight: 700;
+      color: var(--text-muted);
+      min-width: 60px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .meta-value { color: var(--text-primary); }
+    .meta-value.highlight { color: var(--accent-blue); font-weight: 600; }
+
+    /* ── Section Card ────────────────────────────────────────────────────── */
+    .section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px 32px;
+      margin-bottom: 20px;
+      transition: border-color 0.2s;
+    }
+    .section:hover { border-color: var(--border-light); }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .icon-blue   { background: rgba(56,189,248,0.12); }
+    .icon-indigo { background: rgba(129,140,248,0.12); }
+    .icon-green  { background: rgba(52,211,153,0.12); }
+    .icon-amber  { background: rgba(251,191,36,0.12); }
+    .icon-rose   { background: rgba(251,113,133,0.12); }
+    .icon-pink   { background: rgba(244,114,182,0.12); }
+
+    .section-number {
+      font-size: 11px;
+      font-family: 'Courier New', monospace;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+    }
+    .section-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      flex: 1;
+    }
+    .section-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 9px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .tag-blue   { background: rgba(56,189,248,0.15); color: var(--accent-blue); border: 1px solid rgba(56,189,248,0.25); }
+    .tag-green  { background: rgba(52,211,153,0.15); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.25); }
+    .tag-amber  { background: rgba(251,191,36,0.15); color: var(--accent-amber); border: 1px solid rgba(251,191,36,0.25); }
+    .tag-rose   { background: rgba(251,113,133,0.15); color: var(--accent-rose); border: 1px solid rgba(251,113,133,0.25); }
+
+    /* ── Typography ──────────────────────────────────────────────────────── */
+    p {
+      color: var(--text-primary);
+      margin-bottom: 14px;
+    }
+    p:last-child { margin-bottom: 0; }
+
+    strong, b {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* ── Lists ───────────────────────────────────────────────────────────── */
+    ul.memo-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      margin-top: 4px;
+    }
+    ul.memo-list li {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+    ul.memo-list li::before {
+      content: '▸';
+      color: var(--accent-blue);
+      margin-top: 2px;
+      flex-shrink: 0;
+      font-size: 12px;
+    }
+
+    /* ── Portal Feature Grid ─────────────────────────────────────────────── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    @media (max-width: 600px) { .feature-grid { grid-template-columns: 1fr; } }
+    .feature-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .feature-card:hover {
+      border-color: var(--border-light);
+      transform: translateY(-2px);
+    }
+    .feature-icon { font-size: 22px; margin-bottom: 8px; }
+    .feature-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .feature-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+    /* ── Spike Rule Callout ──────────────────────────────────────────────── */
+    .spike-callout {
+      background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(251,113,133,0.06));
+      border: 1px solid rgba(251,191,36,0.3);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin: 18px 0;
+    }
+    .spike-callout blockquote {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.5;
+      font-style: normal;
+      border-left: 3px solid var(--accent-amber);
+      padding-left: 16px;
+    }
+    .spike-callout blockquote span { color: var(--accent-amber); }
+
+    .anomaly-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+    @media (max-width: 600px) { .anomaly-grid { grid-template-columns: 1fr; } }
+    .anomaly-item {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .anomaly-item .a-icon { font-size: 20px; }
+    .anomaly-item .a-text { font-size: 13px; color: var(--text-muted); }
+    .anomaly-item .a-text strong { color: var(--text-primary); display: block; font-size: 13px; }
+
+    /* ── SLA Table ───────────────────────────────────────────────────────── */
+    .sla-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 18px;
+      font-size: 14px;
+    }
+    .sla-table thead tr {
+      background: var(--bg-panel);
+    }
+    .sla-table th {
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      border-bottom: 1px solid var(--border);
+    }
+    .sla-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-primary);
+    }
+    .sla-table tr:last-child td { border-bottom: none; }
+    .sla-table tr:hover td { background: var(--bg-hover); }
+    .pill {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .pill-warn  { background: rgba(251,191,36,0.15); color: var(--accent-amber); border: 1px solid rgba(251,191,36,0.3); }
+    .pill-crit  { background: rgba(251,113,133,0.15); color: var(--accent-rose);  border: 1px solid rgba(251,113,133,0.3); }
+
+    /* ── Team Cards ──────────────────────────────────────────────────────── */
+    .teams-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 16px;
+    }
+    @media (max-width: 620px) { .teams-grid { grid-template-columns: 1fr; } }
+    .team-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      position: relative;
+      transition: border-color 0.2s, transform 0.2s;
+      overflow: hidden;
+    }
+    .team-card:hover {
+      border-color: var(--border-light);
+      transform: translateY(-2px);
+    }
+    .team-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      border-radius: 10px 0 0 10px;
+    }
+    .team-card:nth-child(1)::before { background: #6366f1; }
+    .team-card:nth-child(2)::before { background: #0ea5e9; }
+    .team-card:nth-child(3)::before { background: #f59e0b; }
+    .team-card:nth-child(4)::before { background: #10b981; }
+    .team-card:nth-child(5)::before { background: #ec4899; }
+    .team-card:nth-child(6)::before { background: #f43f5e; }
+    .team-number {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-family: 'Courier New', monospace;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    .team-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 14px;
+    }
+    .team-tasks {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .team-tasks li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .team-tasks li .check {
+      color: var(--accent-green);
+      margin-top: 1px;
+      flex-shrink: 0;
+      font-size: 13px;
+    }
+    .champion-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 20px;
+      background: rgba(52,211,153,0.1);
+      color: var(--accent-green);
+      border: 1px solid rgba(52,211,153,0.2);
+      margin-top: 12px;
+    }
+
+    /* ── CTA Section ─────────────────────────────────────────────────────── */
+    .cta-section {
+      background: linear-gradient(135deg, #0a1f3d 0%, #0d2347 50%, #0a192e 100%);
+      border: 1px solid rgba(56,189,248,0.25);
+      border-radius: 12px;
+      padding: 28px 32px;
+      margin-bottom: 20px;
+      box-shadow: var(--glow-blue);
+    }
+    .cta-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .cta-step {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 13px 16px;
+      transition: background 0.2s;
+    }
+    .cta-step:hover { background: rgba(255,255,255,0.06); }
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-text { font-size: 14px; color: var(--text-primary); }
+    .step-text strong { color: #fff; }
+
+    /* ── Closing ─────────────────────────────────────────────────────────── */
+    .closing-card {
+      background: linear-gradient(135deg, #0c1a2e, #0f1f38);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px 32px;
+      margin-bottom: 20px;
+    }
+    .signature-block {
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    .sig-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .sig-title { font-size: 14px; color: var(--accent-blue); margin-bottom: 2px; }
+    .sig-quote {
+      margin-top: 12px;
+      font-size: 13px;
+      font-style: italic;
+      color: var(--text-dim);
+    }
+    .sig-quote span { color: var(--accent-indigo); }
+
+    /* ── Action Footer ───────────────────────────────────────────────────── */
+    .action-footer {
+      background: linear-gradient(135deg, rgba(251,191,36,0.06), rgba(251,113,133,0.04));
+      border: 1px solid rgba(251,191,36,0.2);
+      border-radius: 10px;
+      padding: 20px 24px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 600px) { .action-footer { grid-template-columns: 1fr; } }
+    .footer-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .footer-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      font-family: 'Courier New', monospace;
+    }
+    .footer-value { font-size: 14px; color: var(--text-primary); }
+    .footer-value.urgent { color: var(--accent-amber); font-weight: 700; }
+    .footer-value code {
+      font-family: 'Courier New', monospace;
+      background: rgba(255,255,255,0.06);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+      color: var(--accent-green);
+    }
+
+    /* ── Scroll reveal animation ─────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .section, .cta-section, .closing-card, .action-footer {
+      animation: fadeUp 0.4s ease both;
+    }
+    .section:nth-child(2)  { animation-delay: 0.05s; }
+    .section:nth-child(3)  { animation-delay: 0.10s; }
+    .section:nth-child(4)  { animation-delay: 0.15s; }
+    .section:nth-child(5)  { animation-delay: 0.20s; }
+    .section:nth-child(6)  { animation-delay: 0.25s; }
+    .cta-section           { animation-delay: 0.30s; }
+    .closing-card          { animation-delay: 0.35s; }
+    .action-footer         { animation-delay: 0.40s; }
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- Top Banner -->
+  <div class="top-banner">
+    <span class="badge">Internal Memo</span>
+    <span class="stamp">REF: FINOPS-2026-03-23 · AWS Migration Program</span>
+    <span class="confidential">⚠ Internal Use Only</span>
+  </div>
+
+  <!-- Memo Header -->
+  <div class="memo-header">
+    <div class="memo-type">// Internal Engineering Memo</div>
+    <div class="memo-title">
+      Introducing the <span>FinOps Command Center</span><br>
+      &amp; Mandatory 15% Daily Spike Alert Protocol
+    </div>
+    <div class="memo-meta">
+      <div class="meta-row">
+        <span class="meta-label">TO</span>
+        <span class="meta-value">Engineering Leads — Teams 1 through 6</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">DATE</span>
+        <span class="meta-value">March 23, 2026</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">FROM</span>
+        <span class="meta-value highlight">Cheran · FinOps Manager, AWS Data Migration</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">SUBJ</span>
+        <span class="meta-value">FinOps Command Center Launch &amp; 15% Spike Rule</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 1: The Vision -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🎯</div>
+      <div>
+        <div class="section-number">§ 01</div>
+        <div class="section-title">The Vision — Why This Matters Now</div>
+      </div>
+      <span class="section-tag tag-blue">Strategic</span>
+    </div>
+    <p>
+      We are executing one of the most complex AWS migrations this organization has undertaken.
+      Every architectural decision we make — instance sizing, data transfer paths, storage tier
+      selection, query optimization — carries an <strong>immediate and compounding financial impact
+      on our Cost of Goods Sold (COGS)</strong>.
+    </p>
+    <p>
+      As we accelerate toward the <strong>May 31st Go-Live milestone</strong> and the
+      <strong>June 30th Maintenance Window</strong>, we cannot afford to discover cost anomalies
+      retroactively during a monthly billing cycle. We are <strong>shifting left on cloud cost
+      management</strong>, embedding financial accountability directly into our daily engineering cadence.
+    </p>
+    <p style="color: var(--accent-blue); font-weight: 600; font-size: 15px;">
+      This is not a finance initiative. This is an engineering excellence initiative with a dollar sign attached.
+    </p>
+  </div>
+
+  <!-- Section 2: The Portal -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-indigo">🖥️</div>
+      <div>
+        <div class="section-number">§ 02</div>
+        <div class="section-title">The Portal — FinOps Command Center</div>
+      </div>
+      <span class="section-tag tag-blue">New Platform</span>
+    </div>
+    <p>
+      Effective immediately, all six teams are required to operate within the
+      <strong>FinOps Command Center</strong> — our centralized, real-time visibility platform
+      for cloud capacity and cost-to-serve metrics. Updated <strong>daily at 06:00 UTC</strong>.
+      Weekly cost reviews are every <strong>Monday at 10:00 AM local</strong>.
+    </p>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-name">Weekly COGS Tracking Dashboard</div>
+        <div class="feature-desc">Team-scoped view of infrastructure spend across compute, storage, networking, and managed services.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔥</div>
+        <div class="feature-name">Capacity Utilization Heatmaps</div>
+        <div class="feature-desc">Identify over-provisioned or under-utilized resources at a glance with color-coded heatmaps.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💰</div>
+        <div class="feature-name">Cost-Per-Workload Breakdown</div>
+        <div class="feature-desc">Drill into spend by service, region, and deployment stage for full cost attribution.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📈</div>
+        <div class="feature-name">7-Day Rolling Trend Lines</div>
+        <div class="feature-desc">Baseline your team's expected spend so anomalies are immediately visible against the norm.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤝</div>
+        <div class="feature-name">Cross-Team Benchmarking</div>
+        <div class="feature-desc">Optional visibility into aggregate (anonymized) spend across teams to encourage healthy optimization.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔔</div>
+        <div class="feature-name">Automated Spike Alerts</div>
+        <div class="feature-desc">Real-time notifications routed to the designated FinOps champion when the 15% threshold is crossed.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: The 15% Rule -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-amber">⚡</div>
+      <div>
+        <div class="section-number">§ 03</div>
+        <div class="section-title">The Rule — 15% Daily Spike Alert Protocol</div>
+      </div>
+      <span class="section-tag tag-amber">Mandatory</span>
+    </div>
+
+    <div class="spike-callout">
+      <blockquote>
+        If any team's total infrastructure cost increases by <span>15% or more day-over-day</span>,
+        an automated alert is triggered and escalated to the team's designated FinOps champion
+        and their engineering lead.
+      </blockquote>
+    </div>
+
+    <p><strong>Why 15%?</strong> This threshold is calibrated to catch real anomalies — not routine
+      deployment fluctuations — while filtering out expected scaling events. A 15% single-day spike
+      typically signals one of the following:
+    </p>
+    <div class="anomaly-grid">
+      <div class="anomaly-item">
+        <span class="a-icon">🖥️</span>
+        <div class="a-text"><strong>Compute Sprawl</strong>Orphaned instances, over-provisioned autoscaling, test environments left running.</div>
+      </div>
+      <div class="anomaly-item">
+        <span class="a-icon">🌐</span>
+        <div class="a-text"><strong>Egress Anomalies</strong>Unexpected cross-region or cross-AZ data transfer costs.</div>
+      </div>
+      <div class="anomaly-item">
+        <span class="a-icon">🔍</span>
+        <div class="a-text"><strong>Inefficient Queries</strong>Runaway scans on RDS, Redshift, or DynamoDB consuming excess I/O.</div>
+      </div>
+      <div class="anomaly-item">
+        <span class="a-icon">🏷️</span>
+        <div class="a-text"><strong>Untagged Resources</strong>Infrastructure deployed outside the approved IaC pipeline.</div>
+      </div>
+    </div>
+
+    <p style="margin-top: 18px; color: var(--accent-green); font-weight: 600;">
+      ✓ This is not punitive. A spike alert is a rapid-response mechanism — not a performance review trigger.
+      The goal is to catch, investigate, and resolve cost inefficiencies within 24 hours before they compound.
+    </p>
+
+    <table class="sla-table">
+      <thead>
+        <tr>
+          <th>Severity</th>
+          <th>Trigger</th>
+          <th>Response SLA</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="pill pill-warn">⚠ Warning</span></td>
+          <td>15–24% day-over-day spike</td>
+          <td>Acknowledge + root cause within <strong>24 hours</strong></td>
+        </tr>
+        <tr>
+          <td><span class="pill pill-crit">🔴 Critical</span></td>
+          <td>≥ 25% day-over-day spike</td>
+          <td>Acknowledge + mitigation plan within <strong>4 hours</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section 4: Team Expectations -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-green">👥</div>
+      <div>
+        <div class="section-number">§ 04</div>
+        <div class="section-title">Team Expectations — FinOps Champions</div>
+      </div>
+      <span class="section-tag tag-blue">Required by Mar 25</span>
+    </div>
+
+    <p>
+      Each team must designate a <strong>FinOps Champion</strong> — an engineer or tech lead who
+      owns cost-awareness for that team. Champions monitor dashboards, respond to alerts, and attend
+      weekly Monday cost reviews.
+    </p>
+
+    <ul class="memo-list" style="margin-bottom: 18px;">
+      <li>Monitor and acknowledge the team's dashboard at least <strong>3× per week</strong></li>
+      <li>Respond to all 15% spike alerts within <strong>24 hours</strong> with a root cause note</li>
+      <li>Attend the <strong>weekly Monday 10:00 AM</strong> cost review</li>
+      <li>Pre-register planned high-cost events as <strong>scheduled exceptions</strong> ≥24 hours in advance</li>
+    </ul>
+
+    <div class="teams-grid">
+
+      <div class="team-card">
+        <div class="team-number">Team 01</div>
+        <div class="team-name">[Team Name / Domain TBD]</div>
+        <ul class="team-tasks">
+          <li><span class="check">✓</span> Designate FinOps champion &amp; register in portal by <strong>March 25</strong></li>
+          <li><span class="check">✓</span> Review current baseline spend and confirm capacity plan is reflected</li>
+          <li><span class="check">✓</span> Own and acknowledge all spike alerts within 24 hours</li>
+        </ul>
+        <span class="champion-badge">⚡ FinOps Champion — TBD</span>
+      </div>
+
+      <div class="team-card">
+        <div class="team-number">Team 02</div>
+        <div class="team-name">[Team Name / Domain TBD]</div>
+        <ul class="team-tasks">
+          <li><span class="check">✓</span> Designate FinOps champion &amp; register in portal by <strong>March 25</strong></li>
+          <li><span class="check">✓</span> Review current baseline spend and confirm capacity plan is reflected</li>
+          <li><span class="check">✓</span> Own and acknowledge all spike alerts within 24 hours</li>
+        </ul>
+        <span class="champion-badge">⚡ FinOps Champion — TBD</span>
+      </div>
+
+      <div class="team-card">
+        <div class="team-number">Team 03</div>
+        <div class="team-name">[Team Name / Domain TBD]</div>
+        <ul class="team-tasks">
+          <li><span class="check">✓</span> Designate FinOps champion &amp; register in portal by <strong>March 25</strong></li>
+          <li><span class="check">✓</span> Review current baseline spend and confirm capacity plan is reflected</li>
+          <li><span class="check">✓</span> Own and acknowledge all spike alerts within 24 hours</li>
+        </ul>
+        <span class="champion-badge">⚡ FinOps Champion — TBD</span>
+      </div>
+
+      <div class="team-card">
+        <div class="team-number">Team 04</div>
+        <div class="team-name">[Team Name / Domain TBD]</div>
+        <ul class="team-tasks">
+          <li><span class="check">✓</span> Designate FinOps champion &amp; register in portal by <strong>March 25</strong></li>
+          <li><span class="check">✓</span> Review current baseline spend and confirm capacity plan is reflected</li>
+          <li><span class="check">✓</span> Own and acknowledge all spike alerts within 24 hours</li>
+        </ul>
+        <span class="champion-badge">⚡ FinOps Champion — TBD</span>
+      </div>
+
+      <div class="team-card">
+        <div class="team-number">Team 05</div>
+        <div class="team-name">[Team Name / Domain TBD]</div>
+        <ul class="team-tasks">
+          <li><span class="check">✓</span> Designate FinOps champion &amp; register in portal by <strong>March 25</strong></li>
+          <li><span class="check">✓</span> Review current baseline spend and confirm capacity plan is reflected</li>
+          <li><span class="check">✓</span> Own and acknowledge all spike alerts within 24 hours</li>
+        </ul>
+        <span class="champion-badge">⚡ FinOps Champion — TBD</span>
+      </div>
+
+      <div class="team-card">
+        <div class="team-number">Team 06</div>
+        <div class="team-name">[Team Name / Domain TBD]</div>
+        <ul class="team-tasks">
+          <li><span class="check">✓</span> Designate FinOps champion &amp; register in portal by <strong>March 25</strong></li>
+          <li><span class="check">✓</span> Review current baseline spend and confirm capacity plan is reflected</li>
+          <li><span class="check">✓</span> Own and acknowledge all spike alerts within 24 hours</li>
+        </ul>
+        <span class="champion-badge">⚡ FinOps Champion — TBD</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CTA Section -->
+  <div class="cta-section">
+    <div class="section-header" style="border-bottom-color: rgba(56,189,248,0.15);">
+      <div class="section-icon icon-blue">🚀</div>
+      <div>
+        <div class="section-number">§ 05</div>
+        <div class="section-title">Call to Action — Required by March 25, 2026</div>
+      </div>
+      <span class="section-tag tag-rose">Deadline: Mar 25</span>
+    </div>
+    <p>Every engineering lead from Teams 1–6 must complete the following <strong>before end of day, March 25</strong>:</p>
+    <div class="cta-steps">
+      <div class="cta-step">
+        <span class="step-num">1</span>
+        <span class="step-text"><strong>Log into the FinOps Command Center portal</strong> and authenticate with your SSO credentials.</span>
+      </div>
+      <div class="cta-step">
+        <span class="step-num">2</span>
+        <span class="step-text"><strong>Review your team's current cost baseline</strong> — confirm the numbers reflect your actual deployed infrastructure.</span>
+      </div>
+      <div class="cta-step">
+        <span class="step-num">3</span>
+        <span class="step-text"><strong>Identify and register your FinOps champion</strong> using the Team Registration form in the portal.</span>
+      </div>
+      <div class="cta-step">
+        <span class="step-num">4</span>
+        <span class="step-text"><strong>Validate your capacity plan</strong> is aligned with tracked metrics — flag any discrepancies to me directly.</span>
+      </div>
+      <div class="cta-step">
+        <span class="step-num">5</span>
+        <span class="step-text"><strong>Acknowledge this memo</strong> by replying to this thread or completing the portal check-in.</span>
+      </div>
+      <div class="cta-step">
+        <span class="step-num">6</span>
+        <span class="step-text"><strong>Pre-register any planned high-cost events</strong> (load tests, bulk migrations, large deploys) in the next 30 days as scheduled exceptions to avoid false alerts.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Closing -->
+  <div class="closing-card">
+    <div class="section-header" style="border-bottom-color: var(--border);">
+      <div class="section-icon icon-indigo">💡</div>
+      <div>
+        <div class="section-number">§ 06</div>
+        <div class="section-title">Closing — FinOps Excellence is a Team Sport</div>
+      </div>
+    </div>
+    <p>
+      We will not achieve a clean, efficient migration by tracking costs after the fact. The teams
+      that come out of this migration with strong COGS discipline will be the teams best positioned
+      for scale in the next phase.
+    </p>
+    <p>
+      The <strong>FinOps Command Center</strong> is your tool. The <strong>15% rule</strong> is your
+      safety net. <span style="color: var(--accent-blue); font-weight: 700;">Use both.</span>
+    </p>
+    <p>
+      I am available for questions, onboarding sessions, or team-specific cost reviews. 
+      Do not wait for a Monday call — reach out directly.
+    </p>
+    <div class="signature-block">
+      <div class="sig-name">Cheran</div>
+      <div class="sig-title">FinOps Manager · AWS Data Migration Program</div>
+      <div class="sig-quote">"<span>Build fast. Ship reliably. Spend intentionally.</span>"</div>
+    </div>
+  </div>
+
+  <!-- Action Footer -->
+  <div class="action-footer">
+    <div class="footer-item">
+      <span class="footer-label">Action Required By</span>
+      <span class="footer-value urgent">March 25, 2026 — EOD</span>
+    </div>
+    <div class="footer-item">
+      <span class="footer-label">Portal Access</span>
+      <span class="footer-value"><code>[Insert Internal Portal URL]</code></span>
+    </div>
+    <div class="footer-item">
+      <span class="footer-label">Slack / Teams Channel</span>
+      <span class="footer-value"><code>#finops-command-center</code></span>
+    </div>
+    <div class="footer-item">
+      <span class="footer-label">Critical Alert Escalation</span>
+      <span class="footer-value">Cheran (direct) · ≥25% spikes</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

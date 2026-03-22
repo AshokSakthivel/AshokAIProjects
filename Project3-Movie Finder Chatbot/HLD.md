@@ -1,10 +1,14 @@
-﻿# High-Level Design (HLD) — Movie Finder Chatbot
+﻿# High-Level Design (HLD) — Agentic Movie & Weather Planner
 
-**Document Version:** 1.0  
-**Date:** March 22, 2026  
-**Author:** Ashok Sakthivel  
-**Repository:** https://github.com/AshokSakthivel/AshokAIProjects  
+**Document Version:** 2.0
+**Date:** March 23, 2026
+**Author:** Ashok Sakthivel
+**Repository:** https://github.com/AshokSakthivel/AshokAIProjects
 **Status:** Approved
+
+> **Revision history:**
+> v1.0 — Movie Finder Chatbot (Playwright scraper, POST /api/movies)
+> v2.0 — Agentic Planner (NVIDIA Llama 3.1 function calling, POST /api/chat)
 
 ---
 
@@ -12,12 +16,15 @@
 
 1. [Executive Summary](#1-executive-summary)
 2. [System Overview](#2-system-overview)
-3. [Architecture Diagram](#3-architecture-diagram)
+3. [Architecture Diagrams](#3-architecture-diagrams)
+   - 3.1 High-Level System Diagram
+   - 3.2 Layered Architecture
+   - 3.3 Agent Loop Flowchart
 4. [Component Breakdown](#4-component-breakdown)
    - 4.1 Frontend (React + Vite)
-   - 4.2 Backend (Node.js + Express)
-   - 4.3 Scraping Engine (Playwright)
-   - 4.4 Mock Data Fallback
+   - 4.2 Backend Agent Loop (Node.js + Express)
+   - 4.3 Tool Definitions & Dispatcher
+   - 4.4 NVIDIA NIM Integration
 5. [Data Flow](#5-data-flow)
 6. [API Design](#6-api-design)
 7. [Technology Stack](#7-technology-stack)
@@ -31,89 +38,188 @@
 
 ## 1. Executive Summary
 
-**Movie Finder Chatbot** is a full-stack web application that provides a conversational interface for users to discover movies currently showing in theaters in any city. The user types a city name into a chat input; the system scrapes live movie data from Rotten Tomatoes using a headless browser (Playwright), and presents the results as visual movie cards within the chat window.
+**Agentic Movie & Weather Planner** is a full-stack AI chatbot that upgrades the original Movie Finder Chatbot from a hardcoded scraping pipeline to a **native LLM function-calling agent**.
 
-The application is designed to be stateless — no database, no login, no persistent session. All data flows in real time from the scraping engine through the REST API directly to the chat UI.
+The system uses NVIDIA NIM's `meta/llama-3.1-70b-instruct` model with the OpenAI-compatible tool-calling API. When a user asks about movies in a city, the model autonomously decides to call `get_weather(city)` and `get_movies(city)` as JavaScript functions, reads their results, and synthesizes a weather-aware movie recommendation in natural language.
+
+**Key upgrade from v1.0:**
+
+| Feature                  | v1.0 (Playwright)                   | v2.0 (Agentic Planner)                     |
+|--------------------------|-------------------------------------|--------------------------------------------|
+| Data source              | Rotten Tomatoes scraping            | Mock JS tools (expandable to real APIs)    |
+| LLM role                 | None                                | Llama 3.1-70B decision maker               |
+| API endpoint             | `POST /api/movies`                  | `POST /api/chat`                           |
+| Response type            | Structured movies only              | Natural language reply + structured cards  |
+| Multi-turn conversation  | No                                  | Yes (history array forwarded to LLM)       |
+| Weather awareness        | No                                  | Yes (`get_weather` tool)                   |
+| Extensibility            | Hard — requires new scraper logic   | Easy — add a new tool definition           |
 
 ---
 
 ## 2. System Overview
 
 ```
-+------------------+        HTTP (REST)        +----------------------+
-|                  |  POST /api/movies          |                      |
-|   React Frontend | -------------------------> |  Node.js / Express   |
-|   (Vite)         | <------------------------- |  Backend Server      |
-|   :5173          |   JSON response            |  :5000               |
-|                  |                            |                      |
-+------------------+                            +----------+-----------+
-                                                           |
-                                                           | Playwright
-                                                           | (Headless Chromium)
-                                                           v
-                                              +------------------------+
-                                              |  Rotten Tomatoes       |
-                                              |  rottentomatoes.com    |
-                                              |  /browse/movies_in_    |
-                                              |   theaters/            |
-                                              +------------------------+
-                                                           |
-                                              (on failure) | fallback
-                                                           v
-                                              +------------------------+
-                                              |  Mock Movie Dataset    |
-                                              |  (in-memory, 8 movies) |
-                                              +------------------------+
++------------------+          HTTP / REST           +------------------------+
+|                  |  POST /api/chat                 |                        |
+|  React Frontend  | ------------------------------> |   Node.js / Express    |
+|  (Vite :5173)    | <------------------------------ |   Backend (:5001)      |
+|                  |  { reply, movies, toolsUsed }   |                        |
++------------------+                                 +----------+-------------+
+                                                                 |
+                                                    NVIDIA NIM   |  HTTPS
+                                                    REST API     |
+                                                                 v
+                                              +----------------------------------+
+                                              |  NVIDIA NIM API                  |
+                                              |  integrate.api.nvidia.com/v1     |
+                                              |  model: llama-3.1-70b-instruct   |
+                                              |  tool_choice: auto               |
+                                              +----------------------------------+
+                                                      |
+                                         finish_reason: "tool_calls"
+                                                      |
+                                                      v
+                                       +--------------+---------------+
+                                       |  Local Tool Execution        |
+                                       |  (Node.js, same process)     |
+                                       |                              |
+                                       |  get_weather(city)           |
+                                       |  → { condition, recommendation } |
+                                       |                              |
+                                       |  get_movies(city)            |
+                                       |  → { movies[] }              |
+                                       +--------------+---------------+
+                                                      |
+                                         Tool results appended
+                                         to messages[], loop back
+                                                      |
+                                         finish_reason: "stop"
+                                                      |
+                                                      v
+                                       +------------------------------+
+                                       |  Final LLM text reply        |
+                                       |  + collected movies array    |
+                                       |  returned to frontend        |
+                                       +------------------------------+
 ```
-
-### Key Design Principles
-
-| Principle         | Implementation                                              |
-|-------------------|-------------------------------------------------------------|
-| Stateless          | No DB, no sessions — each request is fully independent      |
-| Resilient          | Scraping failure triggers automatic mock-data fallback      |
-| Separation of Concerns | Frontend and Backend are independently deployable      |
-| Security-First     | Input sanitization, CORS whitelist, no sensitive data stored|
-| Progressive Enhancement | Works fully on demo data when live scraping is blocked|
 
 ---
 
-## 3. Architecture Diagram
+## 3. Architecture Diagrams
 
-### Layered Architecture
+### 3.1 Layered Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        PRESENTATION LAYER                        │
-│                                                                   │
-│  ┌─────────────┐  ┌─────────────┐  ┌───────────┐  ┌──────────┐ │
-│  │  ChatInput  │  │ ChatWindow  │  │MovieCard  │  │ Typing   │ │
-│  │  Component  │  │  Component  │  │ Component │  │Indicator │ │
-│  └──────┬──────┘  └──────┬──────┘  └───────────┘  └──────────┘ │
-│         │                │                                        │
-│         └────────────────▼────────────────────────────────────── │
-│                       App.jsx (State Manager)                     │
-└─────────────────────────────┬───────────────────────────────────┘
-                               │  fetch('/api/movies')
-                               │  Vite proxy → :5000
-┌─────────────────────────────▼───────────────────────────────────┐
-│                        API / BUSINESS LOGIC LAYER                │
-│                                                                   │
-│  ┌───────────────────────────────────────────────────────────┐  │
-│  │                  Express Router                           │  │
-│  │  POST /api/movies   ─────────────────► Input Validation   │  │
-│  │  GET  /health       ─────────────────► Health Check       │  │
-│  └────────────────────────────┬──────────────────────────────┘  │
-│                                │                                   │
-│  ┌─────────────────────────────▼──────────────────────────────┐  │
-│  │                  scrapeMovies(city)                        │  │
-│  │                                                            │  │
-│  │   ┌──────────────────┐        ┌──────────────────────┐   │  │
-│  │   │ Playwright Engine │        │  Mock Data Fallback   │   │  │
-│  │   │ (Headless Chrome) │──fail─►│  (8 curated movies)  │   │  │
-│  │   └──────────────────┘        └──────────────────────┘   │  │
-│  └────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
++===========================================================================+
+|                         PRESENTATION LAYER  (:5173)                       |
+|                                                                           |
+|  +-------------+  +-------------+  +-----------+  +--------------------+ |
+|  | ChatInput   |  | ChatWindow  |  | MovieCard |  | TypingIndicator    | |
+|  | Component   |  | Component   |  | Component |  | Component          | |
+|  +------+------+  +------+------+  +-----------+  +--------------------+ |
+|         |                |                                                 |
+|         +----------------v---------+                                       |
+|                      App.jsx                                               |
+|             State: messages[], history[], loading                          |
++=======================================+===================================+
+                                        |
+                         POST /api/chat |  (Vite proxy → :5001)
+                                        |
++=======================================v===================================+
+|                         API GATEWAY LAYER  (:5001)                        |
+|                                                                           |
+|   Express Router                                                          |
+|   POST /api/chat  → Input validation → sanitisedMessage                   |
+|   GET  /health    → { status, mode, model }                               |
++=======================================+===================================+
+                                        |
++=======================================v===================================+
+|                         AGENT LOOP  (runAgentLoop)                        |
+|                                                                           |
+|   messages[] = [ system, ...history, user ]                               |
+|                                                                           |
+|   ┌─────────────────────────────────────────────────────────────────┐    |
+|   │  ITERATION 1..N  (max 8 iterations safety limit)                │    |
+|   │                                                                 │    |
+|   │  callNvidiaAPI(messages, TOOL_DEFINITIONS)                      │    |
+|   │         │                                                       │    |
+|   │         ├── finish_reason: "tool_calls"                         │    |
+|   │         │     └── executeToolCall() for each requested tool     │    |
+|   │         │           ├── get_weather(city) → condition           │    |
+|   │         │           └── get_movies(city)  → movies[]            │    |
+|   │         │     └── append tool results to messages[]             │    |
+|   │         │     └── LOOP BACK ↺                                   │    |
+|   │         │                                                       │    |
+|   │         └── finish_reason: "stop"                               │    |
+|   │               └── return { reply, movies, toolsUsed }           │    |
+|   └─────────────────────────────────────────────────────────────────┘    |
++=======================================+===================================+
+                                        |
++=======================================v===================================+
+|                         TOOL LAYER  (Local JS)                            |
+|                                                                           |
+|   get_weather(city)                   get_movies(city)                    |
+|   → random Sunny/Rain                 → shuffle(MOCK_MOVIES).slice(0,5)  |
+|   → weather recommendation            → structured movie objects          |
++===========================================================================+
+                                        |
++=======================================v===================================+
+|                         EXTERNAL LAYER                                    |
+|                                                                           |
+|   NVIDIA NIM REST API                                                     |
+|   https://integrate.api.nvidia.com/v1/chat/completions                    |
+|   Bearer: NVIDIA_API_KEY (from .env)                                      |
++===========================================================================+
+```
+
+### 3.2 Agent Loop Flowchart
+
+```
+                       ┌──────────────────────┐
+                       │  User sends message   │
+                       │  e.g. "Movies in NYC" │
+                       └──────────┬───────────┘
+                                  │
+                       ┌──────────▼───────────┐
+                       │  Build messages[]    │
+                       │  [system, history,   │
+                       │   user message]      │
+                       └──────────┬───────────┘
+                                  │
+                       ┌──────────▼───────────┐
+                  ┌───►│  callNvidiaAPI()      │
+                  │    │  Llama 3.1-70B +      │
+                  │    │  tool_definitions     │
+                  │    └──────────┬────────────┘
+                  │               │
+                  │    ┌──────────▼────────────┐
+                  │    │  Check finish_reason  │
+                  │    └──────────┬────────────┘
+                  │               │
+          ┌───────┴──────┐        │        ┌─────────────────────┐
+          │ "tool_calls" │        │        │       "stop"        │
+          └───────┬──────┘        │        └──────────┬──────────┘
+                  │               │                   │
+          ┌───────▼──────┐        │        ┌──────────▼──────────┐
+          │  Append       │        │        │  Return to frontend │
+          │  assistantMsg │        │        │  {reply, movies,    │
+          │  to messages[]│        │        │   toolsUsed}        │
+          └───────┬──────┘                  └─────────────────────┘
+                  │
+          ┌───────▼──────────────────────────┐
+          │  For each tool_call:              │
+          │  executeToolCall()                │
+          │  ├── get_weather → {condition}    │
+          │  └── get_movies  → {movies[]}     │
+          └───────┬──────────────────────────┘
+                  │
+          ┌───────▼──────┐
+          │  Append tool  │
+          │  result msgs  │
+          │  to messages[]│
+          └───────┬──────┘
+                  │
+                  └─────────────► callNvidiaAPI() again ↺
 ```
 
 ---
@@ -122,68 +228,60 @@ The application is designed to be stateless — no database, no login, no persis
 
 ### 4.1 Frontend (React + Vite)
 
-The frontend is a single-page application (SPA) built with React 18. It uses Vite as the build tool and development server.
-
 #### Component Tree
 
 ```
-App.jsx
+App.jsx  (state: messages[], history[], loading)
 ├── <aside> Sidebar
-│     ├── Logo + Title
-│     ├── City suggestion list
-│     └── Backend status indicator
+│     ├── Logo + Title ("Agentic Planner")
+│     ├── Example prompt list
+│     └── Backend status indicator (port 5001)
 │
 └── <main> Chat Area
       ├── ChatHeader
       ├── ChatWindow.jsx
-      │     ├── Message.jsx (text bubble — user)
-      │     ├── Message.jsx (text bubble — bot)
+      │     ├── Message.jsx (user text bubble)
+      │     ├── Message.jsx (bot text bubble — LLM reply)
       │     ├── Message.jsx (type="movies")
-      │     │     └── MovieCard.jsx  ×N
+      │     │     └── MovieCard.jsx ×N
       │     └── TypingIndicator.jsx
       └── ChatInput.jsx
 ```
 
-#### Component Responsibilities
-
-| Component         | Responsibility                                              |
-|-------------------|-------------------------------------------------------------|
-| `App.jsx`         | Global state (messages[], loading), fetch orchestration     |
-| `ChatWindow.jsx`  | Renders the scrollable message list                         |
-| `Message.jsx`     | Renders user/bot text bubbles with inline Markdown support  |
-| `MovieCard.jsx`   | Displays a single movie: icon, title, genre, score, times   |
-| `ChatInput.jsx`   | Controlled input, Enter-to-submit, disabled state           |
-| `TypingIndicator` | Three-dot animated bubble shown during API call             |
-
-#### State Management
-
-All state is managed locally in `App.jsx` using React hooks — no Redux or external state library is needed for this scope.
-
-```
-App state:
-  messages : Array<Message>   // full chat history
-  loading  : boolean          // true while awaiting API response
-
-Message shape:
-  { id, role: 'user'|'bot', type: 'text'|'movies', text?, movies? }
-```
-
-#### Routing & Proxy
-
-Vite's built-in dev proxy forwards all `/api/*` requests to `http://localhost:5000`, eliminating CORS issues during development.
+#### State Shape
 
 ```javascript
-// vite.config.js
-proxy: {
-  '/api': { target: 'http://localhost:5000', changeOrigin: true }
+// App.jsx state
+messages : Array<Message>         // full rendered chat history
+history  : Array<{role, content}> // last 10 turns forwarded to LLM
+loading  : boolean                // true while agent loop running
+
+// Message shape
+{
+  id    : string,
+  role  : 'user' | 'bot',
+  type  : 'text' | 'movies',
+  text? : string,       // for type='text'
+  movies?: object[]     // for type='movies'
 }
 ```
 
+#### API Call (App.jsx → Backend)
+
+```javascript
+POST /api/chat
+Body: { message: string, history: [{role, content}] }
+Response: { reply: string, movies: object[]|null, toolsUsed: string[] }
+```
+
+The frontend:
+1. Shows the `reply` as a bot text bubble
+2. If `movies` is present, shows MovieCard grid below
+3. Appends the turn to `history` for multi-turn context
+
 ---
 
-### 4.2 Backend (Node.js + Express)
-
-The backend is a lightweight REST API server.
+### 4.2 Backend Agent Loop
 
 #### Middleware Stack
 
@@ -191,208 +289,248 @@ The backend is a lightweight REST API server.
 Request
   │
   ▼
-CORS Middleware          ← Whitelists localhost:5173 only
+CORS Middleware          ← Whitelist: localhost:5173 and 5174
   │
   ▼
-express.json()           ← Parses JSON request body
+express.json()           ← Parse JSON body
   │
   ▼
-Route Handler            ← POST /api/movies
+POST /api/chat handler
   │
   ▼
-Input Validation         ← Type check, empty check, length limit, XSS strip
+Input Validation         ← message trim, 500-char cap
+                           history: filter role/content strings, last 10
   │
   ▼
-scrapeMovies(city)       ← Playwright or Mock fallback
+runAgentLoop()           ← agent loop (up to 8 iterations)
+  │
+  ├─ callNvidiaAPI()     ← HTTPS POST to NVIDIA NIM
+  ├─ executeToolCall()   ← local JS function dispatch
+  └─ return result
   │
   ▼
-JSON Response            ← { source, city, movies[] }
+JSON Response: { reply, movies, toolsUsed }
 ```
 
 #### Routes
 
-| Method | Path          | Description                               |
-|--------|---------------|-------------------------------------------|
-| POST   | /api/movies   | Main endpoint — accepts city, returns movies |
-| GET    | /health       | Health check — returns `{ status: "ok" }` |
+| Method | Path        | Description                                              |
+|--------|-------------|----------------------------------------------------------|
+| POST   | /api/chat   | Main agent endpoint — accepts message + history          |
+| GET    | /health     | Returns `{ status, mode, model }`                        |
 
 ---
 
-### 4.3 Scraping Engine (Playwright)
+### 4.3 Tool Definitions & Dispatcher
 
-Playwright controls a headless Chromium browser to scrape the Rotten Tomatoes "Now in Theaters" page.
+#### Tool Schema (sent to LLM each request)
 
-#### Scraping Flow
-
+```javascript
+TOOL_DEFINITIONS = [
+  {
+    type: 'function',
+    function: {
+      name: 'get_weather',
+      description: 'Returns current weather condition for a city.',
+      parameters: {
+        type: 'object',
+        properties: {
+          city: { type: 'string', description: 'City name' }
+        },
+        required: ['city']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_movies',
+      description: 'Returns movies currently playing in theaters in a city.',
+      parameters: {
+        type: 'object',
+        properties: {
+          city: { type: 'string', description: 'City name' }
+        },
+        required: ['city']
+      }
+    }
+  }
+]
 ```
-chromium.launch({ headless: true })
-          │
-          ▼
-newContext({ userAgent: '...Chrome/122...', viewport: 1280×720 })
-          │
-          ▼
-page.goto('https://www.rottentomatoes.com/browse/movies_in_theaters/')
-   waitUntil: 'domcontentloaded', timeout: 20s
-          │
-          ▼
-page.waitForSelector('[data-qa="discovery-media-list-item"]')
-          │
-          ▼
-page.evaluate()  ← DOM traversal inside the browser context
-   - Extracts: title, tomatometer score
-   - Maps to movie object shape
-   - Returns top 8 results
-          │
-          ▼
-browser.close()   ← Always called in finally block
+
+#### Tool Implementations
+
+| Tool            | Input    | Output                                          | Data Source     |
+|-----------------|----------|-------------------------------------------------|-----------------|
+| `get_weather`   | `city`   | `{ city, condition: 'Sunny'|'Rain', recommendation }` | Random (mock)   |
+| `get_movies`    | `city`   | `{ city, movies[] }` (5 movies)                 | In-memory dataset |
+
+#### Dispatcher Logic (executeToolCall)
+
+```javascript
+executeToolCall(toolCall):
+  1. JSON.parse(toolCall.function.arguments)  → catch malformed JSON
+  2. Sanitise city: trim, slice(0, 100)        → prevent oversized inputs
+  3. switch(toolCall.function.name):
+       'get_weather' → get_weather(city)
+       'get_movies'  → get_movies(city)
+       default       → { error: 'Unknown tool' }
 ```
-
-#### Target DOM Selectors
-
-| Data Point | CSS Selector                                      |
-|------------|---------------------------------------------------|
-| Movie tile | `[data-qa="discovery-media-list-item"]`           |
-| Title      | `[data-qa="discovery-media-list-item-title"]`     |
-| Score      | `[data-qa="tomatometer"]`                         |
-
-#### Resilience Strategy
-
-The entire scrape is wrapped in `try/catch`. Any failure (network timeout, selector change, bot detection, CAPTCHA) is caught and transparently reroutes to the mock data fallback. The browser is always closed in the `finally` block to prevent resource leaks.
 
 ---
 
-### 4.4 Mock Data Fallback
+### 4.4 NVIDIA NIM Integration
 
-A curated in-memory dataset of 8 movies is used whenever live scraping fails. Movies are shuffled randomly per request to simulate variety, and 6 are returned per response.
+#### API Call Shape
 
-| Title                        | Genre              | MPAA | Score  |
-|------------------------------|--------------------|------|--------|
-| Dune: Part Three             | Sci-Fi / Adventure | PG-13| 8.4/10 |
-| The Batman: Shadow of Gotham | Action / Crime      | PG-13| 8.1/10 |
-| Interstellar: Beyond         | Sci-Fi / Drama      | PG   | 8.7/10 |
-| Avengers: New Legacy         | Action / Superhero  | PG-13| 7.9/10 |
-| The Grand Budapest Heist     | Comedy / Crime      | PG-13| 8.0/10 |
-| Echoes of Tomorrow           | Thriller / Mystery  | R    | 7.6/10 |
-| Wildfire                     | Action / Disaster   | PG-13| 7.3/10 |
-| Laughter in Lahore           | Comedy / Romance    | PG   | 7.8/10 |
+```http
+POST https://integrate.api.nvidia.com/v1/chat/completions
+Authorization: Bearer nvapi-...
+Content-Type: application/json
 
-The UI displays a clearly labelled badge: `🌐 Live data` vs `🎭 Demo data`.
+{
+  "model": "meta/llama-3.1-70b-instruct",
+  "messages": [ ... ],
+  "tools": [ ... ],
+  "tool_choice": "auto",
+  "max_tokens": 1024,
+  "temperature": 0.7
+}
+```
+
+#### Response Handling
+
+| `finish_reason` | Meaning                        | Action                              |
+|-----------------|--------------------------------|-------------------------------------|
+| `"tool_calls"`  | LLM wants to invoke tools      | Execute tools, loop back            |
+| `"stop"`        | LLM produced final text reply  | Return to frontend                  |
+| other           | Unexpected                     | Throw error                         |
+
+#### Known Quirk — Null Content Guard
+
+Llama's prompt template crashes with HTTP 500 if `content: null` appears in an
+assistant message. This is patched in the agent loop:
+
+```javascript
+if (assistantMsg.content === null || assistantMsg.content === undefined) {
+  assistantMsg.content = '';
+}
+```
 
 ---
 
 ## 5. Data Flow
 
-### Happy Path (Live Scraping)
+### Full Agent Turn (Happy Path)
 
 ```
-User types "New York" → presses Enter
+User: "Movies in Tokyo"
     │
     ▼
-ChatInput.jsx calls onSend("New York")
+App.jsx — POST /api/chat { message: "Movies in Tokyo", history: [] }
+    │  (Vite proxy → localhost:5001)
+    ▼
+Express validates input → runAgentLoop("Movies in Tokyo", [])
+    │
+    ▼  Iteration 1
+callNvidiaAPI([system, user])
+→ finish_reason: "tool_calls"
+→ tool: get_weather("Tokyo")
+→ executeToolCall → { city:"Tokyo", condition:"Sunny", recommendation:"..." }
+→ append to messages[]
+    │
+    ▼  Iteration 2
+callNvidiaAPI([system, user, assistant, tool-weather])
+→ finish_reason: "tool_calls"
+→ tool: get_movies("Tokyo")
+→ executeToolCall → { city:"Tokyo", movies:[...5 films] }
+→ collectedMovies = movies
+→ append to messages[]
+    │
+    ▼  Iteration 3
+callNvidiaAPI([system, user, assistant, tool-weather, assistant, tool-movies])
+→ finish_reason: "stop"
+→ reply: "It's sunny in Tokyo! I recommend Laughter in Lahore..."
     │
     ▼
-App.jsx adds user message to messages[]
-App.jsx sets loading = true
+Return: { reply, movies: collectedMovies, toolsUsed: ["get_weather","get_movies"] }
     │
     ▼
-fetch POST /api/movies  { city: "New York" }
-    │  (via Vite proxy → localhost:5000)
-    ▼
-Express validates input → calls scrapeMovies("New York")
-    │
-    ▼
-Playwright launches Chromium (headless)
-→ navigates to rottentomatoes.com/browse/movies_in_theaters/
-→ extracts 8 movie tiles from DOM
-→ closes browser
-    │
-    ▼
-Returns JSON: { source: "live", city: "New York", movies: [...8 items] }
-    │
-    ▼
-App.jsx sets loading = false
-App.jsx appends bot text message + bot movies message to messages[]
-    │
-    ▼
-ChatWindow renders MovieCard × 8
+App.jsx:
+  addMsg({ role:'bot', type:'text',   text: reply  })
+  addMsg({ role:'bot', type:'movies', movies })
+  history.push({ role:'user', content: message })
+  history.push({ role:'assistant', content: reply })
 ```
 
-### Fallback Path (Scraping Blocked)
+### Off-Topic Turn (No Tools Called)
 
 ```
-Playwright throws (timeout / bot-block / selector missing)
+User: "Tell me a joke"
     │
     ▼
-catch block calls buildMockResponse()
-→ shuffles MOCK_MOVIES, returns 6
+callNvidiaAPI → finish_reason: "stop"  (LLM answers without tools)
     │
     ▼
-Returns JSON: { source: "mock", city: "New York", movies: [...6 items] }
-    │
-    ▼
-UI shows: "🎭 Demo data — live scraping unavailable for this region"
+Return: { reply: "Why don't scientists trust atoms?...", movies: null, toolsUsed: [] }
 ```
 
 ---
 
 ## 6. API Design
 
-### POST /api/movies
+### POST /api/chat
 
 **Request**
-```
-POST http://localhost:5000/api/movies
-Content-Type: application/json
-
-{
-  "city": "London"
-}
-```
-
-**Validation Rules**
-- `city` must be a non-empty string
-- Maximum 100 characters
-- Characters `< > " ' &` are stripped (XSS prevention)
-
-**Success Response (200)**
 ```json
 {
-  "source": "live",
-  "city": "London",
-  "movies": [
-    {
-      "title": "Dune: Part Three",
-      "genre": "Sci-Fi / Adventure",
-      "rating": "PG-13",
-      "score": "94% 🍅",
-      "description": "Now playing in theaters near you.",
-      "showtimes": ["Check local theater for showtimes"],
-      "icon": "🎬"
-    }
+  "message": "Movies in London",
+  "history": [
+    { "role": "user",      "content": "Hi" },
+    { "role": "assistant", "content": "Hello! Ask me about movies in any city." }
   ]
 }
 ```
 
-**`source` Field Values**
+**Validation Rules**
 
-| Value  | Meaning                                      |
-|--------|----------------------------------------------|
-| `live` | Data scraped in real time from Rotten Tomatoes|
-| `mock` | Demo data from in-memory fallback dataset     |
+| Field     | Rule                                                       |
+|-----------|------------------------------------------------------------|
+| `message` | Required, non-empty string, max 500 characters             |
+| `history` | Optional array; each item must have `role` and `content` as strings; at most last 10 items used |
+
+**Success Response (200)**
+```json
+{
+  "reply": "It's raining in London! Perfect time for a thriller — Echoes of Tomorrow or The Batman: Shadow of Gotham.",
+  "movies": [
+    {
+      "title": "Echoes of Tomorrow",
+      "genre": "Thriller / Mystery",
+      "rating": "R",
+      "score": "7.6/10 ⭐",
+      "description": "A detective discovers she can receive messages from her future self.",
+      "showtimes": ["12:00 PM", "3:15 PM", "6:45 PM", "10:00 PM"],
+      "icon": "🔍"
+    }
+  ],
+  "toolsUsed": ["get_weather", "get_movies"]
+}
+```
 
 **Error Responses**
 
-| Status | Scenario                         | Body                                          |
-|--------|----------------------------------|-----------------------------------------------|
-| 400    | Missing or empty city            | `{ "error": "Please provide a valid city name." }` |
-| 400    | City exceeds 100 characters      | `{ "error": "City name is too long." }`       |
-| 500    | Unexpected server error          | `{ "error": "Internal server error..." }`     |
+| Status | Scenario                              | Body                                                    |
+|--------|---------------------------------------|---------------------------------------------------------|
+| 400    | Missing or empty `message`            | `{ "error": "Please provide a non-empty message." }`    |
+| 500    | Missing `NVIDIA_API_KEY` in .env      | `{ "error": "NVIDIA_API_KEY is not set..." }`           |
+| 500    | NVIDIA API call failed                | `{ "error": "NVIDIA API responded with 5xx: ..." }`     |
+| 500    | Agent loop exceeded 8 iterations      | `{ "error": "Agent loop hit the 8-iteration safety limit..." }` |
 
 ### GET /health
 
-```
-GET http://localhost:5000/health
-→ 200 OK  { "status": "ok" }
+```json
+{ "status": "ok", "mode": "agentic", "model": "meta/llama-3.1-70b-instruct" }
 ```
 
 ---
@@ -401,34 +539,40 @@ GET http://localhost:5000/health
 
 ### Frontend
 
-| Technology          | Version  | Purpose                                    |
-|---------------------|----------|--------------------------------------------|
-| React               | 18.2.0   | UI component framework                     |
-| Vite                | 6.4.1    | Build tool, dev server, API proxy          |
-| @vitejs/plugin-react| 4.5.2    | Babel-based JSX/Fast Refresh support       |
-| CSS Modules (plain) | —        | Component-scoped styling (no CSS-in-JS)    |
-| Inter (Google Fonts)| —        | Primary typeface                           |
+| Technology           | Version  | Purpose                                    |
+|----------------------|----------|--------------------------------------------|
+| React                | 18.2.0   | UI component framework                     |
+| Vite                 | 6.4.1    | Build tool, dev server, API proxy (:5001)  |
+| @vitejs/plugin-react | 4.5.2    | Babel JSX + Fast Refresh                   |
+| CSS (plain)          | —        | Component-scoped styling                   |
 
 ### Backend
 
-| Technology    | Version  | Purpose                                         |
-|---------------|----------|-------------------------------------------------|
-| Node.js       | 24.14.0  | JavaScript runtime                              |
-| Express       | 4.18.2   | HTTP server and routing                         |
-| Playwright    | 1.42.1   | Headless browser automation for scraping        |
-| Chromium      | bundled  | Browser engine used by Playwright               |
-| cors          | 2.8.5    | CORS header management                          |
-| nodemon       | 3.1.0    | Dev-mode auto-restart (devDependency)           |
+| Technology  | Version  | Purpose                                         |
+|-------------|----------|-------------------------------------------------|
+| Node.js     | 24.14.0  | JavaScript runtime                              |
+| Express     | 4.18.2   | HTTP server, routing, middleware                |
+| dotenv      | 16.4.5   | Load NVIDIA_API_KEY from .env                   |
+| cors        | 2.8.5    | CORS origin whitelist                           |
+| nodemon     | 3.1.0    | Dev-mode auto-restart (devDependency)           |
+| fetch (built-in) | Node 18+ | HTTPS calls to NVIDIA NIM API            |
 
-### Infrastructure / Tooling
+### AI / External
 
-| Tool       | Purpose                                 |
-|------------|-----------------------------------------|
-| Git        | Version control                         |
-| GitHub CLI | Repo creation and push automation       |
-| GitHub     | Remote code hosting (AshokSakthivel)    |
-| npm        | Package management (both frontend/backend)|
-| winget     | Node.js installation on Windows         |
+| Service         | Details                                              |
+|-----------------|------------------------------------------------------|
+| NVIDIA NIM API  | `https://integrate.api.nvidia.com/v1`                |
+| Model           | `meta/llama-3.1-70b-instruct`                        |
+| Protocol        | OpenAI-compatible REST w/ function calling           |
+| Auth            | Bearer token (`NVIDIA_API_KEY`)                      |
+
+### Infrastructure
+
+| Tool    | Purpose                                 |
+|---------|-----------------------------------------|
+| Git     | Version control                         |
+| GitHub  | Remote repo — AshokSakthivel/AshokAIProjects |
+| npm     | Package management                      |
 
 ---
 
@@ -436,29 +580,24 @@ GET http://localhost:5000/health
 
 ### Threat Model & Mitigations
 
-| Threat                     | OWASP Category              | Mitigation                                              |
-|----------------------------|-----------------------------|---------------------------------------------------------|
-| XSS via city input         | A03 Injection               | Strip `< > " ' &` before use; never rendered as HTML    |
-| SSRF via city input        | A10 SSRF                    | City is only used as a display label; URL is hardcoded  |
-| Unbounded input length     | A03 Injection               | Server rejects city > 100 chars; client `maxLength=100` |
-| CORS abuse                 | A01 Broken Access Control   | CORS origin whitelist: only `localhost:5173` allowed    |
-| Dependency vulnerabilities | A06 Vulnerable Components   | `npm audit` clean; Vite upgraded to 6.4.1 to patch CVEs |
-| Rogue DOM content injection| A03 Injection               | Scraped text rendered via React (auto-escaped), not innerHTML |
-| Bot detection evasion      | —                           | Realistic User-Agent and viewport set; graceful fallback |
+| Threat                      | OWASP Category              | Mitigation                                              |
+|-----------------------------|-----------------------------|---------------------------------------------------------|
+| API key exposure             | A02 Cryptographic Failure   | Stored in `.env`, excluded from git via `.gitignore`    |
+| Prompt injection via user msg| A03 Injection               | User input capped at 500 chars; system prompt is fixed  |
+| XSS via LLM reply            | A03 Injection               | React auto-escapes all text; no `dangerouslySetInnerHTML` |
+| CORS abuse                   | A01 Broken Access Control   | Origin whitelist: only `localhost:5173/5174`            |
+| Unbounded LLM loops          | —                           | Hard cap: 8 iterations max in agent loop                |
+| Malformed tool arguments     | A03 Injection               | `JSON.parse` in try/catch; city sanitised + capped at 100 chars |
+| History poisoning            | A03 Injection               | History items validated (role + content must be strings); at most 10 items accepted |
+| Dependency vulnerabilities   | A06 Vulnerable Components   | `npm audit` clean; Playwright removed, reducing attack surface |
 
-### Input Sanitization Flow
+### API Key Best Practice
 
 ```
-Raw input: "  <script>alert(1)</script>  "
-                │
-                ▼ city.trim()
-"<script>alert(1)</script>"
-                │
-                ▼ .replace(/[<>"'&]/g, '')
-"scriptalert(1)/script"
-                │
-                ▼ length check (≤ 100)
-Passes — used only as display label, not in any URL or query
+✅  backend/.env          ← NVIDIA_API_KEY stored here
+✅  backend/.gitignore    ← .env excluded
+✅  backend/.env.example  ← committed as safe template
+❌  NEVER hardcode key in server.js or commit .env
 ```
 
 ---
@@ -467,65 +606,66 @@ Passes — used only as display label, not in any URL or query
 
 ### Frontend Error States
 
-| Scenario                     | User-Visible Message                                     |
-|------------------------------|----------------------------------------------------------|
-| Backend not running          | "⚠️ Oops! Failed to fetch. Make sure the backend is running on port 5000." |
-| Server 400 (bad input)       | "⚠️ Oops! [server error message]"                         |
-| Server 500 (crash)           | "⚠️ Oops! Internal server error. Please try again."       |
-| No movies returned           | "😕 No movies found for [city]. Try another city!"        |
+| Scenario                        | User-Visible Message                                          |
+|---------------------------------|---------------------------------------------------------------|
+| Backend not running             | "⚠️ Oops! connect ECONNREFUSED. Make sure the backend is running on port 5000." |
+| Missing API key (500)           | "⚠️ Oops! NVIDIA_API_KEY is not set."                         |
+| NVIDIA API error (500)          | "⚠️ Oops! NVIDIA API responded with 5xx."                     |
+| LLM loop limit hit              | "⚠️ Oops! Agent loop hit the 8-iteration safety limit."       |
 
-### Backend Error Handling
+### Backend Resilience
 
 ```
-scrapeMovies(city)
-├── try
-│     ├── Playwright launch & navigate
-│     ├── DOM extraction
-│     └── Return { source: 'live', ... }
-├── catch (any error)
-│     └── Return { source: 'mock', ... }  ← never crashes the API
-└── finally
-      └── browser.close()               ← no resource leaks
+runAgentLoop()
+├── MAX_ITERATIONS = 8  (prevents infinite loop / runaway billing)
+├── callNvidiaAPI()
+│     └── response.ok check → throws on non-2xx with full error body
+├── executeToolCall()
+│     ├── JSON.parse in try/catch → returns { error } on failure
+│     └── city sanitisation before tool execution
+└── content: null guard on assistantMsg before appending
 ```
 
 ### Loading State
 
-The `loading` flag in `App.jsx` disables the input and send button during a pending API call, preventing duplicate requests.
+The `loading` flag in `App.jsx` disables ChatInput during an active agent loop, preventing duplicate requests.
 
 ---
 
 ## 10. Folder Structure
 
 ```
-AshokAIProjects/                          ← Git repo root
-├── .gitignore                            ← Ignores node_modules, dist, .env
+AshokAIProjects/                              ← Git repo root
+├── .gitignore                                ← Ignores node_modules, dist, .env
 │
 └── Project3-Movie Finder Chatbot/
     │
-    ├── README.md                         ← Quick-start guide
-    ├── HLD.md                            ← This document
+    ├── README.md                             ← Quick-start guide (v2.0)
+    ├── HLD.md                                ← This document (v2.0)
     │
     ├── backend/
-    │   ├── package.json                  ← express, playwright, cors, nodemon
+    │   ├── .env                              ← NVIDIA_API_KEY (never committed)
+    │   ├── .env.example                      ← Safe template (committed)
+    │   ├── package.json                      ← express, dotenv, cors, nodemon
     │   ├── package-lock.json
-    │   └── server.js                     ← Express app + Playwright scraper
+    │   └── server.js                         ← Agent loop + tool definitions + Express
     │
     └── frontend/
-        ├── package.json                  ← react, vite, @vitejs/plugin-react
+        ├── package.json                      ← react, vite, @vitejs/plugin-react
         ├── package-lock.json
-        ├── vite.config.js                ← Dev server config + API proxy
-        ├── index.html                    ← HTML shell, Google Fonts
+        ├── vite.config.js                    ← Proxy /api → localhost:5001
+        ├── index.html                        ← HTML shell
         └── src/
-            ├── main.jsx                  ← ReactDOM.createRoot entry point
-            ├── App.jsx                   ← Root component + state + fetch logic
-            ├── App.css                   ← Layout: sidebar + chat area
-            ├── index.css                 ← CSS variables, global resets, scrollbar
+            ├── main.jsx                      ← ReactDOM.createRoot entry point
+            ├── App.jsx                       ← State (messages, history, loading) + fetch
+            ├── App.css                       ← Layout: sidebar + chat area
+            ├── index.css                     ← CSS variables, resets
             └── components/
-                ├── ChatWindow.jsx / .css ← Scrollable message list container
-                ├── Message.jsx / .css    ← Text bubble + movie grid renderer
-                ├── MovieCard.jsx / .css  ← Individual movie info card
-                ├── ChatInput.jsx / .css  ← Text input + submit button
-                └── TypingIndicator.jsx / .css  ← Animated loading dots
+                ├── ChatWindow.jsx / .css     ← Scrollable message list
+                ├── Message.jsx / .css        ← Text bubble + movie grid renderer
+                ├── MovieCard.jsx / .css      ← Individual movie info card
+                ├── ChatInput.jsx / .css      ← Text input + submit button
+                └── TypingIndicator.jsx / .css ← Animated loading dots
 ```
 
 ---
@@ -534,51 +674,41 @@ AshokAIProjects/                          ← Git repo root
 
 ### Performance
 
-| Metric                        | Target / Actual                                   |
-|-------------------------------|---------------------------------------------------|
-| Frontend production build size| 149 KB JS + 6.4 KB CSS (gzipped: 48 KB + 1.9 KB) |
-| Vite cold start               | < 500ms                                           |
-| Live scrape response time     | ~5–10 seconds (Playwright cold start + DOM fetch) |
-| Mock data response time       | < 100ms                                           |
-| Concurrent requests           | Stateless — each request creates a new browser context |
+| Metric                         | Target / Actual                                         |
+|--------------------------------|---------------------------------------------------------|
+| Agent loop response time       | ~5–15 seconds (2–3 LLM round-trips @ 70B model)        |
+| Mock tool execution time       | < 1ms per tool call                                     |
+| Frontend build size            | ~149 KB JS (gzipped: ~48 KB)                           |
+| Vite cold start                | < 500ms                                                 |
+| Max LLM iterations per request | 8 (hard cap)                                           |
+
+### Scalability
+
+- Stateless design — each `/api/chat` request is independent
+- No in-memory session — history is passed by the client
+- Can be horizontally scaled behind a load balancer with no changes
 
 ### Availability
 
-- No single point of failure for demo use — mock fallback ensures the UI is always functional.
-- Backend can be restarted independently without affecting the frontend build.
-
-### Maintainability
-
-- Components are small, single-responsibility, and individually styled.
-- The mock dataset is a plain JS array — trivially editable.
-- DOM selectors are isolated in a single `page.evaluate()` call — easy to update if Rotten Tomatoes changes their markup.
-
-### Browser Compatibility
-
-| Browser         | Support |
-|-----------------|---------|
-| Chrome / Edge   | ✅ Full  |
-| Firefox         | ✅ Full  |
-| Safari          | ✅ Full  |
-| Mobile (> 640px)| ✅ Full  |
-| Mobile (< 640px)| ✅ Sidebar hidden, chat full-width |
+- If NVIDIA NIM is unavailable, the backend returns a 500 with a clear message
+- Frontend always shows an error bubble — never hangs silently
 
 ---
 
 ## 12. Future Enhancements
 
-| Enhancement                    | Description                                              | Priority |
-|--------------------------------|----------------------------------------------------------|----------|
-| Showtimes by City              | Integrate a real showtimes API (e.g. Fandango, SeatGeek) | High     |
-| Caching Layer                  | Redis/in-memory cache to avoid re-scraping within 10 min | Medium   |
-| Rate Limiting                  | Throttle `/api/movies` to N requests/minute per IP        | Medium   |
-| Multiple Scrape Sources        | Fall through IMDB → Google Movies → mock                  | Medium   |
-| Movie Detail Page              | Click a card to see trailers, cast, reviews              | Low      |
-| Chat History Persistence       | LocalStorage or IndexedDB to save sessions               | Low      |
-| Docker Compose                 | Single-command startup for frontend + backend            | Low      |
-| CI/CD Pipeline                 | GitHub Actions: lint → build → deploy on push            | Low      |
-| Deployment                     | Vercel (frontend) + Railway/Render (backend)             | Low      |
+| Enhancement                  | Description                                               | Priority |
+|------------------------------|-----------------------------------------------------------|----------|
+| Real weather tool            | Replace mock with OpenWeatherMap API call                 | High     |
+| Real showtimes tool          | Integrate Fandango / SeatGeek / Google Movies API         | High     |
+| Streaming LLM responses      | Use SSE to stream tokens to UI as they arrive             | Medium   |
+| Rate limiting                | Throttle `/api/chat` to N requests/min per IP             | Medium   |
+| Persistent chat history      | Store history in LocalStorage or IndexedDB                | Medium   |
+| More tools                   | `get_trailers`, `get_reviews`, `book_tickets`             | Medium   |
+| Docker Compose               | Single-command startup for both services                  | Low      |
+| CI/CD Pipeline               | GitHub Actions: lint → build → test → deploy on push      | Low      |
+| Deployment                   | Vercel (frontend) + Railway/Render (backend)              | Low      |
 
 ---
 
-*End of HLD — Movie Finder Chatbot v1.0*
+*End of HLD — Agentic Movie & Weather Planner v2.0*
