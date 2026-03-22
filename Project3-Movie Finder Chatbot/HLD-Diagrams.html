@@ -1,0 +1,317 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HLD Diagrams — Movie Finder Chatbot</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #0d0d1a; --surface: #13131f; --surface2: #1a1a2e;
+      --accent: #6c63ff; --accent2: #8b85ff;
+      --text: #f0f0ff; --muted: #9090b0; --border: #2a2a40;
+      --green: #4caf50; --orange: #ff9800; --red: #f44336;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; padding: 40px 24px 80px; }
+    h1 { font-size: 1.8rem; font-weight: 700; text-align: center; margin-bottom: 6px; }
+    h1 span { color: var(--accent2); }
+    .subtitle { text-align: center; color: var(--muted); font-size: 0.9rem; margin-bottom: 48px; }
+    .subtitle a { color: var(--accent2); text-decoration: none; }
+    .section { max-width: 1100px; margin: 0 auto 56px; }
+    .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .section-num { background: var(--accent); color: #fff; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
+    .section-title { font-size: 1.2rem; font-weight: 600; }
+    .section-desc { font-size: 0.85rem; color: var(--muted); margin-top: 2px; }
+    .diagram-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 32px; overflow-x: auto; }
+    .diagram-card .mermaid { display: flex; justify-content: center; }
+    .legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--muted); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    footer { text-align: center; color: var(--muted); font-size: 0.78rem; margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); max-width: 1100px; margin-left: auto; margin-right: auto; }
+  </style>
+</head>
+<body>
+  <h1>🎬 <span>Movie Finder Chatbot</span></h1>
+  <p class="subtitle">
+    High-Level Design Diagrams &nbsp;·&nbsp; v1.0 &nbsp;·&nbsp; March 2026 &nbsp;·&nbsp;
+    <a href="https://github.com/AshokSakthivel/AshokAIProjects" target="_blank">GitHub ↗</a>
+  </p>
+
+  <!-- ── Diagram 1: System Architecture ──────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div>
+        <div class="section-title">System Architecture Overview</div>
+        <div class="section-desc">High-level view of all system nodes, communication channels, and component groupings</div>
+      </div>
+    </div>
+    <div class="diagram-card">
+      <div class="mermaid">
+graph TB
+    subgraph CLIENT["🖥️  CLIENT — Browser (localhost:5173)"]
+        direction TB
+        subgraph COMPONENTS["UI Components"]
+            CI["ChatInput"]
+            CW["ChatWindow"]
+            MSG["Message"]
+            MC["MovieCard"]
+            TI["TypingIndicator"]
+        end
+        APP["App.jsx — State · Fetch · Logic"]
+        CI --> APP
+        APP --> CW
+        CW --> MSG
+        MSG --> MC
+        CW --> TI
+    end
+
+    subgraph SERVER["⚙️  SERVER — Node.js / Express (localhost:5000)"]
+        direction TB
+        CORS["CORS Middleware — whitelist :5173"]
+        RT["POST /api/movies"]
+        HEALTH["GET /health"]
+        VALID["Input Validation — sanitise · length · type"]
+        CORS --> RT
+        CORS --> HEALTH
+        RT --> VALID
+        subgraph SCRAPER["🎭  Scraping Engine"]
+            PW["Playwright — Headless Chromium"]
+            MOCK["Mock Dataset — 8 movies in-memory"]
+            PW -- "on failure" --> MOCK
+        end
+        VALID --> SCRAPER
+    end
+
+    subgraph EXTERNAL["🌐  EXTERNAL"]
+        RT_WEB["Rotten Tomatoes\nrottentomatoes.com"]
+    end
+
+    APP -- "POST /api/movies {city}" --> SERVER
+    SERVER -- "JSON {source, city, movies[]}" --> APP
+    PW -- "Headless Chrome request" --> RT_WEB
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#6c63ff"></div> Frontend (React + Vite)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#8b85ff"></div> Backend (Express + Node.js)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#4caf50"></div> External (Rotten Tomatoes)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ff9800"></div> Fallback (Mock Data)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Diagram 2: Sequence Diagram ─────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div>
+        <div class="section-title">Request / Response Sequence</div>
+        <div class="section-desc">Chronological message flow between all actors for both the live and mock fallback paths</div>
+      </div>
+    </div>
+    <div class="diagram-card">
+      <div class="mermaid">
+sequenceDiagram
+    actor User
+    participant CI as ChatInput
+    participant App as App.jsx
+    participant API as Express API :5000
+    participant PW as Playwright
+    participant RT as Rotten Tomatoes
+    participant Mock as Mock Dataset
+
+    User->>CI: Types city name + Enter
+    CI->>App: onSend(city)
+    App->>App: addMsg(user bubble) setLoading=true
+    App->>API: POST /api/movies { city }
+
+    API->>API: Validate + sanitise input
+
+    alt Live scraping succeeds
+        API->>PW: scrapeMovies(city)
+        PW->>RT: GET /browse/movies_in_theaters/ (headless)
+        RT-->>PW: HTML page
+        PW->>PW: waitForSelector + evaluate() extract ×8
+        PW-->>API: movies[] source=live
+        PW->>PW: browser.close()
+    else Scraping fails — blocked / timeout / no results
+        PW-->>API: throws Error
+        API->>Mock: buildMockResponse()
+        Mock-->>API: shuffle slice 6 source=mock
+    end
+
+    API-->>App: 200 JSON { source, city, movies[] }
+    App->>App: setLoading=false addMsg(bot text + movies)
+    App-->>User: MovieCard × N rendered in chat
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Diagram 3: Data Flow ─────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <div>
+        <div class="section-title">Detailed Data Flow</div>
+        <div class="section-desc">Decision tree showing every branch — happy path, fallback, and error states</div>
+      </div>
+    </div>
+    <div class="diagram-card">
+      <div class="mermaid">
+flowchart TD
+    A([User types city name]) --> B[ChatInput onSend]
+    B --> C{Input empty?}
+    C -- Yes --> Z1([Silently ignored])
+    C -- No --> D[App.jsx POST /api/movies]
+
+    D --> E{Server reachable?}
+    E -- No --> ERR1["Bot bubble — Cannot reach backend\nCheck backend is running on :5000"]
+    E -- Yes --> F{Validation passes?}
+    F -- Fails --> ERR2["Bot bubble — Error message from server\n400 Bad Request"]
+    F -- Passes --> G[Launch Playwright Headless Chromium]
+
+    G --> H[Navigate to Rotten Tomatoes\n/browse/movies_in_theaters/]
+    H --> I{Page loaded within 20s?}
+    I -- Timeout --> FALL
+    I -- Loaded --> J[waitForSelector\ndata-qa discovery-media-list-item]
+    J --> K{Selector found within 10s?}
+    K -- Not found --> FALL
+    K -- Found --> L[page.evaluate\nExtract title + score x8]
+    L --> M{movies.length > 0?}
+    M -- No --> FALL
+    M -- Yes --> N["Return source=live movies=array"]
+
+    FALL(["Fallback triggered"]) --> O["buildMockResponse\nshuffle MOCK_MOVIES slice 6"]
+    O --> P["Return source=mock movies=array"]
+
+    N --> Q[browser.close always]
+    P --> Q
+
+    Q --> R[App.jsx setLoading=false]
+    R --> S["Add bot text bubble with source badge"]
+    S --> T["Add bot movies message"]
+    T --> U([ChatWindow renders MovieCard x N])
+
+    style FALL fill:#ff9800,color:#000,stroke:#e65100
+    style ERR1 fill:#f44336,color:#fff,stroke:#b71c1c
+    style ERR2 fill:#f44336,color:#fff,stroke:#b71c1c
+    style N fill:#4caf50,color:#fff,stroke:#1b5e20
+    style P fill:#ff9800,color:#000,stroke:#e65100
+    style U fill:#6c63ff,color:#fff,stroke:#3f3a99
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#4caf50"></div> Happy path (live data)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ff9800"></div> Fallback path (mock data)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f44336"></div> Error state</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#6c63ff"></div> Final render</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Diagram 4: Component Tree ───────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <div>
+        <div class="section-title">React Component Hierarchy</div>
+        <div class="section-desc">Parent-child relationships and data flow within the frontend layer</div>
+      </div>
+    </div>
+    <div class="diagram-card">
+      <div class="mermaid">
+graph TD
+    APP["App.jsx\nstate: messages[], loading\nfetch: POST /api/movies"]
+
+    APP --> SIDEBAR["aside Sidebar\ncity hints · status dot"]
+    APP --> MAIN["main Chat Area\nchat-header"]
+    MAIN --> CW["ChatWindow\nscrollable list"]
+    MAIN --> INPUT["ChatInput\ncontrolled input · Enter key"]
+
+    CW --> MSG_USER["Message role=user\ntext bubble right-aligned"]
+    CW --> MSG_BOT_TEXT["Message role=bot type=text\nMarkdown rendered bubble"]
+    CW --> MSG_BOT_MOVIES["Message role=bot type=movies\ngrid layout"]
+    CW --> TI["TypingIndicator\nthree-dot bounce animation"]
+
+    MSG_BOT_MOVIES --> MC1["MovieCard\nicon · title · genre"]
+    MSG_BOT_MOVIES --> MC2["MovieCard\nscore · rating badge"]
+    MSG_BOT_MOVIES --> MC3["MovieCard\nshowtimes pills"]
+
+    INPUT -- "onSend(city)" --> APP
+    APP -- "messages[]" --> CW
+    APP -- "loading" --> TI
+    APP -- "loading · disabled" --> INPUT
+
+    style APP fill:#6c63ff,color:#fff
+    style CW fill:#1e1e30,color:#f0f0ff,stroke:#2a2a40
+    style MSG_BOT_MOVIES fill:#16162a,color:#f0f0ff,stroke:#2e2e50
+    style MC1 fill:#16162a,color:#f0f0ff,stroke:#6c63ff
+    style MC2 fill:#16162a,color:#f0f0ff,stroke:#6c63ff
+    style MC3 fill:#16162a,color:#f0f0ff,stroke:#6c63ff
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Diagram 5: Security ──────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <div>
+        <div class="section-title">Security & Input Sanitization Flow</div>
+        <div class="section-desc">How untrusted user input is processed and guarded at every layer</div>
+      </div>
+    </div>
+    <div class="diagram-card">
+      <div class="mermaid">
+flowchart LR
+    RAW["Raw user input\ne.g. script alert xss"] --> FE_MAX["Frontend\nmaxLength=100 attr"]
+    FE_MAX --> FE_TRIM["JS trim()"]
+    FE_TRIM --> FETCH["fetch POST /api/movies\nContent-Type: application/json"]
+
+    FETCH --> CORS_CHECK{"CORS Check\nOrigin === :5173?"}
+    CORS_CHECK -- No --> REJECT_CORS["403 Blocked"]
+    CORS_CHECK -- Yes --> TYPE_CHECK{"Type check\ntypeof city === string?"}
+    TYPE_CHECK -- No --> REJECT_400["400 Bad Request"]
+    TYPE_CHECK -- Yes --> EMPTY_CHECK{"Empty check\ncity.trim().length > 0?"}
+    EMPTY_CHECK -- No --> REJECT_400
+    EMPTY_CHECK -- Yes --> LEN_CHECK{"Length check\n<= 100 chars?"}
+    LEN_CHECK -- No --> REJECT_400
+    LEN_CHECK -- Yes --> SANITISE["strip chars\nlt gt quote amp"]
+    SANITISE --> DISPLAY["Used only as\ndisplay label"]
+    SANITISE --> HARDCODED_URL["Rotten Tomatoes URL\nHardcoded — not injectable"]
+    DISPLAY --> REACT_RENDER["React renders as text\nauto-escaped — no XSS"]
+
+    style REJECT_CORS fill:#f44336,color:#fff
+    style REJECT_400 fill:#f44336,color:#fff
+    style REACT_RENDER fill:#4caf50,color:#fff
+    style HARDCODED_URL fill:#4caf50,color:#fff
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Movie Finder Chatbot &nbsp;·&nbsp; HLD v1.0 &nbsp;·&nbsp; March 2026<br/>
+    <a href="https://github.com/AshokSakthivel/AshokAIProjects" style="color:#8b85ff">
+      github.com/AshokSakthivel/AshokAIProjects
+    </a>
+  </footer>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        background: '#13131f',
+        primaryColor: '#6c63ff',
+        primaryTextColor: '#f0f0ff',
+        primaryBorderColor: '#2a2a40',
+        lineColor: '#9090b0',
+        secondaryColor: '#1e1e30',
+        tertiaryColor: '#16162a',
+        edgeLabelBackground: '#1a1a2e',
+        fontFamily: 'Inter, system-ui, sans-serif',
+      }
+    });
+  </script>
+</body>
+</html>
