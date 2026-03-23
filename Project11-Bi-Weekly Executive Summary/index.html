@@ -412,6 +412,34 @@
     }
     .mwa-label { font-size: 0.58rem; color: #4d6880; font-weight: 600; }
 
+    /* Team photo */
+    .mw-photo-wrap {
+      margin-top: 2.5rem;
+      position: relative; border-radius: 20px; overflow: hidden;
+      border: 1px solid rgba(192, 132, 252, 0.2);
+      box-shadow: 0 0 60px rgba(168, 85, 247, 0.12), 0 0 120px rgba(59, 130, 246, 0.07);
+    }
+    .mw-photo-wrap img {
+      width: 100%; display: block;
+      filter: saturate(1.05) contrast(1.02);
+    }
+    .mw-photo-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(to top, rgba(6,8,13,0.92) 0%, rgba(6,8,13,0.6) 40%, transparent 100%);
+      padding: 2rem 2.5rem 1.75rem;
+      display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+    }
+    .mwp-caption { }
+    .mwp-tag { font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.14em; color: #9d7fca; font-weight: 700; margin-bottom: 0.35rem; }
+    .mwp-title { font-size: 1.3rem; font-weight: 900; color: #f0eaff; line-height: 1.2; }
+    .mwp-sub { font-size: 0.78rem; color: #8ba5c8; margin-top: 0.3rem; }
+    .mwp-pill {
+      padding: 0.45rem 1.1rem; border-radius: 999px;
+      background: linear-gradient(135deg, rgba(168,85,247,0.2), rgba(236,72,153,0.15));
+      border: 1px solid rgba(192,132,252,0.3);
+      font-size: 0.75rem; font-weight: 700; color: #e0aaff; white-space: nowrap;
+    }
+
     @media (max-width: 900px) {
       .mw-body { grid-template-columns: 1fr; gap: 2rem; }
       .mw-headline { font-size: 2rem; }
@@ -1252,6 +1280,19 @@
           </div>
         </div>
       </div><!-- /mw-shoutout -->
+
+      <!-- Team photo -->
+      <div class="mw-photo-wrap">
+        <img src="team.png" alt="The Mimecast Team — BUILD t-shirts, all hands, GCI Portfolio" />
+        <div class="mw-photo-overlay">
+          <div class="mwp-caption">
+            <div class="mwp-tag">The People Behind the Platform · GCI · March 2026</div>
+            <div class="mwp-title">This is who we're building for.<br/>This is who we're building with.</div>
+            <div class="mwp-sub">Every uptime percentage, every sprint point, every migration wave — it's all these people. That's the Mimecast Way.</div>
+          </div>
+          <div class="mwp-pill">60PB · 60 Engineers · One Mission 🟣</div>
+        </div>
+      </div><!-- /mw-photo-wrap -->
 
     </div><!-- /mw-inner -->
   </section><!-- /mw-section -->
