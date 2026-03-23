@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>All-Hands Infographic — Technical Strategy Hub</title>
+  <style>
+    :root {
+      --bg: #0a0e1a; --surface: #111827; --surface2: #1a2236; --border: #1e2d45;
+      --accent: #3b82f6; --accent2: #8b5cf6; --accent3: #10b981; --accent4: #f59e0b;
+      --accent5: #ef4444; --text: #e2e8f0; --text-muted: #64748b; --text-dim: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+    header {
+      background: linear-gradient(135deg, #0d1b2e, #0f2241); border-bottom: 1px solid var(--border);
+      padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg,var(--accent),var(--accent2)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .logo-text h1 { font-size: 1rem; font-weight: 700; }
+    .logo-text p { font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    nav { display: flex; gap: 4px; }
+    nav a { color: var(--text-dim); text-decoration: none; padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 500; transition: all 0.2s; border: 1px solid transparent; }
+    nav a:hover { color: var(--text); background: var(--surface2); border-color: var(--border); }
+    nav a.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+
+    /* ── INFOGRAPHIC CANVAS ── */
+    .infographic {
+      max-width: 1200px; margin: 2rem auto; padding: 0 2rem 3rem;
+    }
+
+    /* ── HEADER BLOCK ── */
+    .ig-header {
+      text-align: center; padding: 3rem 2rem;
+      background: linear-gradient(135deg, #0d1b2e 0%, #0f2241 50%, #0d1b2e 100%);
+      border: 1px solid var(--border); border-radius: 20px; margin-bottom: 2rem;
+      position: relative; overflow: hidden;
+    }
+    .ig-header::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(59,130,246,0.12) 0%, transparent 70%);
+    }
+    .ig-header-inner { position: relative; z-index: 1; }
+    .ig-eyebrow { font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent4); font-weight: 700; margin-bottom: 0.75rem; }
+    .ig-title { font-size: 2.4rem; font-weight: 900; line-height: 1.15; margin-bottom: 0.75rem; }
+    .ig-title .t1 { color: var(--text); }
+    .ig-title .t2 { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .ig-sub { font-size: 1rem; color: var(--text-dim); max-width: 700px; margin: 0 auto 1.5rem; line-height: 1.6; }
+    .ig-stats { display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap; }
+    .ig-stat .is-val { font-size: 2rem; font-weight: 900; display: block; }
+    .ig-stat .is-lbl { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+    /* ── SECTION DIVIDERS ── */
+    .ig-section-label {
+      text-align: center; margin: 2rem 0 1.25rem;
+      font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 700;
+      display: flex; align-items: center; gap: 1rem; color: var(--text-muted);
+    }
+    .ig-section-label::before, .ig-section-label::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
+
+    /* ── FROM → TO ARCHITECTURE ── */
+    .arch-compare {
+      display: grid; grid-template-columns: 1fr auto 1fr;
+      gap: 0; align-items: stretch; margin-bottom: 2rem;
+    }
+    .arch-side {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem;
+    }
+    .arch-side.legacy { border-color: rgba(239,68,68,0.3); }
+    .arch-side.modern { border-color: rgba(16,185,129,0.3); }
+    .arch-title { font-size: 1rem; font-weight: 800; text-align: center; margin-bottom: 0.5rem; }
+    .arch-title.red { color: var(--accent5); }
+    .arch-title.green { color: var(--accent3); }
+    .arch-subtitle { font-size: 0.72rem; text-align: center; color: var(--text-muted); margin-bottom: 0.75rem; }
+
+    .mono-block {
+      width: 100%; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 12px; padding: 1.25rem; position: relative;
+    }
+    .mono-block-title { font-size: 0.8rem; font-weight: 800; color: #ef4444; text-align: center; margin-bottom: 0.75rem; }
+    .mono-row { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 6px; }
+    .mono-chip {
+      padding: 4px 10px; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 6px; font-size: 0.68rem; color: #ef4444; font-weight: 600;
+    }
+    .mono-issue { font-size: 0.7rem; color: var(--text-muted); text-align: center; margin-top: 0.75rem; line-height: 1.5; }
+    .mono-pain {
+      padding: 4px 8px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 4px; font-size: 0.65rem; color: var(--accent5); text-align: center;
+    }
+    .legacy-pains { display: flex; flex-direction: column; gap: 6px; margin-top: 0.75rem; }
+
+    /* Arrow in middle */
+    .arch-arrow {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 0 1.5rem; gap: 8px;
+    }
+    .arrow-body {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 1.25rem 1rem; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .arrow-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent4); font-weight: 700; text-align: center; }
+    .arrow-icon { font-size: 2rem; }
+    .arrow-tag { font-size: 0.6rem; padding: 2px 7px; background: rgba(245,158,11,0.15); color: var(--accent4); border: 1px solid rgba(245,158,11,0.3); border-radius: 4px; font-weight: 700; }
+    .wave-chips { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+    .wc { text-align: center; padding: 3px 8px; border-radius: 4px; font-size: 0.62rem; font-weight: 700; }
+    .wc0 { background: rgba(99,102,241,0.15); color: #6366f1; }
+    .wc1 { background: rgba(16,185,129,0.15); color: #10b981; }
+    .wc2 { background: rgba(59,130,246,0.15); color: #3b82f6; }
+    .wc3 { background: rgba(245,158,11,0.15); color: #f59e0b; }
+    .wc4 { background: rgba(139,92,246,0.15); color: #8b5cf6; }
+
+    /* Microservices grid on right */
+    .ms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .ms-card {
+      padding: 0.6rem 0.75rem; border-radius: 8px; border: 1px solid;
+      font-size: 0.72rem;
+    }
+    .ms-name { font-weight: 700; margin-bottom: 3px; }
+    .ms-detail { font-size: 0.62rem; color: var(--text-muted); line-height: 1.4; }
+
+    /* Storage planes */
+    .plane-block {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 1.25rem; margin-bottom: 1rem;
+    }
+    .plane-title { font-size: 0.78rem; font-weight: 800; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+    .planes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .cp-block {
+      padding: 1rem; border-radius: 10px; border: 1px solid;
+    }
+    .cp-title { font-size: 0.75rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .cp-items { display: flex; flex-wrap: wrap; gap: 5px; }
+    .cp-item { font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-weight: 500; }
+
+    /* Conway's Law diagram */
+    .conway-section {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.75rem; margin-bottom: 2rem;
+    }
+    .conway-title { font-size: 1rem; font-weight: 800; text-align: center; margin-bottom: 0.5rem; }
+    .conway-subtitle { font-size: 0.78rem; color: var(--text-dim); text-align: center; max-width: 600px; margin: 0 auto 1.5rem; line-height: 1.55; }
+    .conway-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .conway-card {
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      padding: 1rem; border-radius: 12px; border: 2px solid;
+      transition: transform 0.2s;
+    }
+    .conway-card:hover { transform: translateY(-2px); }
+    .cc-num { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+    .cc-icon { font-size: 1.8rem; margin-bottom: 8px; }
+    .cc-team { font-size: 0.85rem; font-weight: 800; margin-bottom: 4px; }
+    .cc-service { font-size: 0.7rem; color: var(--text-dim); margin-bottom: 8px; }
+    .cc-arrow-down { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 4px; }
+    .cc-domain { font-size: 0.62rem; padding: 3px 10px; border-radius: 5px; font-weight: 700; }
+
+    /* Timeline CTA */
+    .timeline-cta {
+      background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.08));
+      border: 1px solid rgba(59,130,246,0.25); border-radius: 16px;
+      padding: 2rem; margin-bottom: 2rem;
+    }
+    .tc-title { font-size: 1.05rem; font-weight: 800; text-align: center; margin-bottom: 0.5rem; }
+    .tc-sub { font-size: 0.8rem; color: var(--text-dim); text-align: center; max-width: 600px; margin: 0 auto 1.5rem; line-height: 1.55; }
+    .tc-waves { display: flex; gap: 0; align-items: stretch; }
+    .tc-wave {
+      flex: 1; padding: 1rem; text-align: center; border-right: 1px solid var(--border);
+    }
+    .tc-wave:last-child { border-right: none; }
+    .tcw-num { font-size: 1.4rem; font-weight: 900; display: block; }
+    .tcw-name { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; margin-bottom: 6px; }
+    .tcw-dates { font-size: 0.62rem; color: var(--text-muted); margin-bottom: 8px; }
+    .tcw-focus { font-size: 0.68rem; color: var(--text-dim); line-height: 1.4; }
+    .tcw-status { font-size: 0.6rem; padding: 2px 8px; border-radius: 4px; font-weight: 700; display: inline-block; margin-top: 6px; }
+
+    /* Impact summary */
+    .impact-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    .impact-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.25rem; text-align: center;
+    }
+    .ic-before { font-size: 1.1rem; font-weight: 800; text-decoration: line-through; color: var(--accent5); display: block; }
+    .ic-arrow { font-size: 1.2rem; color: var(--text-muted); display: block; margin: 4px 0; }
+    .ic-after { font-size: 1.3rem; font-weight: 900; color: var(--accent3); display: block; margin-bottom: 8px; }
+    .ic-label { font-size: 0.7rem; color: var(--text-muted); }
+
+    /* CTA Bottom line */
+    .ig-cta {
+      background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(59,130,246,0.08));
+      border: 1px solid rgba(16,185,129,0.25); border-radius: 16px;
+      padding: 2rem; text-align: center;
+    }
+    .ig-cta h3 { font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .ig-cta p { font-size: 0.85rem; color: var(--text-dim); max-width: 700px; margin: 0 auto 1rem; line-height: 1.6; }
+    .ig-cta-pills { display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; }
+    .cta-pill { padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; border: 1px solid; }
+
+    footer { border-top: 1px solid var(--border); text-align: center; padding: 1.5rem; color: var(--text-muted); font-size: 0.75rem; margin-top: 2rem; }
+    footer strong { color: var(--text-dim); }
+
+    @media (max-width: 900px) {
+      .arch-compare { grid-template-columns: 1fr; }
+      .arch-arrow { flex-direction: row; padding: 1rem 0; }
+      .conway-grid { grid-template-columns: 1fr 1fr; }
+      .impact-grid { grid-template-columns: 1fr 1fr; }
+      .tc-waves { flex-wrap: wrap; }
+      .tc-wave { flex-basis: 50%; border-bottom: 1px solid var(--border); }
+    }
+    @media (max-width: 640px) {
+      nav { display: none; }
+      .ig-title { font-size: 1.6rem; }
+      .ig-stats { gap: 1.5rem; }
+      .conway-grid { grid-template-columns: 1fr; }
+      .planes-grid { grid-template-columns: 1fr; }
+      .impact-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🗄️</div>
+    <div class="logo-text">
+      <h1>Technical Strategy Hub</h1>
+      <p>Message Archiver Platform · All-Hands Infographic</p>
+    </div>
+  </div>
+  <nav>
+    <a href="index.html">Overview</a>
+    <a href="team-topology.html">Team Topology</a>
+    <a href="wave-model.html">Wave Model</a>
+    <a href="strategy-dashboard.html">Strategy Dashboard</a>
+    <a href="infographic.html" class="active">All-Hands Infographic</a>
+  </nav>
+</header>
+
+<div class="infographic">
+
+  <!-- ══════════ HEADER ══════════ -->
+  <div class="ig-header">
+    <div class="ig-header-inner">
+      <p class="ig-eyebrow">All-Hands Presentation · Engineering Modernization Initiative 2025–2027</p>
+      <div class="ig-title">
+        <div class="t1">From Monolith to Cloud-Native:</div>
+        <div class="t2">Modernizing 60 Petabytes Without Blinking</div>
+      </div>
+      <p class="ig-sub">
+        How we are safely decomposing a decade-old enterprise archiving monolith, restructuring 6 engineering teams
+        to eliminate Conway's Law bottlenecks, and cutting cloud COGS by 34% — all while maintaining
+        99.99% compliance uptime across 60PB of immutable archive data.
+      </p>
+      <div class="ig-stats">
+        <div class="ig-stat"><span class="is-val" style="color:var(--accent)">60 PB</span><span class="is-lbl">Archive Scale</span></div>
+        <div class="ig-stat"><span class="is-val" style="color:var(--accent2)">6 Teams</span><span class="is-lbl">Domain Squads</span></div>
+        <div class="ig-stat"><span class="is-val" style="color:var(--accent3)">60 Eng</span><span class="is-lbl">Engineers</span></div>
+        <div class="ig-stat"><span class="is-val" style="color:var(--accent4)">5 Waves</span><span class="is-lbl">Modernization</span></div>
+        <div class="ig-stat"><span class="is-val" style="color:var(--accent5)">−34%</span><span class="is-lbl">COGS Target</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ ARCHITECTURE: FROM → TO ══════════ -->
+  <div class="ig-section-label">The Architecture Transformation</div>
+
+  <div class="arch-compare">
+    <!-- LEFT: LEGACY -->
+    <div class="arch-side legacy">
+      <div class="arch-title red">❌ The Legacy Monolith</div>
+      <div class="arch-subtitle" style="color:#ef444488;">Single JVM process · Shared database · 1.2M LOC</div>
+
+      <div class="mono-block">
+        <div class="mono-block-title">🏛️ MONOLITH ARCHIVER v1</div>
+        <div class="mono-row">
+          <span class="mono-chip">SMTP Adapter</span>
+          <span class="mono-chip">IMAP Parser</span>
+          <span class="mono-chip">REST API</span>
+        </div>
+        <div class="mono-row">
+          <span class="mono-chip">Ingestion Workers</span>
+          <span class="mono-chip">ES Indexer</span>
+          <span class="mono-chip">Retention Jobs</span>
+        </div>
+        <div class="mono-row">
+          <span class="mono-chip">Legal Hold</span>
+          <span class="mono-chip">E-Discovery</span>
+          <span class="mono-chip">Tenant Mgmt</span>
+        </div>
+        <div class="mono-row">
+          <span class="mono-chip">Compliance Reports</span>
+          <span class="mono-chip">Search API</span>
+        </div>
+        <div style="text-align:center;margin-top:0.75rem;font-size:0.7rem;color:#ef4444a0;font-weight:600;">▼ All in one process · Shared Oracle DB ▼</div>
+        <div style="padding:8px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:6px;text-align:center;font-size:0.7rem;color:#ef4444a0;margin-top:4px;">🗄️ Oracle RDS (shared schema, 50+ tables)</div>
+        <div style="padding:8px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:6px;text-align:center;font-size:0.7rem;color:#ef4444a0;margin-top:4px;">💾 S3 Flat Bucket (untiered, untagged)</div>
+      </div>
+
+      <div class="legacy-pains">
+        <div class="mono-pain">⚡ 80–200ms ingest-index mutex lock</div>
+        <div class="mono-pain">🔄 18h weekly full index rebuild job</div>
+        <div class="mono-pain">💸 $24,800/day unoptimized COGS</div>
+        <div class="mono-pain">🔒 4.2-day lead time for changes</div>
+        <div class="mono-pain">🏋️ 180+ critical CVEs in dependencies</div>
+        <div class="mono-pain">😱 Full-org on-call for every incident</div>
+      </div>
+    </div>
+
+    <!-- MIDDLE: ARROW -->
+    <div class="arch-arrow">
+      <div class="arrow-body">
+        <div class="arrow-label">Strangler<br/>Fig Pattern</div>
+        <div class="arrow-icon">🌊</div>
+        <div class="arrow-tag">2025–2027</div>
+        <div style="margin-top:8px;width:100%;">
+          <div class="wave-chips">
+            <div class="wc wc0">W0 Foundation</div>
+            <div class="wc wc1">W1 Ingestion</div>
+            <div class="wc wc2">W2 Search ●</div>
+            <div class="wc wc3">W3 Data Plane</div>
+            <div class="wc wc4">W4 Deprecate</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: MODERN -->
+    <div class="arch-side modern">
+      <div class="arch-title green">✅ Cloud-Native Microservices</div>
+      <div class="arch-subtitle" style="color:#10b98188;">6 Domain Services · Event Mesh · S3 Tiered</div>
+
+      <div class="ms-grid">
+        <div class="ms-card" style="border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.06);">
+          <div class="ms-name" style="color:#ef4444;">📥 T1 Ingestion</div>
+          <div class="ms-detail">Kafka MSK · ECS Fargate Connectors · S3 Raw Zone</div>
+        </div>
+        <div class="ms-card" style="border-color:rgba(99,102,241,0.3);background:rgba(99,102,241,0.06);">
+          <div class="ms-name" style="color:#6366f1;">🔍 T2 Search</div>
+          <div class="ms-detail">OpenSearch Serverless · GraphQL API · ILM</div>
+        </div>
+        <div class="ms-card" style="border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.06);">
+          <div class="ms-name" style="color:#10b981;">💰 T3 FinOps</div>
+          <div class="ms-detail">S3 Lifecycle Policies · Glacier Deep Archive · COGS</div>
+        </div>
+        <div class="ms-card" style="border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.06);">
+          <div class="ms-name" style="color:#f59e0b;">⚖️ T4 Compliance</div>
+          <div class="ms-detail">Legal Hold API · WORM · E-Discovery · SEC 17a-4</div>
+        </div>
+        <div class="ms-card" style="border-color:rgba(59,130,246,0.3);background:rgba(59,130,246,0.06);">
+          <div class="ms-name" style="color:#3b82f6;">🔌 T5 Control</div>
+          <div class="ms-detail">API Gateway · RBAC/OPA · Tenant Config</div>
+        </div>
+        <div class="ms-card" style="border-color:rgba(139,92,246,0.3);background:rgba(139,92,246,0.06);">
+          <div class="ms-name" style="color:#8b5cf6;">⚙️ T6 Platform</div>
+          <div class="ms-detail">EKS · Istio · GitHub Actions · Backstage IDP</div>
+        </div>
+      </div>
+
+      <div style="margin-top:0.75rem;">
+        <div class="planes-grid">
+          <div class="cp-block" style="border-color:rgba(59,130,246,0.3);background:rgba(59,130,246,0.05);">
+            <div class="cp-title" style="color:var(--accent);">🔧 Control Plane</div>
+            <div class="cp-items">
+              <span class="cp-item" style="background:rgba(59,130,246,0.12);color:#60a5fa;">API Gateway</span>
+              <span class="cp-item" style="background:rgba(59,130,246,0.12);color:#60a5fa;">Tenant Config</span>
+              <span class="cp-item" style="background:rgba(59,130,246,0.12);color:#60a5fa;">RBAC</span>
+              <span class="cp-item" style="background:rgba(59,130,246,0.12);color:#60a5fa;">Provisioning</span>
+            </div>
+          </div>
+          <div class="cp-block" style="border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.05);">
+            <div class="cp-title" style="color:var(--accent3);">📦 Data Plane</div>
+            <div class="cp-items">
+              <span class="cp-item" style="background:rgba(16,185,129,0.12);color:#34d399;">S3 Tiered</span>
+              <span class="cp-item" style="background:rgba(16,185,129,0.12);color:#34d399;">Glacier</span>
+              <span class="cp-item" style="background:rgba(16,185,129,0.12);color:#34d399;">Kafka MSK</span>
+              <span class="cp-item" style="background:rgba(16,185,129,0.12);color:#34d399;">PresignedURLs</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ CONWAY'S LAW IN ACTION ══════════ -->
+  <div class="ig-section-label">Conway's Law in Action — Your Team IS Your Architecture</div>
+
+  <div class="conway-section">
+    <div class="conway-title">🔬 The Inverse Conway Maneuver</div>
+    <div class="conway-subtitle">
+      We don't design a new architecture and hope the org follows. We <strong>first reshape the org</strong> to match
+      the architecture we want — then the system design emerges naturally from team boundaries.
+      Each team owns one bounded context. Their API contract <em>is</em> the service interface.
+    </div>
+
+    <div class="conway-grid">
+      <div class="conway-card" style="border-color:rgba(239,68,68,0.35);background:rgba(239,68,68,0.06);">
+        <div class="cc-num" style="color:#ef4444;">Team 1 · 10 Engineers</div>
+        <div class="cc-icon">📥</div>
+        <div class="cc-team" style="color:#ef4444;">Ingestion Pipeline</div>
+        <div class="cc-service">Owns: Kafka MSK, SMTP/IMAP Connectors, S3 Raw Zone</div>
+        <div class="cc-arrow-down">↕️</div>
+        <div class="cc-service" style="font-size:0.62rem;color:var(--text-muted);">Publishes: <strong>raw-message.v1</strong> Avro topic</div>
+        <div class="cc-domain" style="background:rgba(239,68,68,0.15);color:#ef4444;">Message Intake Domain</div>
+      </div>
+
+      <div class="conway-card" style="border-color:rgba(99,102,241,0.35);background:rgba(99,102,241,0.06);">
+        <div class="cc-num" style="color:#6366f1;">Team 2 · 12 Engineers</div>
+        <div class="cc-icon">🔍</div>
+        <div class="cc-team" style="color:#6366f1;">Search &amp; Indexing</div>
+        <div class="cc-service">Owns: OpenSearch Serverless, ILM Policies, Query Engine</div>
+        <div class="cc-arrow-down">↕️</div>
+        <div class="cc-service" style="font-size:0.62rem;color:var(--text-muted);">Publishes: <strong>search.v2</strong> GraphQL API</div>
+        <div class="cc-domain" style="background:rgba(99,102,241,0.15);color:#6366f1;">Search Intelligence Domain</div>
+      </div>
+
+      <div class="conway-card" style="border-color:rgba(16,185,129,0.35);background:rgba(16,185,129,0.06);">
+        <div class="cc-num" style="color:#10b981;">Team 3 · 8 Engineers</div>
+        <div class="cc-icon">💰</div>
+        <div class="cc-team" style="color:#10b981;">Storage &amp; FinOps</div>
+        <div class="cc-service">Owns: S3 Lifecycle, Glacier Policies, COGS Attribution</div>
+        <div class="cc-arrow-down">↕️</div>
+        <div class="cc-service" style="font-size:0.62rem;color:var(--text-muted);">Publishes: <strong>storage-events.v1</strong> SNS</div>
+        <div class="cc-domain" style="background:rgba(16,185,129,0.15);color:#10b981;">Cost Engineering Domain</div>
+      </div>
+
+      <div class="conway-card" style="border-color:rgba(245,158,11,0.35);background:rgba(245,158,11,0.06);">
+        <div class="cc-num" style="color:#f59e0b;">Team 4 · 10 Engineers</div>
+        <div class="cc-icon">⚖️</div>
+        <div class="cc-team" style="color:#f59e0b;">E-Discovery &amp; Compliance</div>
+        <div class="cc-service">Owns: Legal Hold, WORM, E-Discovery Engine, Audit Log</div>
+        <div class="cc-arrow-down">↕️</div>
+        <div class="cc-service" style="font-size:0.62rem;color:var(--text-muted);">Publishes: <strong>legal-hold.v1</strong> REST API</div>
+        <div class="cc-domain" style="background:rgba(245,158,11,0.15);color:#f59e0b;">Legal &amp; Regulatory Domain</div>
+      </div>
+
+      <div class="conway-card" style="border-color:rgba(59,130,246,0.35);background:rgba(59,130,246,0.06);">
+        <div class="cc-num" style="color:#3b82f6;">Team 5 · 10 Engineers</div>
+        <div class="cc-icon">🔌</div>
+        <div class="cc-team" style="color:#3b82f6;">Control Plane &amp; API</div>
+        <div class="cc-service">Owns: API Gateway, Multi-Tenancy, RBAC/OIDC, Provisioning</div>
+        <div class="cc-arrow-down">↕️</div>
+        <div class="cc-service" style="font-size:0.62rem;color:var(--text-muted);">Publishes: <strong>tenant-api.v3</strong> REST/OpenAPI</div>
+        <div class="cc-domain" style="background:rgba(59,130,246,0.15);color:#3b82f6;">Platform Control Domain</div>
+      </div>
+
+      <div class="conway-card" style="border-color:rgba(139,92,246,0.35);background:rgba(139,92,246,0.06);">
+        <div class="cc-num" style="color:#8b5cf6;">Team 6 · 10 Engineers</div>
+        <div class="cc-icon">⚙️</div>
+        <div class="cc-team" style="color:#8b5cf6;">Platform Engineering</div>
+        <div class="cc-service">Owns: EKS Fleet, Istio, CI/CD, Backstage IDP, Observability</div>
+        <div class="cc-arrow-down">↕️</div>
+        <div class="cc-service" style="font-size:0.62rem;color:var(--text-muted);">Provides: <strong>golden-path.v2</strong> self-service</div>
+        <div class="cc-domain" style="background:rgba(139,92,246,0.15);color:#8b5cf6;">Internal Platform Domain</div>
+      </div>
+    </div>
+
+    <div style="margin-top:1.5rem;padding:1rem;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:10px;font-size:0.78rem;color:var(--text-dim);text-align:center;line-height:1.6;">
+      <strong style="color:var(--accent);">The Cardinal Rule:</strong> No team reads another team's database. No team calls another team's internal service.
+      Every cross-domain interaction flows through a <strong>versioned, published API contract</strong>. This is how Conway's Law works <em>for</em> us, not against us.
+    </div>
+  </div>
+
+  <!-- ══════════ WAVE TIMELINE ══════════ -->
+  <div class="ig-section-label">The Wave Modernization Roadmap</div>
+
+  <div class="timeline-cta">
+    <div class="tc-title">Strangler Fig in 5 Waves — No Big Bang, No Downtime</div>
+    <div class="tc-sub">Every wave extracts one bounded context, validates it against the monolith in parallel, then cuts traffic over. The monolith shrinks. The microservices grow. Compliance never pauses.</div>
+    <div class="tc-waves">
+      <div class="tc-wave">
+        <span class="tcw-num" style="color:#6366f1;">W0</span>
+        <div class="tcw-name" style="color:#6366f1;">Foundation</div>
+        <div class="tcw-dates">Q1–Q2 2025</div>
+        <div class="tcw-focus">OTel, IaC, AWS LZ, Team Re-Org, S3 IT</div>
+        <span class="tcw-status" style="background:rgba(16,185,129,0.15);color:#10b981;">✓ Complete</span>
+      </div>
+      <div class="tc-wave">
+        <span class="tcw-num" style="color:#10b981;">W1</span>
+        <div class="tcw-name" style="color:#10b981;">Ingestion</div>
+        <div class="tcw-dates">Q3–Q4 2025</div>
+        <div class="tcw-focus">Kafka MSK, Connector Services, S3 restructure</div>
+        <span class="tcw-status" style="background:rgba(16,185,129,0.15);color:#10b981;">✓ Complete</span>
+      </div>
+      <div class="tc-wave" style="background:rgba(59,130,246,0.06);border-radius:8px;">
+        <span class="tcw-num" style="color:#3b82f6;">W2</span>
+        <div class="tcw-name" style="color:#3b82f6;">Search Plane</div>
+        <div class="tcw-dates">Q1–Q2 2026</div>
+        <div class="tcw-focus">OpenSearch Serverless, API Gateway, Dual-Write</div>
+        <span class="tcw-status" style="background:rgba(59,130,246,0.15);color:#3b82f6;animation:pulse 1.5s infinite;">● In Progress</span>
+      </div>
+      <div class="tc-wave">
+        <span class="tcw-num" style="color:#f59e0b;">W3</span>
+        <div class="tcw-name" style="color:#f59e0b;">Data Plane</div>
+        <div class="tcw-dates">Q3–Q4 2026</div>
+        <div class="tcw-focus">Glacier migration, Control/Data plane split, OPA</div>
+        <span class="tcw-status" style="background:rgba(245,158,11,0.12);color:#f59e0b;">Planned</span>
+      </div>
+      <div class="tc-wave">
+        <span class="tcw-num" style="color:#8b5cf6;">W4</span>
+        <div class="tcw-name" style="color:#8b5cf6;">Deprecation</div>
+        <div class="tcw-dates">Q1–Q2 2027</div>
+        <div class="tcw-focus">Monolith off, EventBridge mesh, Chaos validation</div>
+        <span class="tcw-status" style="background:rgba(139,92,246,0.12);color:#8b5cf6;">Planned</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ BEFORE / AFTER IMPACT ══════════ -->
+  <div class="ig-section-label">Before / After — What This Means for Every Engineer</div>
+
+  <div class="impact-grid">
+    <div class="impact-card">
+      <span class="ic-before">$24,800/day</span>
+      <span class="ic-arrow">↓</span>
+      <span class="ic-after">$14,200/day</span>
+      <div class="ic-label">Cloud COGS reduction<br/>(−43% by Wave 4)</div>
+    </div>
+    <div class="impact-card">
+      <span class="ic-before">4.2 days</span>
+      <span class="ic-arrow">↓</span>
+      <span class="ic-after">38 min</span>
+      <div class="ic-label">Lead time for changes<br/>(64× faster deployments)</div>
+    </div>
+    <div class="impact-card">
+      <span class="ic-before">18% CFR</span>
+      <span class="ic-arrow">↓</span>
+      <span class="ic-after">3.1% CFR</span>
+      <div class="ic-label">Change failure rate<br/>(6× more reliable)</div>
+    </div>
+    <div class="impact-card">
+      <span class="ic-before">6.4 hr MTTR</span>
+      <span class="ic-arrow">↓</span>
+      <span class="ic-after">12 min MTTR</span>
+      <div class="ic-label">Mean time to restore<br/>(32× faster recovery)</div>
+    </div>
+  </div>
+
+  <!-- ══════════ CLOSING CTA ══════════ -->
+  <div class="ig-cta">
+    <h3>🚀 This Is Not Just a Cloud Migration. This Is an Engineering Transformation.</h3>
+    <p>
+      We are not moving the monolith to the cloud. We are rebuilding how this organization designs, owns,
+      and operates software — at 60 petabyte scale. Every engineer in this room owns a piece of this transformation.
+      Your team's domain is your contract with the rest of the organization. Your API is your architecture.
+    </p>
+    <div class="ig-cta-pills">
+      <span class="cta-pill" style="background:rgba(59,130,246,0.12);color:var(--accent);border-color:rgba(59,130,246,0.3);">🏗️ Read: Team Topology</span>
+      <span class="cta-pill" style="background:rgba(139,92,246,0.12);color:var(--accent2);border-color:rgba(139,92,246,0.3);">🌊 Read: Wave Model</span>
+      <span class="cta-pill" style="background:rgba(16,185,129,0.12);color:var(--accent3);border-color:rgba(16,185,129,0.3);">📊 See: Live Dashboard</span>
+      <span class="cta-pill" style="background:rgba(245,158,11,0.12);color:var(--accent4);border-color:rgba(245,158,11,0.3);">💬 Questions? Reach VP Architecture</span>
+    </div>
+  </div>
+
+</div><!-- /infographic -->
+
+<footer>
+  <strong>Technical Strategy Hub — Output 4: All-Hands Infographic</strong> · Message Archiver Platform · Confidential · Internal Use Only · &copy; 2026 Enterprise Engineering
+</footer>
+</body>
+</html>

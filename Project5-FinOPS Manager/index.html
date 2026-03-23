@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>FinOps Manager | Ashok Sakthivel</title>
+  <style>
+    :root {
+      --bg: #05080f; --surface: #0d1117; --border: #1e2a3a; --muted: #6b7a99;
+      --text: #e2e8f0; --blue: #3b82f6; --indigo: #6366f1; --green: #10b981;
+      --amber: #f59e0b; --rose: #f43f5e; --purple: #a855f7; --teal: #14b8a6;
+      --cyan: #06b6d4; --orange: #f97316; --sidebar-w: 220px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;display:flex;min-height:100vh}
+    /* SIDEBAR */
+    .sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);position:fixed;top:0;left:0;height:100vh;overflow-y:auto;padding:24px 0;z-index:100}
+    .sb-brand{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}
+    .sb-brand .logo{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--amber);text-transform:uppercase}
+    .sb-brand .name{font-size:13px;color:var(--muted);margin-top:4px}
+    .sb-nav a{display:block;padding:8px 20px;font-size:12px;color:var(--muted);text-decoration:none;border-left:2px solid transparent;transition:.2s}
+    .sb-nav a:hover{color:var(--text);background:rgba(255,255,255,.03)}
+    .sb-nav a.active{color:var(--amber);border-left-color:var(--amber);background:rgba(245,158,11,.06)}
+    .sb-section{padding:8px 20px 4px;font-size:10px;letter-spacing:1.5px;color:var(--border);text-transform:uppercase;margin-top:8px}
+    /* MAIN */
+    .main{margin-left:var(--sidebar-w);flex:1;padding:0 40px 80px}
+    section{padding:60px 0;border-bottom:1px solid var(--border)}
+    section:last-child{border-bottom:none}
+    .section-tag{font-size:10px;letter-spacing:2px;color:var(--amber);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+    h1{font-size:36px;font-weight:800;line-height:1.2;margin-bottom:12px}
+    h2{font-size:22px;font-weight:700;margin-bottom:20px}
+    h3{font-size:15px;font-weight:600;margin-bottom:10px}
+    p{color:var(--muted);line-height:1.7;font-size:14px}
+    /* HERO */
+    .hero-meta{display:flex;gap:24px;margin-top:24px;flex-wrap:wrap}
+    .hero-pill{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--amber)}
+    /* KPI GRID */
+    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:24px}
+    .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;border-top:3px solid}
+    .kpi-card .kpi-label{font-size:11px;color:var(--muted);letter-spacing:.5px;margin-bottom:8px}
+    .kpi-card .kpi-val{font-size:28px;font-weight:800}
+    .kpi-card .kpi-sub{font-size:11px;color:var(--muted);margin-top:4px}
+    /* PROBLEM GRID */
+    .problem-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:24px}
+    .problem-cell{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
+    .problem-cell ul{padding-left:16px;margin-top:10px}
+    .problem-cell li{color:var(--muted);font-size:13px;margin-bottom:6px;line-height:1.5}
+    .ph{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+    .ph-rose{color:var(--rose)} .ph-amber{color:var(--amber)} .ph-green{color:var(--green)}
+    /* ACCORDION */
+    .phase-list{margin-top:24px;display:flex;flex-direction:column;gap:10px}
+    .phase-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+    .phase-hd{display:flex;align-items:center;gap:14px;padding:16px 20px;cursor:pointer;user-select:none}
+    .phase-hd:hover{background:rgba(255,255,255,.02)}
+    .phase-num{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+    .phase-title{flex:1;font-size:14px;font-weight:600}
+    .phase-badge{font-size:11px;background:rgba(255,255,255,.06);border-radius:12px;padding:3px 10px;color:var(--muted)}
+    .phase-arrow{color:var(--muted);transition:.25s;font-size:16px}
+    .phase-item.open .phase-arrow{transform:rotate(90deg)}
+    .phase-body{max-height:0;overflow:hidden;transition:max-height .35s ease}
+    .phase-item.open .phase-body{max-height:600px}
+    .phase-bd-inner{padding:0 20px 20px;border-top:1px solid var(--border)}
+    .phase-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+    .phase-col h4{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+    .phase-col ul{padding-left:14px}
+    .phase-col li{font-size:13px;color:var(--muted);margin-bottom:5px;line-height:1.5}
+    /* PORTAL MOCKUP */
+    .portal-frame{background:#0a0f1a;border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-top:24px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+    .portal-chrome{background:#111827;padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+    .dot{width:10px;height:10px;border-radius:50%}
+    .dot-r{background:#ff5f57} .dot-y{background:#febc2e} .dot-g{background:#28c840}
+    .portal-url{background:rgba(255,255,255,.05);border-radius:6px;padding:4px 12px;font-size:11px;color:var(--muted);margin-left:8px;flex:1}
+    .portal-inner{display:grid;grid-template-columns:180px 1fr;min-height:340px}
+    .portal-sb{background:#080d16;border-right:1px solid var(--border);padding:16px 0}
+    .portal-sb .p-logo{padding:0 14px 14px;font-size:11px;font-weight:700;color:var(--amber);border-bottom:1px solid var(--border);margin-bottom:10px}
+    .portal-sb a{display:block;padding:6px 14px;font-size:11px;color:var(--muted);border-radius:4px;margin:1px 6px}
+    .portal-sb a.active{background:rgba(245,158,11,.1);color:var(--amber)}
+    .portal-content{padding:20px;overflow:hidden}
+    .p-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+    .p-kpi{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center}
+    .p-kpi .v{font-size:20px;font-weight:800;color:var(--amber)}
+    .p-kpi .l{font-size:10px;color:var(--muted);margin-top:4px}
+    .p-chart-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .p-chart{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:8px;padding:12px}
+    .p-chart .ct{font-size:10px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+    /* BAR CHARTS */
+    .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+    .bar-lbl{font-size:10px;color:var(--muted);width:60px;flex-shrink:0;text-align:right}
+    .bar-track{flex:1;background:rgba(255,255,255,.05);border-radius:3px;height:8px;overflow:hidden}
+    .bar-fill{height:100%;border-radius:3px}
+    /* SPARKLINE */
+    .sparkline-row{display:flex;gap:3px;align-items:flex-end;height:32px}
+    .sp-bar{width:8px;border-radius:2px 2px 0 0;background:var(--amber)}
+    /* PANE SPECS */
+    .pane-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:24px}
+    .pane-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
+    .pane-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+    .pane-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+    .pane-title{font-size:13px;font-weight:600}
+    .pane-body{font-size:12px;color:var(--muted);line-height:1.6}
+    .pane-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+    .tag{background:rgba(255,255,255,.06);border-radius:10px;padding:2px 8px;font-size:10px;color:var(--muted)}
+    /* VIZ LAB */
+    .viz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;margin-top:24px}
+    .viz-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+    .viz-title{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+    /* RISK TABLE */
+    .risk-table{width:100%;border-collapse:collapse;margin-top:24px;font-size:13px}
+    .risk-table th{background:var(--surface);padding:10px 14px;text-align:left;font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
+    .risk-table td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
+    .risk-name{font-weight:600;font-size:13px;margin-bottom:3px}
+    .risk-desc{font-size:11px;color:var(--muted)}
+    .sev{border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700}
+    .sev-h{background:rgba(244,63,94,.15);color:var(--rose)}
+    .sev-m{background:rgba(245,158,11,.15);color:var(--amber)}
+    .sev-l{background:rgba(16,185,129,.15);color:var(--green)}
+    .mitigation{font-size:12px;color:var(--muted);line-height:1.6}
+    /* STRATEGY GRID */
+    .strat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:24px}
+    .strat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
+    .strat-card h4{font-size:13px;font-weight:600;margin-bottom:8px}
+    .strat-card p{font-size:12px}
+    .badge{display:inline-block;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;margin-bottom:8px}
+  </style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sb-brand">
+    <div class="logo">Project 5</div>
+    <div class="name">FinOps Manager</div>
+  </div>
+  <div class="sb-nav" id="sb-nav">
+    <div class="sb-section">Overview</div>
+    <a href="#challenge">§00 Challenge</a>
+    <a href="#kpis">§01 North Star KPIs</a>
+    <div class="sb-section">Strategy</div>
+    <a href="#roadmap">§02 90-Day Roadmap</a>
+    <a href="#portal">§03 FinOps Portal</a>
+    <a href="#panes">§04 Pane Specs</a>
+    <a href="#cost-strategy">§05 Cost Strategy</a>
+    <div class="sb-section">Insights</div>
+    <a href="#viz">§06 Visualization Lab</a>
+    <a href="#antipatterns">§07 Anti-Pattern Registry</a>
+  </div>
+</nav>
+
+<main class="main">
+
+  <!-- §00 CHALLENGE -->
+  <section id="challenge">
+    <div class="section-tag">§00 — Challenge</div>
+    <h1>Cloud FinOps<br><span style="color:var(--amber)">From Cost Centre to Value Engine</span></h1>
+    <p style="max-width:660px;margin-top:12px">Mimecast's AWS bill is growing faster than revenue. Without real-time cost attribution, rightsizing discipline, and a culture of cost ownership, engineering teams build without financial accountability — turning every sprint into invisible spend. This FinOps practice changes that.</p>
+    <div class="hero-meta">
+      <div class="hero-pill">Ashok Sakthivel · Sr. Director of Engineering</div>
+      <div class="hero-pill">Mimecast · Bangalore Hub</div>
+      <div class="hero-pill">April – June 2026</div>
+      <div class="hero-pill">Target: 35% Cloud Savings</div>
+    </div>
+    <div class="problem-grid">
+      <div class="problem-cell">
+        <span class="ph ph-rose">⚠ Current State</span>
+        <ul>
+          <li>Cloud spend growing 28% YoY with no unit economics baseline</li>
+          <li>Resource tagging coverage below 40% — no cost attribution</li>
+          <li>Dev/test environments running 24×7 with zero auto-shutdown</li>
+          <li>70% On-Demand pricing — Reserved Instance & Savings Plans underutilised</li>
+          <li>Storage costs invisible; cold data in hot S3 Standard</li>
+        </ul>
+      </div>
+      <div class="problem-cell">
+        <span class="ph ph-amber">⚡ Root Causes</span>
+        <ul>
+          <li><strong>No Cost Ownership:</strong> Engineers optimise features, not bills</li>
+          <li><strong>Tag Debt:</strong> 60% of resources have no cost-allocation tags</li>
+          <li><strong>Zombie Resources:</strong> Unattached EBS volumes, idle EC2s, orphaned snapshots</li>
+          <li><strong>No Showback:</strong> Teams never see their cloud bill impact</li>
+          <li><strong>Missing Anomaly Alerts:</strong> Spend spikes go undetected for weeks</li>
+        </ul>
+      </div>
+      <div class="problem-cell">
+        <span class="ph ph-green">✅ Target State</span>
+        <ul>
+          <li>Every team has real-time cost visibility dashboards (showback → chargeback)</li>
+          <li>100% resource tagging with enforced AWS Tag Policies</li>
+          <li>Dev/test auto-scheduled — zero idle spend after 18:00 local</li>
+          <li>RI + Savings Plans coverage ≥80% for steady-state workloads</li>
+          <li>Unit cost ($/GB archived) reduced 40% by end of Q2 2026</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- §01 KPIS -->
+  <section id="kpis">
+    <div class="section-tag">§01 — North Star KPIs</div>
+    <h2>FinOps Success Metrics</h2>
+    <div class="kpi-grid">
+      <div class="kpi-card" style="border-top-color:var(--amber)">
+        <div class="kpi-label">CLOUD SAVINGS RATE</div>
+        <div class="kpi-val" style="color:var(--amber)">≥35%</div>
+        <div class="kpi-sub">Total AWS spend reduction vs baseline</div>
+      </div>
+      <div class="kpi-card" style="border-top-color:var(--green)">
+        <div class="kpi-label">UNIT COST ($/GB)</div>
+        <div class="kpi-val" style="color:var(--green)">-40%</div>
+        <div class="kpi-sub">Cost per GB archived — FinOps north star</div>
+      </div>
+      <div class="kpi-card" style="border-top-color:var(--blue)">
+        <div class="kpi-label">RI/SP COVERAGE</div>
+        <div class="kpi-val" style="color:var(--blue)">≥80%</div>
+        <div class="kpi-sub">Steady-state workloads on commitments</div>
+      </div>
+      <div class="kpi-card" style="border-top-color:var(--purple)">
+        <div class="kpi-label">TAGGING COVERAGE</div>
+        <div class="kpi-val" style="color:var(--purple)">100%</div>
+        <div class="kpi-sub">All resources tagged with cost-allocation keys</div>
+      </div>
+      <div class="kpi-card" style="border-top-color:var(--teal)">
+        <div class="kpi-label">BUDGET VARIANCE</div>
+        <div class="kpi-val" style="color:var(--teal)">≤5%</div>
+        <div class="kpi-sub">Monthly forecast accuracy</div>
+      </div>
+      <div class="kpi-card" style="border-top-color:var(--rose)">
+        <div class="kpi-label">ZOMBIE RESOURCES</div>
+        <div class="kpi-val" style="color:var(--rose)">0</div>
+        <div class="kpi-sub">Unattached EBS / idle EC2 / orphaned snapshots</div>
+      </div>
+      <div class="kpi-card" style="border-top-color:var(--cyan)">
+        <div class="kpi-label">ANOMALY DETECTION</div>
+        <div class="kpi-val" style="color:var(--cyan)">≤2h</div>
+        <div class="kpi-sub">Time-to-alert on spend spike ≥15% above baseline</div>
+      </div>
+      <div class="kpi-card" style="border-top-color:var(--orange)">
+        <div class="kpi-label">DEV/TEST IDLE SPEND</div>
+        <div class="kpi-val" style="color:var(--orange)">-80%</div>
+        <div class="kpi-sub">Auto-shutdown after 18:00 — nights + weekends</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §02 ROADMAP -->
+  <section id="roadmap">
+    <div class="section-tag">§02 — 90-Day Roadmap</div>
+    <h2>Four-Phase FinOps Transformation</h2>
+    <div class="phase-list">
+      <div class="phase-item open">
+        <div class="phase-hd" onclick="togglePhase(this)">
+          <div class="phase-num" style="background:rgba(245,158,11,.15);color:var(--amber)">1</div>
+          <div class="phase-title">Phase 1 — Visibility  <span style="color:var(--muted);font-weight:400;font-size:12px">Days 0–30</span></div>
+          <div class="phase-badge">Foundation</div>
+          <div class="phase-arrow">›</div>
+        </div>
+        <div class="phase-body">
+          <div class="phase-bd-inner">
+            <div class="phase-cols">
+              <div class="phase-col">
+                <h4>Deliverables</h4>
+                <ul>
+                  <li>AWS Cost Explorer + Cost & Usage Report (CUR) setup</li>
+                  <li>Enforce Tag Policy: env, team, product, cost-centre, owner</li>
+                  <li>Showback dashboards per team in AWS QuickSight</li>
+                  <li>Baseline unit cost ($/GB, $/user, $/request) established</li>
+                  <li>Anomaly detection rules live in AWS Cost Anomaly Detection</li>
+                </ul>
+              </div>
+              <div class="phase-col">
+                <h4>Success Criteria</h4>
+                <ul>
+                  <li>100% resources tagged within 30 days</li>
+                  <li>Every product team has a spend dashboard bookmarked</li>
+                  <li>Anomaly alerts fired at least once (proves the system works)</li>
+                  <li>Zombie resource audit complete — delete list approved</li>
+                  <li>FinOps Slack channel #cloud-cost-ops live with daily digest</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-item">
+        <div class="phase-hd" onclick="togglePhase(this)">
+          <div class="phase-num" style="background:rgba(99,102,241,.15);color:var(--indigo)">2</div>
+          <div class="phase-title">Phase 2 — Optimisation  <span style="color:var(--muted);font-weight:400;font-size:12px">Days 31–60</span></div>
+          <div class="phase-badge">Savings</div>
+          <div class="phase-arrow">›</div>
+        </div>
+        <div class="phase-body">
+          <div class="phase-bd-inner">
+            <div class="phase-cols">
+              <div class="phase-col">
+                <h4>Deliverables</h4>
+                <ul>
+                  <li>EC2 + RDS rightsizing — AWS Compute Optimizer recommendations actioned</li>
+                  <li>Reserved Instances purchased for steady-state DB fleet</li>
+                  <li>S3 Intelligent-Tiering applied to all buckets ≥100GB</li>
+                  <li>Dev/test auto-shutdown Lambda schedules deployed (18:00–08:00 + weekends)</li>
+                  <li>Delete approved zombie resources — EBS, snapshots, unattached ENIs</li>
+                </ul>
+              </div>
+              <div class="phase-col">
+                <h4>Success Criteria</h4>
+                <ul>
+                  <li>Dev/test idle spend reduced ≥50% in first 30 days</li>
+                  <li>S3 storage costs drop ≥20% with tiering</li>
+                  <li>EC2 rightsizing delivers ≥15% compute savings</li>
+                  <li>RI coverage reaches 60% steady-state EC2</li>
+                  <li>Zombie cleanup saves ≥$50K/month</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-item">
+        <div class="phase-hd" onclick="togglePhase(this)">
+          <div class="phase-num" style="background:rgba(16,185,129,.15);color:var(--green)">3</div>
+          <div class="phase-title">Phase 3 — Governance  <span style="color:var(--muted);font-weight:400;font-size:12px">Days 61–90</span></div>
+          <div class="phase-badge">Policy</div>
+          <div class="phase-arrow">›</div>
+        </div>
+        <div class="phase-body">
+          <div class="phase-bd-inner">
+            <div class="phase-cols">
+              <div class="phase-col">
+                <h4>Deliverables</h4>
+                <ul>
+                  <li>Cloud budget gates in CI/CD — PR blocked if Terraform adds >$X/month</li>
+                  <li>Savings Plans committed for top-10 compute families</li>
+                  <li>FinOps review cadence: weekly team cost digest + monthly leadership review</li>
+                  <li>Chargeback model activated — teams own their AWS bill</li>
+                  <li>AWS Service Control Policies (SCP) enforce tag compliance on creation</li>
+                </ul>
+              </div>
+              <div class="phase-col">
+                <h4>Success Criteria</h4>
+                <ul>
+                  <li>Budget variance ≤5% vs forecast for 2 consecutive months</li>
+                  <li>RI + SP coverage reaches ≥80%</li>
+                  <li>Zero untagged resources at month-end</li>
+                  <li>All Terraform PRs include estimated monthly cost diff</li>
+                  <li>CFO sign-off on chargeback model</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-item">
+        <div class="phase-hd" onclick="togglePhase(this)">
+          <div class="phase-num" style="background:rgba(168,85,247,.15);color:var(--purple)">4</div>
+          <div class="phase-title">Phase 4 — Culture  <span style="color:var(--muted);font-weight:400;font-size:12px">Q2 2026+</span></div>
+          <div class="phase-badge">Sustain</div>
+          <div class="phase-arrow">›</div>
+        </div>
+        <div class="phase-body">
+          <div class="phase-bd-inner">
+            <div class="phase-cols">
+              <div class="phase-col">
+                <h4>Deliverables</h4>
+                <ul>
+                  <li>FinOps Guild: cross-team cloud cost champions per squad</li>
+                  <li>Unit economics OKR embedded in every team's quarterly goals</li>
+                  <li>Annual Savings Plan renewal automation with approval workflow</li>
+                  <li>FinOps maturity scorecard published quarterly to leadership</li>
+                  <li>Cost-aware architecture patterns in Golden Path templates</li>
+                </ul>
+              </div>
+              <div class="phase-col">
+                <h4>Success Criteria</h4>
+                <ul>
+                  <li>Cloud savings rate ≥35% sustained for quarter</li>
+                  <li>Unit cost ($/GB) reduced 40% vs baseline</li>
+                  <li>FinOps practice scores "Optimising" on CNCF FinOps maturity model</li>
+                  <li>Engineering culture: cost is a non-functional requirement</li>
+                  <li>FinOps savings fund new product investment (reinvestment loop)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §03 PORTAL -->
+  <section id="portal">
+    <div class="section-tag">§03 — FinOps Command Center</div>
+    <h2>Portal Preview</h2>
+    <div class="portal-frame">
+      <div class="portal-chrome">
+        <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+        <div class="portal-url">finops.mimecast.internal / cloud-costs · Live</div>
+      </div>
+      <div class="portal-inner">
+        <div class="portal-sb">
+          <div class="p-logo">☁ FinOps Hub</div>
+          <a class="active" href="#">Cost Overview</a>
+          <a href="#">By Team</a>
+          <a href="#">Savings Tracker</a>
+          <a href="#">RI / SP Coverage</a>
+          <a href="#">Anomalies</a>
+          <a href="#">Forecast</a>
+          <a href="#">Tag Compliance</a>
+          <a href="#">Zombie Resources</a>
+        </div>
+        <div class="portal-content">
+          <div class="p-row">
+            <div class="p-kpi"><div class="v">$1.2M</div><div class="l">Monthly Spend</div></div>
+            <div class="p-kpi"><div class="v" style="color:var(--green)">-28%</div><div class="l">vs Last Quarter</div></div>
+            <div class="p-kpi"><div class="v" style="color:var(--blue)">78%</div><div class="l">RI/SP Coverage</div></div>
+            <div class="p-kpi"><div class="v" style="color:var(--rose)">12</div><div class="l">Anomalies This Week</div></div>
+          </div>
+          <div class="p-chart-row">
+            <div class="p-chart">
+              <div class="ct">Spend by Service (Top 5)</div>
+              <div class="bar-row"><span class="bar-lbl">EC2</span><div class="bar-track"><div class="bar-fill" style="width:75%;background:var(--blue)"></div></div></div>
+              <div class="bar-row"><span class="bar-lbl">S3</span><div class="bar-track"><div class="bar-fill" style="width:45%;background:var(--teal)"></div></div></div>
+              <div class="bar-row"><span class="bar-lbl">RDS</span><div class="bar-track"><div class="bar-fill" style="width:55%;background:var(--purple)"></div></div></div>
+              <div class="bar-row"><span class="bar-lbl">DMS</span><div class="bar-track"><div class="bar-fill" style="width:20%;background:var(--amber)"></div></div></div>
+              <div class="bar-row"><span class="bar-lbl">Lambda</span><div class="bar-track"><div class="bar-fill" style="width:10%;background:var(--green)"></div></div></div>
+            </div>
+            <div class="p-chart">
+              <div class="ct">Monthly Savings Trend</div>
+              <div class="sparkline-row">
+                <div class="sp-bar" style="height:12px;opacity:.4"></div>
+                <div class="sp-bar" style="height:14px;opacity:.5"></div>
+                <div class="sp-bar" style="height:16px;opacity:.6"></div>
+                <div class="sp-bar" style="height:20px;opacity:.7"></div>
+                <div class="sp-bar" style="height:24px;opacity:.8"></div>
+                <div class="sp-bar" style="height:28px;opacity:.9"></div>
+                <div class="sp-bar" style="height:32px"></div>
+              </div>
+              <div style="font-size:11px;color:var(--green);margin-top:8px">↑ $340K saved this month</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §04 PANE SPECS -->
+  <section id="panes">
+    <div class="section-tag">§04 — Pane Specifications</div>
+    <h2>Portal Pane Breakdown</h2>
+    <div class="pane-grid">
+      <div class="pane-card">
+        <div class="pane-header">
+          <div class="pane-icon" style="background:rgba(245,158,11,.1);color:var(--amber)">💸</div>
+          <div class="pane-title">Cost Overview</div>
+        </div>
+        <div class="pane-body">Real-time AWS spend aggregated by account, service, and region. Rolling 30/90/365-day trend with forecast line and budget threshold bands.</div>
+        <div class="pane-tags"><span class="tag">CUR</span><span class="tag">Cost Explorer</span><span class="tag">QuickSight</span></div>
+      </div>
+      <div class="pane-card">
+        <div class="pane-header">
+          <div class="pane-icon" style="background:rgba(16,185,129,.1);color:var(--green)">🎯</div>
+          <div class="pane-title">Savings Tracker</div>
+        </div>
+        <div class="pane-body">Cumulative savings waterfall: zombie cleanup, rightsizing, RI purchase, dev/test shutdown. Each initiative's realised vs projected savings with owner accountability.</div>
+        <div class="pane-tags"><span class="tag">Compute Optimizer</span><span class="tag">Trusted Advisor</span></div>
+      </div>
+      <div class="pane-card">
+        <div class="pane-header">
+          <div class="pane-icon" style="background:rgba(99,102,241,.1);color:var(--indigo)">📊</div>
+          <div class="pane-title">Team Showback</div>
+        </div>
+        <div class="pane-body">Per-team cost breakdown with month-over-month delta. Teams ranked by unit economics efficiency ($/feature shipped). Budget consumed vs allocated.</div>
+        <div class="pane-tags"><span class="tag">Tag-based</span><span class="tag">Chargeback</span></div>
+      </div>
+      <div class="pane-card">
+        <div class="pane-header">
+          <div class="pane-icon" style="background:rgba(20,184,166,.1);color:var(--teal)">🔒</div>
+          <div class="pane-title">RI / SP Coverage</div>
+        </div>
+        <div class="pane-body">Commitment coverage gauge per service family. On-Demand vs Reserved vs Savings Plan cost split. Renewal calendar with 60-day advance alert.</div>
+        <div class="pane-tags"><span class="tag">EC2 RI</span><span class="tag">RDS RI</span><span class="tag">Savings Plans</span></div>
+      </div>
+      <div class="pane-card">
+        <div class="pane-header">
+          <div class="pane-icon" style="background:rgba(244,63,94,.1);color:var(--rose)">🚨</div>
+          <div class="pane-title">Anomaly Feed</div>
+        </div>
+        <div class="pane-body">AWS Cost Anomaly Detection alerts with severity triage. Each anomaly shows root service, responsible team, and 1-click suppression/escalation action.</div>
+        <div class="pane-tags"><span class="tag">AWS CAD</span><span class="tag">SNS</span><span class="tag">Slack</span></div>
+      </div>
+      <div class="pane-card">
+        <div class="pane-header">
+          <div class="pane-icon" style="background:rgba(168,85,247,.1);color:var(--purple)">🏷</div>
+          <div class="pane-title">Tag Compliance</div>
+        </div>
+        <div class="pane-body">Tagging coverage heat map by account and resource type. Non-compliant resources with owner, age, and estimated monthly cost. SCP enforcement toggle.</div>
+        <div class="pane-tags"><span class="tag">Tag Policies</span><span class="tag">Config Rules</span><span class="tag">SCP</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §05 COST STRATEGY -->
+  <section id="cost-strategy">
+    <div class="section-tag">§05 — Cost Strategy</div>
+    <h2>FinOps Playbook — Five Levers</h2>
+    <div class="strat-grid">
+      <div class="strat-card">
+        <span class="badge" style="background:rgba(245,158,11,.1);color:var(--amber)">Lever 1</span>
+        <h4>Rightsizing</h4>
+        <p>AWS Compute Optimizer + instance family downsizing. Target: 15–20% EC2/RDS cost reduction. Monthly automated scan with Slack recommendations.</p>
+      </div>
+      <div class="strat-card">
+        <span class="badge" style="background:rgba(16,185,129,.1);color:var(--green)">Lever 2</span>
+        <h4>Storage Tiering</h4>
+        <p>S3 Intelligent-Tiering at PB scale. Glacier Instant for 2–7yr archive. Glacier Deep Archive ($0.00099/GB) for 7yr+ compliance. EBS gp2 → gp3 migration (-20% cost).</p>
+      </div>
+      <div class="strat-card">
+        <span class="badge" style="background:rgba(99,102,241,.1);color:var(--indigo)">Lever 3</span>
+        <h4>Commitment Discounts</h4>
+        <p>1yr Reserved Instances for baseline RDS/EC2 fleet. Compute Savings Plans for flexible workloads. Target 80% coverage = 40–72% discount vs On-Demand.</p>
+      </div>
+      <div class="strat-card">
+        <span class="badge" style="background:rgba(20,184,166,.1);color:var(--teal)">Lever 4</span>
+        <h4>Scheduling & Auto-Shutdown</h4>
+        <p>Lambda-powered dev/test stop schedules. Instance Scheduler for 12hr overnight + 16hr weekends. 5 environments × $30K/month → saves ~$180K/year.</p>
+      </div>
+      <div class="strat-card">
+        <span class="badge" style="background:rgba(168,85,247,.1);color:var(--purple)">Lever 5</span>
+        <h4>Architecture Efficiency</h4>
+        <p>Migrate batch workloads to Spot Instances (70–90% savings). Graviton3 adoption for compatible services. Serverless for event-driven low-traffic APIs.</p>
+      </div>
+      <div class="strat-card">
+        <span class="badge" style="background:rgba(6,182,212,.1);color:var(--cyan)">Governance</span>
+        <h4>Cost Culture</h4>
+        <p>FinOps Guild: 1 champion per squad. Cloud cost OKR in every team's quarterly goals. Weekly #cloud-cost-ops digest. Monthly leadership FinOps review with CFO.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- §06 VIZ LAB -->
+  <section id="viz">
+    <div class="section-tag">§06 — Visualization Lab</div>
+    <h2>FinOps Analytics Suite</h2>
+    <div class="viz-grid">
+      <div class="viz-card">
+        <div class="viz-title">Savings Waterfall (Cumulative $)</div>
+        <div class="bar-row"><span class="bar-lbl" style="width:90px">Zombie Cleanup</span><div class="bar-track"><div class="bar-fill" style="width:40%;background:var(--green)"></div></div><span style="font-size:10px;color:var(--green);margin-left:6px">$50K</span></div>
+        <div class="bar-row"><span class="bar-lbl" style="width:90px">Rightsizing</span><div class="bar-track"><div class="bar-fill" style="width:55%;background:var(--blue)"></div></div><span style="font-size:10px;color:var(--blue);margin-left:6px">$70K</span></div>
+        <div class="bar-row"><span class="bar-lbl" style="width:90px">Dev Shutdown</span><div class="bar-track"><div class="bar-fill" style="width:48%;background:var(--amber)"></div></div><span style="font-size:10px;color:var(--amber);margin-left:6px">$60K</span></div>
+        <div class="bar-row"><span class="bar-lbl" style="width:90px">Storage Tier</span><div class="bar-track"><div class="bar-fill" style="width:35%;background:var(--teal)"></div></div><span style="font-size:10px;color:var(--teal);margin-left:6px">$45K</span></div>
+        <div class="bar-row"><span class="bar-lbl" style="width:90px">RI Purchase</span><div class="bar-track"><div class="bar-fill" style="width:90%;background:var(--purple)"></div></div><span style="font-size:10px;color:var(--purple);margin-left:6px">$115K</span></div>
+        <div style="margin-top:10px;font-size:11px;color:var(--green);font-weight:700">Total: $340K/month saved</div>
+      </div>
+      <div class="viz-card">
+        <div class="viz-title">Unit Cost Trend ($/GB Archived)</div>
+        <div class="sparkline-row" style="height:50px;align-items:flex-end;gap:6px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:9px;color:var(--muted)">$0.12</span>
+            <div style="width:24px;height:40px;background:var(--rose);border-radius:3px 3px 0 0;opacity:.8"></div>
+            <span style="font-size:9px;color:var(--muted)">Jan</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:9px;color:var(--muted)">$0.10</span>
+            <div style="width:24px;height:33px;background:var(--amber);border-radius:3px 3px 0 0;opacity:.8"></div>
+            <span style="font-size:9px;color:var(--muted)">Feb</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:9px;color:var(--muted)">$0.09</span>
+            <div style="width:24px;height:30px;background:var(--amber);border-radius:3px 3px 0 0;opacity:.8"></div>
+            <span style="font-size:9px;color:var(--muted)">Mar</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:9px;color:var(--muted)">$0.08</span>
+            <div style="width:24px;height:26px;background:var(--blue);border-radius:3px 3px 0 0;opacity:.8"></div>
+            <span style="font-size:9px;color:var(--muted)">Apr</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:9px;color:var(--muted)">$0.08</span>
+            <div style="width:24px;height:26px;background:var(--blue);border-radius:3px 3px 0 0;opacity:.8"></div>
+            <span style="font-size:9px;color:var(--muted)">May</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:9px;color:var(--muted)">$0.07</span>
+            <div style="width:24px;height:23px;background:var(--green);border-radius:3px 3px 0 0;opacity:.9"></div>
+            <span style="font-size:9px;color:var(--muted)">Jun</span>
+          </div>
+        </div>
+      </div>
+      <div class="viz-card">
+        <div class="viz-title">Savings Opportunity Matrix</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px">
+          <div style="background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.2);border-radius:6px;padding:8px;text-align:center">
+            <div style="color:var(--rose);font-weight:700;font-size:14px">HIGH</div>
+            <div style="color:var(--muted);margin-top:4px">Impact / Easy Fix</div>
+            <div style="color:var(--text);margin-top:6px;font-size:10px">Dev Shutdown<br>Zombie Cleanup</div>
+          </div>
+          <div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:6px;padding:8px;text-align:center">
+            <div style="color:var(--amber);font-weight:700;font-size:14px">PLAN</div>
+            <div style="color:var(--muted);margin-top:4px">High Impact / Complex</div>
+            <div style="color:var(--text);margin-top:6px;font-size:10px">RI Purchase<br>Arch Refactor</div>
+          </div>
+          <div style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:6px;padding:8px;text-align:center">
+            <div style="color:var(--green);font-weight:700;font-size:14px">DO</div>
+            <div style="color:var(--muted);margin-top:4px">Low Impact / Easy</div>
+            <div style="color:var(--text);margin-top:6px;font-size:10px">gp2→gp3<br>Tag Cleanup</div>
+          </div>
+          <div style="background:rgba(107,122,153,.1);border:1px solid rgba(107,122,153,.2);border-radius:6px;padding:8px;text-align:center">
+            <div style="color:var(--muted);font-weight:700;font-size:14px">DEFER</div>
+            <div style="color:var(--muted);margin-top:4px">Low Impact / Hard</div>
+            <div style="color:var(--text);margin-top:6px;font-size:10px">Multi-cloud<br>Spot migration</div>
+          </div>
+        </div>
+      </div>
+      <div class="viz-card">
+        <div class="viz-title">RI/SP Coverage Gauge</div>
+        <div style="text-align:center;padding:10px 0">
+          <div style="font-size:40px;font-weight:800;color:var(--blue)">78%</div>
+          <div style="font-size:11px;color:var(--muted)">Commitment Coverage</div>
+          <div style="margin-top:12px;background:rgba(255,255,255,.05);border-radius:8px;height:10px;overflow:hidden">
+            <div style="width:78%;height:100%;background:linear-gradient(90deg,var(--blue),var(--indigo))"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;">
+            <span style="font-size:10px;color:var(--muted)">0%</span>
+            <span style="font-size:10px;color:var(--amber)">Target: 80%</span>
+            <span style="font-size:10px;color:var(--muted)">100%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §07 ANTI-PATTERNS -->
+  <section id="antipatterns">
+    <div class="section-tag">§07 — Anti-Pattern Registry</div>
+    <h2>FinOps Failure Modes</h2>
+    <table class="risk-table">
+      <thead><tr><th>Anti-Pattern</th><th>Severity</th><th>Root Cause</th><th>Mitigation</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><div class="risk-name">📢 No Cost Ownership</div><div class="risk-desc">Engineers treat cloud cost as someone else's problem — finance's, not engineering's</div></td>
+          <td><span class="sev sev-h">High</span></td>
+          <td style="font-size:12px;color:var(--muted)">No showback; no chargeback; cloud bill abstracted from teams</td>
+          <td><div class="mitigation"><strong>Chargeback + weekly team digest.</strong> Cost OKR in sprint goals. FinOps champion in each squad. Public savings leaderboard.</div></td>
+        </tr>
+        <tr>
+          <td><div class="risk-name">🏷 Tag Debt Spiral</div><div class="risk-desc">Resources created without tags — cost attribution impossible; savings targets unverifiable</div></td>
+          <td><span class="sev sev-h">High</span></td>
+          <td style="font-size:12px;color:var(--muted)">No IaC enforcement; manual resource creation bypassed tagging</td>
+          <td><div class="mitigation"><strong>AWS SCP blocks untagged resource creation.</strong> Terraform modules enforce tags. Weekly non-compliance report sent to team lead.</div></td>
+        </tr>
+        <tr>
+          <td><div class="risk-name">🧟 Zombie Resource Accumulation</div><div class="risk-desc">Idle EC2s, unattached EBS, orphaned snapshots and unused load balancers accumulate silently</div></td>
+          <td><span class="sev sev-m">Medium</span></td>
+          <td style="font-size:12px;color:var(--muted)">No automated cleanup; engineers fear deleting shared resources</td>
+          <td><div class="mitigation"><strong>AWS Trusted Advisor + Cost Anomaly Detection.</strong> Monthly zombie sweep with auto-stop (not delete) after 14-day idle. Owner notification workflow.</div></td>
+        </tr>
+        <tr>
+          <td><div class="risk-name">⏰ Over-Provisioning Habit</div><div class="risk-desc">Teams request largest instance sizes "just in case" — rightsizing never revisited post-launch</div></td>
+          <td><span class="sev sev-m">Medium</span></td>
+          <td style="font-size:12px;color:var(--muted)">No post-launch cost review; performance reviews don't include cost</td>
+          <td><div class="mitigation"><strong>AWS Compute Optimizer monthly runs.</strong> Rightsizing recommendations pushed to team Jira backlog. Require cost justification for m5.xlarge+.</div></td>
+        </tr>
+        <tr>
+          <td><div class="risk-name">💤 Always-On Dev/Test</div><div class="risk-desc">Non-production environments run 24×7, consuming production-equivalent compute budgets</div></td>
+          <td><span class="sev sev-m">Medium</span></td>
+          <td style="font-size:12px;color:var(--muted)">No scheduling policy; devs afraid environments won't start cleanly</td>
+          <td><div class="mitigation"><strong>Instance Scheduler deployed day 1.</strong> Opt-out mechanism for on-call environments. Start/stop Lambda tested for all 5 dev environments before policy enforcement.</div></td>
+        </tr>
+        <tr>
+          <td><div class="risk-name">📉 Vanity Savings Metrics</div><div class="risk-desc">Savings reported in absolute $ without normalising for spend growth — appears efficient while wasting more</div></td>
+          <td><span class="sev sev-l">Low</span></td>
+          <td style="font-size:12px;color:var(--muted)">Finance reporting focuses on absolute credits; unit economics ignored</td>
+          <td><div class="mitigation"><strong>Always report savings rate % alongside absolute $.</strong> Unit cost ($/GB, $/user) as primary FinOps KPI. Baseline locked at Q1 2026 spend.</div></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+<script>
+  function togglePhase(btn) {
+    const item = btn.closest('.phase-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.phase-item.open').forEach(el => el.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+  // Sidebar scroll-spy
+  const sections = document.querySelectorAll('section[id]');
+  const links = document.querySelectorAll('.sb-nav a');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = document.querySelector(`.sb-nav a[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -60% 0px' });
+  sections.forEach(s => io.observe(s));
+</script>
+</body>
+</html>

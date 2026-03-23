@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Team Topology — Technical Strategy Hub</title>
+  <style>
+    :root {
+      --bg: #0a0e1a; --surface: #111827; --surface2: #1a2236; --border: #1e2d45;
+      --accent: #3b82f6; --accent2: #8b5cf6; --accent3: #10b981; --accent4: #f59e0b;
+      --accent5: #ef4444; --text: #e2e8f0; --text-muted: #64748b; --text-dim: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+    header {
+      background: linear-gradient(135deg, #0d1b2e, #0f2241);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg,var(--accent),var(--accent2)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .logo-text h1 { font-size: 1rem; font-weight: 700; }
+    .logo-text p { font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    nav { display: flex; gap: 4px; }
+    nav a { color: var(--text-dim); text-decoration: none; padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 500; transition: all 0.2s; border: 1px solid transparent; }
+    nav a:hover { color: var(--text); background: var(--surface2); border-color: var(--border); }
+    nav a.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+
+    .hero {
+      background: linear-gradient(135deg, #0d1b2e, #0f1f3a, #0d1b2e);
+      border-bottom: 1px solid var(--border);
+      padding: 2.5rem 2rem; position: relative; overflow: hidden;
+    }
+    .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 60% at 70% 50%, rgba(139,92,246,0.08) 0%, transparent 70%); }
+    .hero-content { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
+    .eyebrow { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent2); font-weight: 600; margin-bottom: 0.6rem; }
+    .hero h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .hero h2 span { background: linear-gradient(135deg, var(--accent2), #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { color: var(--text-dim); font-size: 0.88rem; max-width: 700px; line-height: 1.6; }
+
+    .main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+
+    .section-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px; }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+
+    /* Conway's Law Principle Box */
+    .principle-box {
+      background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(59,130,246,0.08));
+      border: 1px solid rgba(139,92,246,0.25);
+      border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;
+      display: flex; gap: 1.5rem; align-items: flex-start;
+    }
+    .pb-icon { font-size: 2.5rem; flex-shrink: 0; }
+    .pb-text h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--accent2); }
+    .pb-text p { font-size: 0.82rem; color: var(--text-dim); line-height: 1.65; }
+    .pb-text strong { color: var(--text); }
+
+    /* Team Detail Cards */
+    .team-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+    .team-detail-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+    .team-detail-card:hover { box-shadow: 0 12px 40px rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.1); }
+    .tdc-header {
+      padding: 1.25rem 1.5rem;
+      display: flex; align-items: center; gap: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .tdc-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+    .tdc-meta { flex: 1; }
+    .tdc-meta h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.15rem; }
+    .tdc-meta .sub { font-size: 0.75rem; color: var(--text-muted); }
+    .tdc-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+    .tdc-body { padding: 1.25rem 1.5rem; }
+    .tdb-section { margin-bottom: 1rem; }
+    .tdb-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 600; margin-bottom: 0.5rem; }
+    .tdb-text { font-size: 0.8rem; color: var(--text-dim); line-height: 1.6; }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag { font-size: 0.68rem; padding: 3px 9px; border-radius: 5px; background: var(--surface2); border: 1px solid var(--border); color: var(--text-dim); }
+    .tag.highlight { border-color: rgba(59,130,246,0.3); color: var(--accent); background: rgba(59,130,246,0.08); }
+    .interfaces { display: flex; flex-direction: column; gap: 6px; }
+    .iface { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; }
+    .iface-arrow { font-size: 0.65rem; color: var(--text-muted); }
+    .iface-target { color: var(--text-dim); }
+    .iface-type { font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted); }
+    .kpi-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.75rem; }
+    .kpi-item { text-align: center; flex: 1; min-width: 70px; padding: 0.5rem; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); }
+    .kpi-item .kv { font-size: 1rem; font-weight: 800; display: block; }
+    .kpi-item .kn { font-size: 0.62rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* Interaction Map */
+    .interaction-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; margin-bottom: 2rem;
+    }
+    .interaction-matrix { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+    th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: center; }
+    th { background: var(--surface2); color: var(--text-dim); font-weight: 600; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    td.row-header { text-align: left; font-weight: 600; color: var(--text-dim); background: var(--surface2); white-space: nowrap; }
+    .cell-strong { background: rgba(59,130,246,0.15); color: var(--accent); font-weight: 700; border-radius: 4px; }
+    .cell-med { background: rgba(139,92,246,0.1); color: var(--accent2); font-size: 0.7rem; }
+    .cell-light { background: rgba(100,116,139,0.1); color: var(--text-muted); font-size: 0.7rem; }
+    .cell-none { color: var(--border); }
+
+    /* Anti-patterns section */
+    .antipattern-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-bottom: 2rem; }
+    .ap-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem;
+    }
+    .ap-header { display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; }
+    .ap-icon { font-size: 1.1rem; }
+    .ap-title { font-size: 0.82rem; font-weight: 700; }
+    .ap-body { font-size: 0.75rem; color: var(--text-dim); line-height: 1.55; }
+    .ap-fix { margin-top: 0.75rem; padding: 0.6rem; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); border-radius: 6px; font-size: 0.72rem; color: var(--accent3); }
+
+    footer { border-top: 1px solid var(--border); text-align: center; padding: 1.5rem; color: var(--text-muted); font-size: 0.75rem; margin-top: 2rem; }
+    footer strong { color: var(--text-dim); }
+
+    @media (max-width: 1024px) { .team-detail-grid { grid-template-columns: 1fr; } .antipattern-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 640px) { .antipattern-grid { grid-template-columns: 1fr; } nav { display: none; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🗄️</div>
+    <div class="logo-text">
+      <h1>Technical Strategy Hub</h1>
+      <p>Message Archiver Platform · VP Architecture</p>
+    </div>
+  </div>
+  <nav>
+    <a href="index.html">Overview</a>
+    <a href="team-topology.html" class="active">Team Topology</a>
+    <a href="wave-model.html">Wave Model</a>
+    <a href="strategy-dashboard.html">Strategy Dashboard</a>
+    <a href="infographic.html">All-Hands Infographic</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <div class="hero-content">
+    <p class="eyebrow">Output 1 · Required Deliverable · Architecture Strategy</p>
+    <h2>Domain-Driven <span>Team Topology</span></h2>
+    <p>
+      A Conway's Law–aligned org structure that ensures each of the 6 engineering squads maps 1:1 to
+      a bounded domain context in the decomposed microservices architecture. Organizational gravity
+      must mirror system gravity — or the monolith will reassemble itself.
+    </p>
+  </div>
+</div>
+
+<main class="main">
+
+  <!-- Conway's Law Statement -->
+  <div class="principle-box">
+    <div class="pb-icon">🔬</div>
+    <div class="pb-text">
+      <h3>The Conway's Law Imperative</h3>
+      <p>
+        <strong>"Organizations which design systems are constrained to produce designs which are copies of the communication structures of those organizations."</strong> — Melvin Conway, 1968.
+        <br/><br/>
+        At 60PB scale, this isn't theory — it's a war. If ingestion engineers sit in the same team as search engineers, the boundary between those two bounded contexts will be <em>code</em>, not a contract.
+        The result? A monolith that reforms in the cloud. Our topology is designed as an <strong>inverse Conway maneuver</strong>: we first draw the architecture we want, then reshape the org to match it.
+        Each team owns a distinct domain, publishes a versioned API contract to adjacent teams, and is held accountable for the SLAs of that domain — not the full stack.
+      </p>
+    </div>
+  </div>
+
+  <!-- 6 Team Deep-Dives -->
+  <p class="section-title">6-Team Architecture Ownership Map</p>
+  <div class="team-detail-grid">
+
+    <!-- TEAM 1 -->
+    <div class="team-detail-card">
+      <div class="tdc-header" style="background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(249,115,22,0.08));">
+        <div class="tdc-icon" style="background:rgba(239,68,68,0.2); color:#ef4444;">📥</div>
+        <div class="tdc-meta">
+          <h3>Team 1 · Ingestion Pipeline</h3>
+          <div class="sub">10 Engineers · 1 Staff Eng + 1 EM + 8 SWE · Domain: Message Intake</div>
+        </div>
+        <span class="tdc-badge" style="background:rgba(239,68,68,0.15); color:#ef4444; border: 1px solid rgba(239,68,68,0.3);">STREAM ALIGNED</span>
+      </div>
+      <div class="tdc-body">
+        <div class="tdb-section">
+          <div class="tdb-label">Mission</div>
+          <div class="tdb-text">Own the entire message intake pipeline from customer protocol endpoints (SMTP, IMAP, REST, Microsoft Graph, Google Workspace) through durable persistence to an S3 raw zone — with zero message loss guarantees and sub-second latency at peak ingestion.</div>
+        </div>
+        <div class="tdb-section">
+          <div class="tdb-label">Architectural Ownership</div>
+          <div class="tag-list">
+            <span class="tag highlight">Apache Kafka (MSK)</span>
+            <span class="tag highlight">SMTP/IMAP Connectors</span>
+            <span class="tag highlight">S3 Raw Zone</span>
+            <span class="tag">Protocol Normalization Service</span>
+            <span class="tag">Dead-Letter Queue</span>
+            <span class="tag">Ingestion Rate Limiter</span>
+            <span class="tag">Deduplication Engine</span>
+            <span class="tag">Message Envelope Schema</span>
+          </div>
+        </div>
+        <div class="tdb-section">
+          <div class="tdb-label">API Contracts Published</div>
+          <div class="interfaces">
+            <div class="iface">
+              <span class="iface-arrow">→</span>
+              <span style="font-weight:600; font-size:0.75rem;">raw-message.v1 Kafka Topic</span>
+              <span class="iface-type">Avro Schema</span>
+              <span class="iface-target">consumed by T2 (Search), T4 (Compliance)</span>
+            </div>
+            <div class="iface">
+              <span class="iface-arrow">→</span>
+              <span style="font-weight:600; font-size:0.75rem;">ingestion-metrics API</span>
+              <span class="iface-type">REST/JSON</span>
+              <span class="iface-target">consumed by T6 (Platform) for alerting</span>
+            </div>
+          </div>
+        </div>
+        <div class="tdb-section">
+          <div class="tdb-label">Key SLOs</div>
+          <div class="kpi-row">
+            <div class="kpi-item"><span class="kv" style="color:#ef4444">99.999%</span><span class="kn">Msg Durability</span></div>
+            <div class="kpi-item"><span class="kv" style="color:#f59e0b">&lt;500ms</span><span class="kn">P99 Ingest Latency</span></div>
+            <div class="kpi-item"><span class="kv" style="color:#10b981">4.2TB</span><span class="kn">Daily Throughput</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEAM 2 -->
+    <div class="team-detail-card">
+      <div class="tdc-header" style="background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.08));">
+        <div class="tdc-icon" style="background:rgba(99,102,241,0.2); color:#6366f1;">🔍</div>
+        <div class="tdc-meta">
+          <h3>Team 2 · Search &amp; Indexing</h3>
+          <div class="sub">12 Engineers · 1 Principal Eng + 1 EM + 10 SWE · Domain: Search Intelligence</div>
+        </div>
+        <span class="tdc-badge" style="background:rgba(99,102,241,0.15); color:#6366f1; border:1px solid rgba(99,102,241,0.3);">STREAM ALIGNED</span>
+      </div>
+      <div class="tdc-body">
+        <div class="tdb-section">
+          <div class="tdb-label">Mission</div>
+          <div class="tdb-text">Design and operate the full-text search and metadata index across 60PB of archive. This team owns search relevance, index lifecycle management, query optimization, and the e-discovery search API — making 10+ years of archived messages instantly searchable at subsecond latency.</div>
+        </div>
+        <div class="tdb-section">
+          <div class="tdb-label">Architectural Ownership</div>
+          <div class="tag-list">
+            <span class="tag highlight">OpenSearch Serverless</span>
+            <span class="tag highlight">Index Lifecycle Management (ILM)</span>
+            <span class="tag highlight">Search Query Service</span>
+            <span class="tag">Relevance Tuning Pipeline</span>
+            <span class="tag">Index Shard Strategy</span>
+            <span class="tag">Search Aggregation Engine</span>
+            <span class="tag">Synonym &amp; Stop-Word Config</span>
+            <span class="tag">Search Analytics</span>
+          </div>
+        </div>
+        <div class="tdb-section">
+          <div class="tdb-label">API Contracts Published</div>
+          <div class="interfaces">
+            <div class="iface">
+              <span class="iface-arrow">→</span>
+              <span style="font-weight:600; font-size:0.75rem;">search.v2 GraphQL API</span>
+              <span class="iface-type">GraphQL</span>
+              <span class="iface-target">consumed by T4 (E-Discovery), T5 (Control Plane)</span>
+            </div>
+            <div class="iface">
+              <span class="iface-arrow">→</span>
+              <span style="font-weight:600; font-size:0.75rem;">index-health.v1 events</span>
+              <span class="iface-type">SNS/SQS</span>
+              <span class="iface-target">consumed by T3 (FinOps), T6 (Platform)</span>
+            </div>
+          </div>
+        </div>
+        <div class="tdb-section">
+          <div class="tdb-label">Key SLOs</div>
+          <div class="kpi-row">
+            <div class="kpi-item"><span class="kv" style="color:#6366f1">&lt;1s</span><span class="kn">P99 Search (Hot)</span></div>
+            <div class="kpi-item"><span class="kv" style="color:#f59e0b">&lt;5s</span><span class="kn">P99 Search (Warm)</span></div>
+            <div class="kpi-item"><span class="kv" style="color:#10b981">99.9%</span><span class="kn">Index Availability</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEAM 3 -->
+    <div class="team-detail-card">
+      <div class="tdc-header" style="background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(245,158,11,0.08));">
+        <div class="tdc-icon" style="background:rgba(16,185,129,0.2); color:#10b981;">💰</div>
+        <div class="tdc-meta">
+          <h3>Team 3 · Storage Lifecycle &amp; FinOps</h3>
+          <div class="sub">8 Engineers · 1 Staff Eng + 1 EM + 6 SWE · Domain: Cost Engineering</div>
+        </div>
+        <span class="tdc-badge" style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3);">ENABLING TEAM</span>
+      </div>
+      <div class="tdc-body">
+        <div class="tdb-section">
+          <div class="tdb-label">Mission</div>
+          <div class="tdb-text">Drive storage unit economics across 60PB. This team is the custodian of every byte in S3 and Glacier — they own lifecycle automation, tier transition policies, storage cost attribution per tenant, and AWS commitment optimization (Reserved Capacity, Savings Plans). Target: 34% COGS reduction by Wave 3.</div>
+        </div>
+        <div class="tdb-section">
+          <div class="tdb-label">Architectural Ownership</div>
+          <div class="tag-list">
+            <span class="tag highlight">S3 Intelligent-Tiering Config</span>
+            <span class="tag highlight">Glacier Lifecycle Policies</span>
+            <span class="tag highlight">Storage Cost Attribution Service</span>
+            <span class="tag">AWS Cost Anomaly Detection</span>
+            <span class="tag">Savings Plans Governance</span>
+            <span class="tag">Data Gravity Dashboard</span>
+            <span class="tag">Object Tagging Standards</span>
+            <span class="tag">Storage Quota Enforcer</span>
+          </div>
+        </div>
+        <div class="tdb-section">
+          <div class="tdb-label">Key FinOps Levers</div>
+          <div class="tdb-text">1. S3 Intelligent-Tiering on all objects 30–730 days old<br/>2. Glacier Flexible Retrieval for 730d–7yr archives<br/>3. Glacier Deep Archive for 7yr+ immutable retention<br/>4. S3 Object Storage Lens for anomaly spend alerting<br/>5. AWS Compute Optimizer for retrieval Lambda sizing</div>
+        </div>
+        <div class="tdb-section">
+          <div class="tdb-label">Key SLOs</div>
+          <div class="kpi-row">
+            <div class="kpi-item"><span class="kv" style="color:#10b981">−34%</span><span class="kn">COGS Target</span></div>
+            <div class="kpi-item"><span class="kv" style="color:#f59e0b">100%</span><span class="kn">Tiered Coverage</span></div>
+            <div class="kpi-item"><span class="kv" style="color:#3b82f6">$0</span><span class="kn">Untagged Spend</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEAM 4 -->
+    <div class="team-detail-card">
+      <div class="tdc-header" style="background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(234,179,8,0.08));">
+        <div class="tdc-icon" style="background:rgba(245,158,11,0.2); color:#f59e0b;">⚖️</div>
+        <div class="tdc-meta">
+          <h3>Team 4 · E-Discovery &amp; Compliance</h3>
+          <div class="sub">10 Engineers · 1 Staff Eng + 1 EM + 8 SWE · Domain: Legal &amp; Regulatory</div>
+        </div>
+        <span class="tdc-badge" style="background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);">STREAM ALIGNED</span>
+      </div>
+      <div class="tdc-body">
+        <div class="tdb-section">
+          <div class="tdb-label">Mission</div>
+          <div class="tdb-text">Build and operate the legal and regulatory surface of the platform. This team is accountable to FINRA, SEC 17a-4, GDPR Article 17, and SOX audit requirements. They own WORM enforcement, legal hold placement, e-discovery search and export pipelines, and the complete audit log fabric.</div>
+        </div>
+        <div class="tdb-section">
+          <div class="tdb-label">Architectural Ownership</div>
+          <div class="tag-list">
+            <span class="tag highlight">Legal Hold Service</span>
+            <span class="tag highlight">WORM Enforcement Layer</span>
+            <span class="tag highlight">E-Discovery Export Engine</span>
+            <span class="tag">Audit Log (immutable append-only)</span>
+            <span class="tag">Retention Policy Engine</span>
+            <span class="tag">Compliance Report Generator</span>
+            <span class="tag">Custodian Management</span>
+            <span class="tag">PST/EML/EDRM Export</span>
+          </div>
+        </div>
+        <div class="tdb-section">
+          <div class="tdb-label">Regulatory Standards Owned</div>
+          <div class="tag-list">
+            <span class="tag" style="color:#f59e0b; border-color:rgba(245,158,11,0.3);">SEC 17a-4 / FINRA 4511</span>
+            <span class="tag" style="color:#f59e0b; border-color:rgba(245,158,11,0.3);">GDPR Art. 17 Right to Erasure</span>
+            <span class="tag" style="color:#f59e0b; border-color:rgba(245,158,11,0.3);">SOX Audit Trail</span>
+            <span class="tag" style="color:#f59e0b; border-color:rgba(245,158,11,0.3);">HIPAA BAA (where applicable)</span>
+          </div>
+        </div>
+        <div class="tdb-section">
+          <div class="tdb-label">Key SLOs</div>
+          <div class="kpi-row">
+            <div class="kpi-item"><span class="kv" style="color:#f59e0b">100%</span><span class="kn">WORM Coverage</span></div>
+            <div class="kpi-item"><span class="kv" style="color:#10b981">&lt;4h</span><span class="kn">Legal Hold Apply</span></div>
+            <div class="kpi-item"><span class="kv" style="color:#3b82f6">&lt;24h</span><span class="kn">Export SLA</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEAM 5 -->
+    <div class="team-detail-card">
+      <div class="tdc-header" style="background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(99,102,241,0.08));">
+        <div class="tdc-icon" style="background:rgba(59,130,246,0.2); color:#3b82f6;">🔌</div>
+        <div class="tdc-meta">
+          <h3>Team 5 · Control Plane &amp; API</h3>
+          <div class="sub">10 Engineers · 1 Staff Eng + 1 EM + 8 SWE · Domain: Platform Control</div>
+        </div>
+        <span class="tdc-badge" style="background:rgba(59,130,246,0.15); color:#3b82f6; border:1px solid rgba(59,130,246,0.3);">STREAM ALIGNED</span>
+      </div>
+      <div class="tdc-body">
+        <div class="tdb-section">
+          <div class="tdb-label">Mission</div>
+          <div class="tdb-text">Owns the entire tenant-facing control plane: provisioning, configuration, multi-tenancy isolation, API gateway, RBAC, and the customer-facing management console. This is the "thin waist" of the architecture — all customer operations flow through this team's domain.</div>
+        </div>
+        <div class="tdb-section">
+          <div class="tdb-label">Architectural Ownership</div>
+          <div class="tag-list">
+            <span class="tag highlight">API Gateway (Kong/AWS APIGW)</span>
+            <span class="tag highlight">Tenant Management Service</span>
+            <span class="tag highlight">RBAC &amp; AuthN/AuthZ (OAuth 2.0/OIDC)</span>
+            <span class="tag">Provisioning Automation</span>
+            <span class="tag">Rate Limiting &amp; Throttling</span>
+            <span class="tag">Tenant Config Store</span>
+            <span class="tag">Webhook Management</span>
+            <span class="tag">API Version Management</span>
+          </div>
+        </div>
+        <div class="tdb-section">
+          <div class="tdb-label">Key SLOs</div>
+          <div class="kpi-row">
+            <div class="kpi-item"><span class="kv" style="color:#3b82f6">99.99%</span><span class="kn">API Availability</span></div>
+            <div class="kpi-item"><span class="kv" style="color:#f59e0b">&lt;50ms</span><span class="kn">P99 Authn Latency</span></div>
+            <div class="kpi-item"><span class="kv" style="color:#10b981">0</span><span class="kn">Tenant Bleedover</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEAM 6 -->
+    <div class="team-detail-card">
+      <div class="tdc-header" style="background: linear-gradient(135deg, rgba(139,92,246,0.12), rgba(168,85,247,0.08));">
+        <div class="tdc-icon" style="background:rgba(139,92,246,0.2); color:#8b5cf6;">⚙️</div>
+        <div class="tdc-meta">
+          <h3>Team 6 · Platform Engineering</h3>
+          <div class="sub">10 Engineers · 1 Principal Eng + 1 EM + 8 SWE · Domain: Internal Platform</div>
+        </div>
+        <span class="tdc-badge" style="background:rgba(139,92,246,0.15); color:#8b5cf6; border:1px solid rgba(139,92,246,0.3);">PLATFORM TEAM</span>
+      </div>
+      <div class="tdc-body">
+        <div class="tdb-section">
+          <div class="tdb-label">Mission</div>
+          <div class="tdb-text">The internal developer platform team. They don't build product features — they build the paved road that makes all other teams fast and safe. Owns the IDP (Internal Developer Platform), CI/CD golden paths, EKS clusters, Istio service mesh, OpenTelemetry collectors, and the security baseline.</div>
+        </div>
+        <div class="tdb-section">
+          <div class="tdb-label">Architectural Ownership</div>
+          <div class="tag-list">
+            <span class="tag highlight">EKS Cluster Fleet</span>
+            <span class="tag highlight">Istio Service Mesh</span>
+            <span class="tag highlight">GitHub Actions CI/CD</span>
+            <span class="tag">OpenTelemetry + Grafana Stack</span>
+            <span class="tag">Backstage IDP</span>
+            <span class="tag">Vault (Secrets Mgmt)</span>
+            <span class="tag">Terraform Modules Library</span>
+            <span class="tag">AWS Landing Zone</span>
+          </div>
+        </div>
+        <div class="tdb-section">
+          <div class="tdb-label">Key SLOs (Platform)</div>
+          <div class="kpi-row">
+            <div class="kpi-item"><span class="kv" style="color:#8b5cf6">&lt;15min</span><span class="kn">Golden Path Onboard</span></div>
+            <div class="kpi-item"><span class="kv" style="color:#10b981">99.9%</span><span class="kn">CI Pipeline Uptime</span></div>
+            <div class="kpi-item"><span class="kv" style="color:#f59e0b">&lt;8min</span><span class="kn">Avg Deploy Time</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team Interaction Matrix -->
+  <p class="section-title">Team Interaction &amp; API Contract Matrix</p>
+  <div class="interaction-card">
+    <p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:1rem; line-height:1.5;">
+      Collaboration modes per Team Topologies: <strong style="color:var(--accent)">X-as-a-Service</strong> (contractual API — preferred),
+      <strong style="color:var(--accent2)">Collaboration</strong> (joint discovery — time-limited),
+      <strong style="color:var(--accent3)">Facilitation</strong> (enabling team support)
+    </p>
+    <div class="interaction-matrix">
+      <table>
+        <thead>
+          <tr>
+            <th>Consuming →<br/>Producing ↓</th>
+            <th>T1 Ingestion</th>
+            <th>T2 Search</th>
+            <th>T3 FinOps</th>
+            <th>T4 Compliance</th>
+            <th>T5 Control Plane</th>
+            <th>T6 Platform</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="row-header">T1 · Ingestion</td>
+            <td class="cell-none">—</td>
+            <td class="cell-strong">X-as-a-Service<br/><small>raw-message topic</small></td>
+            <td class="cell-med">X-as-a-Service<br/><small>storage events</small></td>
+            <td class="cell-strong">X-as-a-Service<br/><small>raw-message topic</small></td>
+            <td class="cell-light">X-as-a-Service<br/><small>ingest config</small></td>
+            <td class="cell-med">Facilitation<br/><small>platform services</small></td>
+          </tr>
+          <tr>
+            <td class="row-header">T2 · Search</td>
+            <td class="cell-none">—</td>
+            <td class="cell-none">—</td>
+            <td class="cell-med">X-as-a-Service<br/><small>index size metrics</small></td>
+            <td class="cell-strong">X-as-a-Service<br/><small>search.v2 API</small></td>
+            <td class="cell-strong">X-as-a-Service<br/><small>search.v2 API</small></td>
+            <td class="cell-med">Facilitation<br/><small>platform services</small></td>
+          </tr>
+          <tr>
+            <td class="row-header">T3 · FinOps</td>
+            <td class="cell-none">—</td>
+            <td class="cell-none">—</td>
+            <td class="cell-none">—</td>
+            <td class="cell-none">—</td>
+            <td class="cell-light">X-as-a-Service<br/><small>cost reports</small></td>
+            <td class="cell-med">Facilitation<br/><small>IaC modules</small></td>
+          </tr>
+          <tr>
+            <td class="row-header">T4 · Compliance</td>
+            <td class="cell-none">—</td>
+            <td class="cell-none">—</td>
+            <td class="cell-none">—</td>
+            <td class="cell-none">—</td>
+            <td class="cell-strong">X-as-a-Service<br/><small>legal hold API</small></td>
+            <td class="cell-med">Facilitation<br/><small>platform services</small></td>
+          </tr>
+          <tr>
+            <td class="row-header">T5 · Control Plane</td>
+            <td class="cell-light">X-as-a-Service<br/><small>tenant config</small></td>
+            <td class="cell-light">X-as-a-Service<br/><small>search config</small></td>
+            <td class="cell-none">—</td>
+            <td class="cell-light">X-as-a-Service<br/><small>hold config</small></td>
+            <td class="cell-none">—</td>
+            <td class="cell-med">Facilitation<br/><small>platform services</small></td>
+          </tr>
+          <tr>
+            <td class="row-header">T6 · Platform</td>
+            <td class="cell-med">Facilitation</td>
+            <td class="cell-med">Facilitation</td>
+            <td class="cell-med">Facilitation</td>
+            <td class="cell-med">Facilitation</td>
+            <td class="cell-med">Facilitation</td>
+            <td class="cell-none">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Anti-Patterns Avoided -->
+  <p class="section-title">Conway's Law Anti-Patterns — Avoided by Design</p>
+  <div class="antipattern-grid">
+    <div class="ap-card">
+      <div class="ap-header"><span class="ap-icon">🚫</span><span class="ap-title">The Full-Stack Team Problem</span></div>
+      <div class="ap-body">If a single team owns ingestion <em>and</em> search, the boundary between them becomes informal. Engineers on one feature start coupling to internals of the other — rebuilding the monolith in disguise.</div>
+      <div class="ap-fix">✓ Fix: Each team has a hard domain boundary enforced by API contracts and separate on-call rotations.</div>
+    </div>
+    <div class="ap-card">
+      <div class="ap-header"><span class="ap-icon">🚫</span><span class="ap-title">Shared Database Anti-Pattern</span></div>
+      <div class="ap-body">A shared RDS/DynamoDB table accessed by multiple teams destroys bounded context. Teams can't evolve their schema independently, creating coordinated deployment dependencies at 60PB scale.</div>
+      <div class="ap-fix">✓ Fix: Each domain team owns its own datastore. Cross-domain reads happen via published APIs only.</div>
+    </div>
+    <div class="ap-card">
+      <div class="ap-header"><span class="ap-icon">🚫</span><span class="ap-title">Platform Team as Bottleneck</span></div>
+      <div class="ap-body">Platform teams that gate every infrastructure change become the monolith's new form — a human bottleneck. When 50 engineers depend on 10 to deploy, velocity collapses under modernization load.</div>
+      <div class="ap-fix">✓ Fix: T6 publishes self-service golden paths. Teams use IaC modules and deploy independently without T6 approvals.</div>
+    </div>
+    <div class="ap-card">
+      <div class="ap-header"><span class="ap-icon">🚫</span><span class="ap-title">E-Discovery as an After-Thought</span></div>
+      <div class="ap-body">Compliance features bolted onto a search team create regulatory risk. When a legal hold must be applied in &lt;4 hours across 60PB, it cannot compete for backlog priority with index performance tuning.</div>
+      <div class="ap-fix">✓ Fix: T4 is a dedicated compliance-first team with its own roadmap, SLAs, and direct legal stakeholder relationships.</div>
+    </div>
+    <div class="ap-card">
+      <div class="ap-header"><span class="ap-icon">🚫</span><span class="ap-title">FinOps as a Finance Function</span></div>
+      <div class="ap-body">Cloud cost managed by finance rather than engineering leads to retroactive optimization. At $24,800/day, every lifecycle policy misconfiguration is immediately material — this must be an engineering domain.</div>
+      <div class="ap-fix">✓ Fix: T3 is an engineering team with code ownership of lifecycle policies, not a reporting function.</div>
+    </div>
+    <div class="ap-card">
+      <div class="ap-header"><span class="ap-icon">🚫</span><span class="ap-title">The Heroic Individual Dependency</span></div>
+      <div class="ap-body">When architecture knowledge lives in one person's head, team topology doesn't matter. The monolith's decomposition stalls when a Staff Engineer leaves or goes on-call for the entire system.</div>
+      <div class="ap-fix">✓ Fix: Each team has 2+ engineers with deep domain ownership. Architecture decision records (ADRs) are mandatory.</div>
+    </div>
+  </div>
+
+</main>
+<footer>
+  <strong>Technical Strategy Hub — Output 1: Team Topology</strong> · Message Archiver Platform · Confidential · Internal Use Only
+</footer>
+</body>
+</html>

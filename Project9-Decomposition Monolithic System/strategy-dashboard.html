@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Architecture &amp; Strategy Portal — Technical Strategy Hub</title>
+  <style>
+    :root {
+      --bg: #0a0e1a; --surface: #111827; --surface2: #1a2236; --border: #1e2d45;
+      --accent: #3b82f6; --accent2: #8b5cf6; --accent3: #10b981; --accent4: #f59e0b;
+      --accent5: #ef4444; --text: #e2e8f0; --text-muted: #64748b; --text-dim: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+    header {
+      background: linear-gradient(135deg, #0d1b2e, #0f2241); border-bottom: 1px solid var(--border);
+      padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg,var(--accent),var(--accent2)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .logo-text h1 { font-size: 1rem; font-weight: 700; }
+    .logo-text p { font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    nav { display: flex; gap: 4px; }
+    nav a { color: var(--text-dim); text-decoration: none; padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 500; transition: all 0.2s; border: 1px solid transparent; }
+    nav a:hover { color: var(--text); background: var(--surface2); border-color: var(--border); }
+    nav a.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+    .badge-live { background: rgba(16,185,129,0.15); color: var(--accent3); border: 1px solid rgba(16,185,129,0.3); padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .dot-live { width: 6px; height: 6px; border-radius: 50%; background: var(--accent3); animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    .hero { background: linear-gradient(135deg,#0d1b2e,#0f1f3a,#0d1b2e); border-bottom: 1px solid var(--border); padding: 2rem 2rem 1.5rem; }
+    .hero-content { max-width: 1600px; margin: 0 auto; }
+    .eyebrow { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent3); font-weight: 600; margin-bottom: 0.5rem; }
+    .hero h2 { font-size: 1.5rem; font-weight: 800; }
+    .hero h2 span { background: linear-gradient(135deg,var(--accent3),var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { color: var(--text-dim); font-size: 0.83rem; max-width: 700px; line-height: 1.55; margin-top: 0.4rem; }
+
+    .main { max-width: 1600px; margin: 0 auto; padding: 1.5rem 2rem; }
+    .section-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg,var(--border),transparent); }
+    .section-tag { font-size: 0.65rem; padding: 2px 9px; border-radius: 4px; font-weight: 700; }
+
+    /* ── WIDGET GRID ── */
+    .dash-row { display: grid; gap: 1rem; margin-bottom: 1.25rem; }
+    .r4 { grid-template-columns: repeat(4,1fr); }
+    .r3 { grid-template-columns: repeat(3,1fr); }
+    .r2 { grid-template-columns: 2fr 1fr; }
+    .r2b { grid-template-columns: 1fr 1fr; }
+
+    .widget {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem;
+      position: relative; overflow: hidden;
+    }
+    .widget-title {
+      font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;
+      color: var(--text-muted); margin-bottom: 0.9rem; display: flex; align-items: center; justify-content: space-between;
+    }
+    .wt-left { display: flex; align-items: center; gap: 8px; }
+    .wt-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .wt-badge { font-size: 0.6rem; padding: 1px 7px; border-radius: 3px; font-weight: 700; }
+
+    /* KPI stat card */
+    .kpi-stat { text-align: left; }
+    .ks-val { font-size: 2rem; font-weight: 900; display: block; line-height: 1; margin-bottom: 0.25rem; }
+    .ks-label { font-size: 0.7rem; color: var(--text-muted); }
+    .ks-change { font-size: 0.72rem; margin-top: 0.4rem; font-weight: 600; }
+    .ks-change.up { color: var(--accent3); }
+    .ks-change.down { color: var(--accent5); }
+    .ks-change.neutral { color: var(--accent4); }
+
+    /* Storage donut area */
+    .storage-tier-list { display: flex; flex-direction: column; gap: 0.55rem; }
+    .stl-item { display: flex; align-items: center; gap: 8px; }
+    .stl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .stl-name { font-size: 0.75rem; color: var(--text-dim); flex: 1; }
+    .stl-bar-wrap { width: 80px; }
+    .stl-bar { height: 4px; border-radius: 2px; background: var(--surface2); overflow: hidden; }
+    .stl-fill { height: 100%; border-radius: 2px; }
+    .stl-val { font-size: 0.72rem; font-weight: 700; min-width: 35px; text-align: right; }
+
+    /* Ingestion chart bars */
+    .ingest-chart { display: flex; align-items: flex-end; gap: 4px; height: 80px; padding-bottom: 2px; }
+    .ic-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .ic-bar { width: 100%; border-radius: 3px 3px 0 0; min-height: 4px; transition: opacity 0.2s; }
+    .ic-bar:hover { opacity: 0.8; }
+    .ic-label { font-size: 0.55rem; color: var(--text-muted); }
+    .ic-tooltip { font-size: 0.58rem; color: var(--text-dim); }
+
+    /* Strangler Fig Matrix */
+    .sfm { display: grid; grid-template-columns: repeat(5,1fr); gap: 2px; }
+    .sfm-header { font-size: 0.62rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); padding: 0.3rem; text-align: center; border-radius: 4px; background: var(--surface2); }
+    .sfm-row-label { font-size: 0.68rem; color: var(--text-dim); padding: 0.4rem 0.25rem; display: flex; align-items: center; font-weight: 600; }
+    .sfm-cell {
+      padding: 0.4rem 0.25rem; border-radius: 4px; border: 1px solid var(--border);
+      font-size: 0.62rem; text-align: center; display: flex; align-items: center; justify-content: center;
+      font-weight: 600; line-height: 1.2;
+    }
+    .sfc-dead { background: rgba(239,68,68,0.15); color: #ef4444; border-color: rgba(239,68,68,0.25); }
+    .sfc-partial { background: rgba(245,158,11,0.12); color: #f59e0b; border-color: rgba(245,158,11,0.25); }
+    .sfc-live { background: rgba(16,185,129,0.12); color: #10b981; border-color: rgba(16,185,129,0.25); }
+    .sfc-new { background: rgba(59,130,246,0.12); color: #3b82f6; border-color: rgba(59,130,246,0.25); }
+    .sfc-planned { background: rgba(100,116,139,0.08); color: var(--text-muted); border-color: var(--border); }
+
+    /* DORA per-team bars */
+    .dora-team-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .dtl-item { display: flex; align-items: center; gap: 8px; }
+    .dtl-name { font-size: 0.7rem; color: var(--text-dim); width: 90px; flex-shrink: 0; }
+    .dtl-bar-wrap { flex: 1; }
+    .dtl-bar { height: 6px; border-radius: 3px; background: var(--surface2); overflow: hidden; }
+    .dtl-fill { height: 100%; border-radius: 3px; }
+    .dtl-val { font-size: 0.7rem; font-weight: 700; min-width: 40px; text-align: right; }
+    .dtl-badge { font-size: 0.6rem; padding: 1px 6px; border-radius: 3px; font-weight: 700; flex-shrink: 0; }
+    .elite { background: rgba(16,185,129,0.15); color: #10b981; }
+    .high-p { background: rgba(59,130,246,0.15); color: #3b82f6; }
+    .medium-p { background: rgba(245,158,11,0.15); color: #f59e0b; }
+    .low-p { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+    /* Alert list */
+    .alert-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .alert-item { padding: 0.6rem 0.75rem; border-radius: 7px; border: 1px solid; display: flex; gap: 8px; align-items: flex-start; font-size: 0.75rem; line-height: 1.45; }
+    .ai-critical { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); }
+    .ai-warn { border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.08); }
+    .ai-info { border-color: rgba(59,130,246,0.25); background: rgba(59,130,246,0.07); }
+    .ai-ok { border-color: rgba(16,185,129,0.25); background: rgba(16,185,129,0.07); }
+    .ai-icon { flex-shrink: 0; font-size: 0.9rem; }
+    .ai-text { flex: 1; }
+    .ai-text strong { display: block; font-weight: 700; margin-bottom: 1px; }
+    .ai-time { font-size: 0.63rem; color: var(--text-muted); }
+
+    /* Compliance metrics */
+    .comp-stat-row { display: flex; justify-content: space-between; align-items: center; padding: 0.55rem 0; border-bottom: 1px solid var(--border); }
+    .comp-stat-row:last-child { border-bottom: none; }
+    .csr-label { font-size: 0.76rem; color: var(--text-dim); }
+    .csr-val { font-size: 0.85rem; font-weight: 800; }
+    .csr-status { font-size: 0.64rem; padding: 2px 7px; border-radius: 4px; font-weight: 700; }
+
+    /* Search latency gauge */
+    .gauge-row { display: flex; gap: 1rem; justify-content: space-around; margin-top: 0.5rem; }
+    .gauge-item { text-align: center; }
+    .gauge-circle {
+      width: 70px; height: 70px; border-radius: 50%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-weight: 800; position: relative; margin: 0 auto 0.4rem;
+      border: 3px solid;
+    }
+    .gc-val { font-size: 0.85rem; font-weight: 800; line-height: 1; }
+    .gc-unit { font-size: 0.55rem; color: var(--text-muted); }
+    .gc-label { font-size: 0.65rem; color: var(--text-muted); }
+    .gc-green { border-color: var(--accent3); color: var(--accent3); box-shadow: 0 0 12px rgba(16,185,129,0.2); }
+    .gc-blue { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 12px rgba(59,130,246,0.2); }
+    .gc-amber { border-color: var(--accent4); color: var(--accent4); box-shadow: 0 0 12px rgba(245,158,11,0.2); }
+
+    /* Tenant ingestion table */
+    .tenant-table { width: 100%; border-collapse: collapse; font-size: 0.73rem; }
+    .tenant-table th { background: var(--surface2); color: var(--text-muted); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.5rem; border-bottom: 1px solid var(--border); text-align: left; }
+    .tenant-table td { padding: 0.5rem; border-bottom: 1px solid var(--border); color: var(--text-dim); }
+    .tenant-table tr:hover td { background: var(--surface2); }
+    .tenant-badge { font-size: 0.62rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+
+    /* COGS sparkline area */
+    .cogs-trend { display: flex; flex-direction: column; gap: 0.5rem; }
+    .ct-item { display: flex; align-items: center; gap: 8px; }
+    .ct-label { font-size: 0.7rem; color: var(--text-dim); width: 110px; flex-shrink: 0; }
+    .ct-bar-wrap { flex: 1; position: relative; }
+    .ct-bar { height: 18px; border-radius: 4px; background: var(--surface2); overflow: hidden; position: relative; }
+    .ct-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.9); }
+    .ct-delta { font-size: 0.7rem; font-weight: 700; min-width: 50px; text-align: right; }
+
+    footer { border-top: 1px solid var(--border); text-align: center; padding: 1.5rem; color: var(--text-muted); font-size: 0.75rem; margin-top: 2rem; }
+    footer strong { color: var(--text-dim); }
+
+    @media (max-width: 1200px) { .r4 { grid-template-columns: 1fr 1fr; } .r3 { grid-template-columns: 1fr 1fr; } .r2 { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { .r4, .r3, .r2, .r2b { grid-template-columns: 1fr; } nav { display: none; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🗄️</div>
+    <div class="logo-text">
+      <h1>Technical Strategy Hub</h1>
+      <p>Message Archiver Platform · Architecture &amp; Strategy Portal</p>
+    </div>
+  </div>
+  <nav>
+    <a href="index.html">Overview</a>
+    <a href="team-topology.html">Team Topology</a>
+    <a href="wave-model.html">Wave Model</a>
+    <a href="strategy-dashboard.html" class="active">Strategy Dashboard</a>
+    <a href="infographic.html">All-Hands Infographic</a>
+  </nav>
+  <div style="display:flex; align-items:center; gap:12px;">
+    <span class="badge-live"><span class="dot-live"></span>Live · Mar 23, 2026 09:14 UTC</span>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-content">
+    <p class="eyebrow">Output 3 · Architecture &amp; Strategy Portal · Live Dashboard</p>
+    <h2><span>Data Gravity · Decomposition State · SEI Intelligence · Compliance Health</span></h2>
+    <p>Real-time operating view for the VP Architecture and Sr. Director Engineering. Four planes: what's in the data, what's being decomposed, how are teams performing, and are we compliant.</p>
+  </div>
+</div>
+
+<main class="main">
+
+  <!-- ══════════════════ PLANE 1: TOP KPIs ══════════════════ -->
+  <p class="section-title">
+    <span>Plane 1 · Data Gravity — Live Snapshot</span>
+    <span class="section-tag" style="background:rgba(59,130,246,0.15);color:var(--accent);">60 PB FOOTPRINT</span>
+  </p>
+  <div class="dash-row r4">
+    <div class="widget">
+      <div class="widget-title"><div class="wt-left"><span class="wt-dot" style="background:#3b82f6;"></span>Total Archive</div></div>
+      <div class="kpi-stat">
+        <span class="ks-val" style="color:var(--accent)">60.4 PB</span>
+        <div class="ks-label">Total data under management</div>
+        <div class="ks-change up">↑ +4.2 TB today · on track</div>
+      </div>
+    </div>
+    <div class="widget">
+      <div class="widget-title"><div class="wt-left"><span class="wt-dot" style="background:#10b981;"></span>Daily Ingestion</div></div>
+      <div class="kpi-stat">
+        <span class="ks-val" style="color:var(--accent3)">4.2 TB</span>
+        <div class="ks-label">Messages ingested today</div>
+        <div class="ks-change up">↑ Peak: 6.1 TB (Tue–Wed avg)</div>
+      </div>
+    </div>
+    <div class="widget">
+      <div class="widget-title"><div class="wt-left"><span class="wt-dot" style="background:#f59e0b;"></span>Daily COGS</div></div>
+      <div class="kpi-stat">
+        <span class="ks-val" style="color:var(--accent4)">$21,960</span>
+        <div class="ks-label">Cloud cost today (post W1–W2 savings)</div>
+        <div class="ks-change up">↓ −11.5% vs. baseline $24,800</div>
+      </div>
+    </div>
+    <div class="widget">
+      <div class="widget-title"><div class="wt-left"><span class="wt-dot" style="background:#8b5cf6;"></span>FinOps Target</div></div>
+      <div class="kpi-stat">
+        <span class="ks-val" style="color:var(--accent2)">$16,400</span>
+        <div class="ks-label">Daily COGS target after Wave 3</div>
+        <div class="ks-change neutral">⏳ $5,560/day remaining to unlock</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dash-row r3">
+    <!-- Storage Tier Distribution -->
+    <div class="widget">
+      <div class="widget-title">
+        <div class="wt-left"><span class="wt-dot" style="background:#3b82f6;"></span>Storage Tier Distribution</div>
+        <span class="wt-badge" style="background:rgba(16,185,129,0.15);color:#10b981;">Compliant</span>
+      </div>
+      <div class="storage-tier-list">
+        <div class="stl-item">
+          <div class="stl-dot" style="background:#ef4444;"></div>
+          <div class="stl-name">🔥 S3 Standard (Hot Active)</div>
+          <div class="stl-bar-wrap"><div class="stl-bar"><div class="stl-fill" style="width:5%;background:#ef4444;"></div></div></div>
+          <div class="stl-val" style="color:#ef4444">3.0 PB</div>
+        </div>
+        <div class="stl-item">
+          <div class="stl-dot" style="background:#f59e0b;"></div>
+          <div class="stl-name">🌡️ S3-IA (Warm 30–90d)</div>
+          <div class="stl-bar-wrap"><div class="stl-bar"><div class="stl-fill" style="width:15%;background:#f59e0b;"></div></div></div>
+          <div class="stl-val" style="color:#f59e0b">9.1 PB</div>
+        </div>
+        <div class="stl-item">
+          <div class="stl-dot" style="background:#3b82f6;"></div>
+          <div class="stl-name">❄️ S3-IT (Cool 90d–2yr)</div>
+          <div class="stl-bar-wrap"><div class="stl-bar"><div class="stl-fill" style="width:30%;background:#3b82f6;"></div></div></div>
+          <div class="stl-val" style="color:#3b82f6">18.1 PB</div>
+        </div>
+        <div class="stl-item">
+          <div class="stl-dot" style="background:#64748b;"></div>
+          <div class="stl-name">🧊 Glacier FR (2–7yr)</div>
+          <div class="stl-bar-wrap"><div class="stl-bar"><div class="stl-fill" style="width:35%;background:#64748b;"></div></div></div>
+          <div class="stl-val" style="color:#64748b">21.1 PB</div>
+        </div>
+        <div class="stl-item">
+          <div class="stl-dot" style="background:#1d4ed8;"></div>
+          <div class="stl-name">🏔️ Glacier Deep (7yr+)</div>
+          <div class="stl-bar-wrap"><div class="stl-bar"><div class="stl-fill" style="width:15%;background:#1d4ed8;"></div></div></div>
+          <div class="stl-val" style="color:#6d9dea">9.1 PB</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7-Day Ingestion Chart -->
+    <div class="widget">
+      <div class="widget-title"><div class="wt-left"><span class="wt-dot" style="background:#10b981;"></span>7-Day Ingestion Volume (TB/day)</div></div>
+      <div class="ingest-chart">
+        <div class="ic-bar-wrap"><div class="ic-bar" style="height:52%; background:linear-gradient(to top,#3b82f6,#60a5fa);"></div><div class="ic-label">Mon</div><div class="ic-tooltip">3.8TB</div></div>
+        <div class="ic-bar-wrap"><div class="ic-bar" style="height:78%; background:linear-gradient(to top,#3b82f6,#60a5fa);"></div><div class="ic-label">Tue</div><div class="ic-tooltip">5.7TB</div></div>
+        <div class="ic-bar-wrap"><div class="ic-bar" style="height:82%; background:linear-gradient(to top,#3b82f6,#60a5fa);"></div><div class="ic-label">Wed</div><div class="ic-tooltip">6.1TB</div></div>
+        <div class="ic-bar-wrap"><div class="ic-bar" style="height:60%; background:linear-gradient(to top,#3b82f6,#60a5fa);"></div><div class="ic-label">Thu</div><div class="ic-tooltip">4.4TB</div></div>
+        <div class="ic-bar-wrap"><div class="ic-bar" style="height:55%; background:linear-gradient(to top,#3b82f6,#60a5fa);"></div><div class="ic-label">Fri</div><div class="ic-tooltip">4.0TB</div></div>
+        <div class="ic-bar-wrap"><div class="ic-bar" style="height:22%; background:linear-gradient(to top,#64748b,#94a3b8);"></div><div class="ic-label">Sat</div><div class="ic-tooltip">1.6TB</div></div>
+        <div class="ic-bar-wrap"><div class="ic-bar" style="height:57%; background:linear-gradient(to top,#10b981,#34d399); animation: pulse 2s infinite;"></div><div class="ic-label">Today</div><div class="ic-tooltip">4.2TB</div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--text-muted);margin-top:0.5rem;">
+        <span>7-day avg: 4.2 TB/day</span><span>Peak: Wed 6.1 TB</span>
+      </div>
+    </div>
+
+    <!-- COGS Trend by Layer -->
+    <div class="widget">
+      <div class="widget-title"><div class="wt-left"><span class="wt-dot" style="background:#f59e0b;"></span>COGS Trend by Wave Savings</div></div>
+      <div class="cogs-trend">
+        <div class="ct-item">
+          <div class="ct-label">Baseline (pre-W0)</div>
+          <div class="ct-bar-wrap"><div class="ct-bar"><div class="ct-fill" style="width:100%;background:rgba(100,116,139,0.5);">$24,800/d</div></div></div>
+          <div class="ct-delta" style="color:var(--text-muted)">—</div>
+        </div>
+        <div class="ct-item">
+          <div class="ct-label">After Wave 0 (IT)</div>
+          <div class="ct-bar-wrap"><div class="ct-bar"><div class="ct-fill" style="width:88%;background:linear-gradient(90deg,#3b82f6,#6366f1);">$21,824/d</div></div></div>
+          <div class="ct-delta" style="color:var(--accent3)">−12%</div>
+        </div>
+        <div class="ct-item">
+          <div class="ct-label">After Wave 1 (Ing)</div>
+          <div class="ct-bar-wrap"><div class="ct-bar"><div class="ct-fill" style="width:79%;background:linear-gradient(90deg,#10b981,#3b82f6);">$19,592/d</div></div></div>
+          <div class="ct-delta" style="color:var(--accent3)">−21%</div>
+        </div>
+        <div class="ct-item">
+          <div class="ct-label">Current (W2 live)</div>
+          <div class="ct-bar-wrap"><div class="ct-bar"><div class="ct-fill" style="width:71%;background:linear-gradient(90deg,#10b981,#34d399);">$21,960/d</div></div></div>
+          <div class="ct-delta" style="color:var(--accent3)">−11.5%</div>
+        </div>
+        <div class="ct-item">
+          <div class="ct-label">Target Wave 3</div>
+          <div class="ct-bar-wrap"><div class="ct-bar" style="border:1px dashed rgba(245,158,11,0.4);"><div class="ct-fill" style="width:66%;background:linear-gradient(90deg,#f59e0b,#fbbf24);opacity:0.6;">$16,400/d</div></div></div>
+          <div class="ct-delta" style="color:var(--accent4)">−34%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ PLANE 2: DECOMPOSITION STATE ══════════════════ -->
+  <p class="section-title" style="margin-top:0.5rem;">
+    <span>Plane 2 · Decomposition State — Strangler Fig Progress Matrix</span>
+    <span class="section-tag" style="background:rgba(139,92,246,0.15);color:var(--accent2);">WAVE 2 ACTIVE</span>
+  </p>
+  <div class="dash-row r2b">
+    <div class="widget" style="overflow-x:auto;">
+      <div class="widget-title"><div class="wt-left"><span class="wt-dot" style="background:#8b5cf6;"></span>Component Migration State (Strangler Fig)</div></div>
+      <div style="font-size:0.68rem;color:var(--text-muted);margin-bottom:0.75rem;display:flex;gap:1rem;flex-wrap:wrap;">
+        <span><span style="background:rgba(239,68,68,0.15);color:#ef4444;padding:1px 6px;border-radius:3px;font-weight:700;">DEPRECATED</span> Legacy traffic stopped</span>
+        <span><span style="background:rgba(245,158,11,0.12);color:#f59e0b;padding:1px 6px;border-radius:3px;font-weight:700;">MIGRATING</span> Dual-write / parallel run</span>
+        <span><span style="background:rgba(16,185,129,0.12);color:#10b981;padding:1px 6px;border-radius:3px;font-weight:700;">LIVE NEW</span> New service 100% traffic</span>
+        <span><span style="background:rgba(59,130,246,0.12);color:#3b82f6;padding:1px 6px;border-radius:3px;font-weight:700;">IN DESIGN</span> Wave not started</span>
+      </div>
+      <div class="sfm">
+        <!-- Headers -->
+        <div class="sfm-header">Component</div>
+        <div class="sfm-header">Monolith State</div>
+        <div class="sfm-header">New Service</div>
+        <div class="sfm-header">% Traffic</div>
+        <div class="sfm-header">Wave</div>
+
+        <!-- Row 1 -->
+        <div class="sfm-row-label">SMTP/IMAP Connectors</div>
+        <div class="sfm-cell sfc-dead">DEPRECATED</div>
+        <div class="sfm-cell sfc-live">LIVE: T1 Ingest</div>
+        <div class="sfm-cell sfc-live">100% ✓</div>
+        <div class="sfm-cell" style="font-size:0.68rem;color:var(--accent3);">W1</div>
+
+        <!-- Row 2 -->
+        <div class="sfm-row-label">Kafka Message Bus</div>
+        <div class="sfm-cell sfc-dead">N/A (new)</div>
+        <div class="sfm-cell sfc-live">LIVE: MSK</div>
+        <div class="sfm-cell sfc-live">100% ✓</div>
+        <div class="sfm-cell" style="font-size:0.68rem;color:var(--accent3);">W1</div>
+
+        <!-- Row 3 -->
+        <div class="sfm-row-label">Oracle Queue Tables</div>
+        <div class="sfm-cell sfc-dead">DEPRECATED</div>
+        <div class="sfm-cell sfc-live">LIVE: Kafka</div>
+        <div class="sfm-cell sfc-live">100% ✓</div>
+        <div class="sfm-cell" style="font-size:0.68rem;color:var(--accent3);">W1</div>
+
+        <!-- Row 4 -->
+        <div class="sfm-row-label">Elasticsearch 6.x</div>
+        <div class="sfm-cell sfc-partial">MIGRATING</div>
+        <div class="sfm-cell sfc-partial">DUAL-WRITE: T2</div>
+        <div class="sfm-cell sfc-partial">40% new</div>
+        <div class="sfm-cell" style="font-size:0.68rem;color:var(--accent);">W2 ●</div>
+
+        <!-- Row 5 -->
+        <div class="sfm-row-label">API Gateway</div>
+        <div class="sfm-cell sfc-partial">PROXY MODE</div>
+        <div class="sfm-cell sfc-partial">T5 APIGW</div>
+        <div class="sfm-cell sfc-partial">70% routed</div>
+        <div class="sfm-cell" style="font-size:0.68rem;color:var(--accent);">W2 ●</div>
+
+        <!-- Row 6 -->
+        <div class="sfm-row-label">Retention Policy Engine</div>
+        <div class="sfm-cell" style="font-size:0.65rem;color:var(--text-muted);">ACTIVE (legacy)</div>
+        <div class="sfm-cell sfc-new">T3 FinOps Svc</div>
+        <div class="sfm-cell sfc-partial">30% shadow</div>
+        <div class="sfm-cell" style="font-size:0.68rem;color:var(--accent);">W2 ●</div>
+
+        <!-- Row 7 -->
+        <div class="sfm-row-label">Legal Hold / WORM</div>
+        <div class="sfm-cell" style="font-size:0.65rem;color:var(--text-muted);">ACTIVE (legacy)</div>
+        <div class="sfm-cell sfc-planned">T4 DESIGN</div>
+        <div class="sfm-cell sfc-planned">0% (W3)</div>
+        <div class="sfm-cell" style="font-size:0.68rem;color:var(--accent4);">W3</div>
+
+        <!-- Row 8 -->
+        <div class="sfm-row-label">Multi-Tenancy Isolation</div>
+        <div class="sfm-cell" style="font-size:0.65rem;color:var(--text-muted);">ACTIVE (legacy)</div>
+        <div class="sfm-cell sfc-planned">T5 OPA Design</div>
+        <div class="sfm-cell sfc-planned">0% (W3)</div>
+        <div class="sfm-cell" style="font-size:0.68rem;color:var(--accent4);">W3</div>
+
+        <!-- Row 9 -->
+        <div class="sfm-row-label">E-Discovery Export</div>
+        <div class="sfm-cell" style="font-size:0.65rem;color:var(--text-muted);">ACTIVE (legacy)</div>
+        <div class="sfm-cell sfc-planned">T4 Planned</div>
+        <div class="sfm-cell sfc-planned">0% (W3)</div>
+        <div class="sfm-cell" style="font-size:0.68rem;color:var(--accent4);">W3</div>
+      </div>
+    </div>
+
+    <!-- Active Alerts -->
+    <div class="widget">
+      <div class="widget-title"><div class="wt-left"><span class="wt-dot" style="background:#ef4444;"></span>Active Alerts &amp; Operational Health</div></div>
+      <div class="alert-list">
+        <div class="alert-item ai-critical">
+          <span class="ai-icon">🔴</span>
+          <div class="ai-text">
+            <strong>OpenSearch dual-write consistency lag: 0.04%</strong>
+            T2 indexing pipeline delta exceeds 0.001% threshold. Index backfill running.
+          </div>
+          <span class="ai-time">4m ago</span>
+        </div>
+        <div class="alert-item ai-warn">
+          <span class="ai-icon">🟡</span>
+          <div class="ai-text">
+            <strong>Glacier restore queue depth elevated</strong>
+            Active e-discovery case restored 1.2TB from Glacier FR. 4h ETA.
+          </div>
+          <span class="ai-time">22m ago</span>
+        </div>
+        <div class="alert-item ai-warn">
+          <span class="ai-icon">🟡</span>
+          <div class="ai-text">
+            <strong>T3 FinOps: 890GB untagged objects detected</strong>
+            S3 Object Storage Lens flagged pre-2024 objects without tenant-id tag. Batch tagging job queued.
+          </div>
+          <span class="ai-time">1h ago</span>
+        </div>
+        <div class="alert-item ai-info">
+          <span class="ai-icon">🔵</span>
+          <div class="ai-text">
+            <strong>API Gateway traffic shift: 70% routed to T5</strong>
+            Wave 2 rollout milestone reached. Monolith proxy load reduced.
+          </div>
+          <span class="ai-time">3h ago</span>
+        </div>
+        <div class="alert-item ai-ok">
+          <span class="ai-icon">🟢</span>
+          <div class="ai-text">
+            <strong>Wave 1 complete: Zero regression on message durability</strong>
+            30-day post-W1 monitoring period closed. SLO 99.999% maintained.
+          </div>
+          <span class="ai-time">2d ago</span>
+        </div>
+        <div class="alert-item ai-ok">
+          <span class="ai-icon">🟢</span>
+          <div class="ai-text">
+            <strong>S3 Intelligent-Tiering: 18.1 PB fully enrolled</strong>
+            All qualifying objects enrolled. Estimated monthly savings: $174,800.
+          </div>
+          <span class="ai-time">5d ago</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ PLANE 3: SEI / DORA HUB ══════════════════ -->
+  <p class="section-title" style="margin-top:0.5rem;">
+    <span>Plane 3 · Software Engineering Intelligence (SEI) — DORA Metrics Hub</span>
+    <span class="section-tag" style="background:rgba(16,185,129,0.15);color:var(--accent3);">6 TEAMS · 60 ENGINEERS</span>
+  </p>
+  <div class="dash-row r4">
+    <div class="widget">
+      <div class="widget-title"><div class="wt-left"><span class="wt-dot" style="background:#10b981;"></span>Deployment Frequency</div></div>
+      <div class="kpi-stat">
+        <span class="ks-val" style="color:var(--accent3)">4.2×</span>
+        <div class="ks-label">Org avg. deploys/week/team</div>
+        <div class="ks-change up">↑ Elite tier (&gt;1/day threshold)</div>
+      </div>
+    </div>
+    <div class="widget">
+      <div class="widget-title"><div class="wt-left"><span class="wt-dot" style="background:#3b82f6;"></span>Lead Time for Changes</div></div>
+      <div class="kpi-stat">
+        <span class="ks-val" style="color:var(--accent)">38 min</span>
+        <div class="ks-label">Commit to production avg.</div>
+        <div class="ks-change up">↑ Elite (&lt;1h) — was 4.2d in monolith era</div>
+      </div>
+    </div>
+    <div class="widget">
+      <div class="widget-title"><div class="wt-left"><span class="wt-dot" style="background:#f59e0b;"></span>Mean Time to Restore</div></div>
+      <div class="kpi-stat">
+        <span class="ks-val" style="color:var(--accent4)">12 min</span>
+        <div class="ks-label">Avg incident resolution</div>
+        <div class="ks-change up">↑ High performer (&lt;1h) — was 6.4h</div>
+      </div>
+    </div>
+    <div class="widget">
+      <div class="widget-title"><div class="wt-left"><span class="wt-dot" style="background:#8b5cf6;"></span>Change Failure Rate</div></div>
+      <div class="kpi-stat">
+        <span class="ks-val" style="color:var(--accent2)">3.1%</span>
+        <div class="ks-label">Deploys causing incidents</div>
+        <div class="ks-change up">↑ Elite (&lt;5%) — was 18% monolith</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dash-row r3">
+    <!-- Deploy Frequency per Team -->
+    <div class="widget">
+      <div class="widget-title"><div class="wt-left"><span class="wt-dot" style="background:#10b981;"></span>Deploy Frequency per Team (per week)</div></div>
+      <div class="dora-team-list">
+        <div class="dtl-item">
+          <div class="dtl-name">T1 Ingestion</div>
+          <div class="dtl-bar-wrap"><div class="dtl-bar"><div class="dtl-fill" style="width:70%;background:linear-gradient(90deg,#10b981,#34d399);"></div></div></div>
+          <div class="dtl-val" style="color:#10b981">6.2×</div>
+          <span class="dtl-badge elite">Elite</span>
+        </div>
+        <div class="dtl-item">
+          <div class="dtl-name">T2 Search</div>
+          <div class="dtl-bar-wrap"><div class="dtl-bar"><div class="dtl-fill" style="width:50%;background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div></div>
+          <div class="dtl-val" style="color:#3b82f6">4.8×</div>
+          <span class="dtl-badge elite">Elite</span>
+        </div>
+        <div class="dtl-item">
+          <div class="dtl-name">T3 FinOps</div>
+          <div class="dtl-bar-wrap"><div class="dtl-bar"><div class="dtl-fill" style="width:38%;background:linear-gradient(90deg,#10b981,#3b82f6);"></div></div></div>
+          <div class="dtl-val" style="color:#10b981">3.8×</div>
+          <span class="dtl-badge high-p">High</span>
+        </div>
+        <div class="dtl-item">
+          <div class="dtl-name">T4 Compliance</div>
+          <div class="dtl-bar-wrap"><div class="dtl-bar"><div class="dtl-fill" style="width:28%;background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div></div></div>
+          <div class="dtl-val" style="color:#f59e0b">2.4×</div>
+          <span class="dtl-badge medium-p">Medium</span>
+        </div>
+        <div class="dtl-item">
+          <div class="dtl-name">T5 Control</div>
+          <div class="dtl-bar-wrap"><div class="dtl-bar"><div class="dtl-fill" style="width:50%;background:linear-gradient(90deg,#8b5cf6,#a78bfa);"></div></div></div>
+          <div class="dtl-val" style="color:#8b5cf6">5.1×</div>
+          <span class="dtl-badge elite">Elite</span>
+        </div>
+        <div class="dtl-item">
+          <div class="dtl-name">T6 Platform</div>
+          <div class="dtl-bar-wrap"><div class="dtl-bar"><div class="dtl-fill" style="width:35%;background:linear-gradient(90deg,#6366f1,#818cf8);"></div></div></div>
+          <div class="dtl-val" style="color:#6366f1">3.2×</div>
+          <span class="dtl-badge high-p">High</span>
+        </div>
+      </div>
+      <div style="margin-top:1rem;padding:0.6rem;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:6px;font-size:0.72rem;color:var(--accent4);">
+        ⚠️ T4 Compliance (2.4×/wk) at Medium — acceptable due to compliance change-freeze requirements. Target 3×/wk by W3.
+      </div>
+    </div>
+
+    <!-- Lead Time per Team -->
+    <div class="widget">
+      <div class="widget-title"><div class="wt-left"><span class="wt-dot" style="background:#3b82f6;"></span>Lead Time for Changes (P50)</div></div>
+      <div class="dora-team-list">
+        <div class="dtl-item">
+          <div class="dtl-name">T1 Ingestion</div>
+          <div class="dtl-bar-wrap"><div class="dtl-bar"><div class="dtl-fill" style="width:25%;background:linear-gradient(90deg,#10b981,#34d399);"></div></div></div>
+          <div class="dtl-val" style="color:#10b981">24 min</div>
+          <span class="dtl-badge elite">Elite</span>
+        </div>
+        <div class="dtl-item">
+          <div class="dtl-name">T2 Search</div>
+          <div class="dtl-bar-wrap"><div class="dtl-bar"><div class="dtl-fill" style="width:42%;background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div></div>
+          <div class="dtl-val" style="color:#3b82f6">41 min</div>
+          <span class="dtl-badge elite">Elite</span>
+        </div>
+        <div class="dtl-item">
+          <div class="dtl-name">T3 FinOps</div>
+          <div class="dtl-bar-wrap"><div class="dtl-bar"><div class="dtl-fill" style="width:35%;background:linear-gradient(90deg,#10b981,#3b82f6);"></div></div></div>
+          <div class="dtl-val" style="color:#10b981">34 min</div>
+          <span class="dtl-badge elite">Elite</span>
+        </div>
+        <div class="dtl-item">
+          <div class="dtl-name">T4 Compliance</div>
+          <div class="dtl-bar-wrap"><div class="dtl-bar"><div class="dtl-fill" style="width:65%;background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div></div></div>
+          <div class="dtl-val" style="color:#f59e0b">65 min</div>
+          <span class="dtl-badge high-p">High</span>
+        </div>
+        <div class="dtl-item">
+          <div class="dtl-name">T5 Control</div>
+          <div class="dtl-bar-wrap"><div class="dtl-bar"><div class="dtl-fill" style="width:38%;background:linear-gradient(90deg,#8b5cf6,#a78bfa);"></div></div></div>
+          <div class="dtl-val" style="color:#8b5cf6">37 min</div>
+          <span class="dtl-badge elite">Elite</span>
+        </div>
+        <div class="dtl-item">
+          <div class="dtl-name">T6 Platform</div>
+          <div class="dtl-bar-wrap"><div class="dtl-bar"><div class="dtl-fill" style="width:44%;background:linear-gradient(90deg,#6366f1,#818cf8);"></div></div></div>
+          <div class="dtl-val" style="color:#6366f1">44 min</div>
+          <span class="dtl-badge elite">Elite</span>
+        </div>
+      </div>
+      <div style="margin-top:1rem;padding:0.6rem;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:6px;font-size:0.72rem;color:var(--accent3);">
+        ✓ 5/6 teams at Elite lead time. T4 Compliance at 65min — high performer. Acceptable given multi-stage legal review requirement.
+      </div>
+    </div>
+
+    <!-- Reliability & Incidents -->
+    <div class="widget">
+      <div class="widget-title"><div class="wt-left"><span class="wt-dot" style="background:#ef4444;"></span>Change Failure Rate per Team</div></div>
+      <div class="dora-team-list">
+        <div class="dtl-item">
+          <div class="dtl-name">T1 Ingestion</div>
+          <div class="dtl-bar-wrap"><div class="dtl-bar"><div class="dtl-fill" style="width:18%;background:#10b981;"></div></div></div>
+          <div class="dtl-val" style="color:#10b981">1.8%</div>
+          <span class="dtl-badge elite">Elite</span>
+        </div>
+        <div class="dtl-item">
+          <div class="dtl-name">T2 Search</div>
+          <div class="dtl-bar-wrap"><div class="dtl-bar"><div class="dtl-fill" style="width:42%;background:#f59e0b;"></div></div></div>
+          <div class="dtl-val" style="color:#f59e0b">4.2%</div>
+          <span class="dtl-badge elite">Elite</span>
+        </div>
+        <div class="dtl-item">
+          <div class="dtl-name">T3 FinOps</div>
+          <div class="dtl-bar-wrap"><div class="dtl-bar"><div class="dtl-fill" style="width:20%;background:#10b981;"></div></div></div>
+          <div class="dtl-val" style="color:#10b981">2.0%</div>
+          <span class="dtl-badge elite">Elite</span>
+        </div>
+        <div class="dtl-item">
+          <div class="dtl-name">T4 Compliance</div>
+          <div class="dtl-bar-wrap"><div class="dtl-bar"><div class="dtl-fill" style="width:28%;background:#10b981;"></div></div></div>
+          <div class="dtl-val" style="color:#10b981">2.8%</div>
+          <span class="dtl-badge elite">Elite</span>
+        </div>
+        <div class="dtl-item">
+          <div class="dtl-name">T5 Control</div>
+          <div class="dtl-bar-wrap"><div class="dtl-bar"><div class="dtl-fill" style="width:52%;background:#f59e0b;"></div></div></div>
+          <div class="dtl-val" style="color:#f59e0b">5.2%</div>
+          <span class="dtl-badge high-p">High</span>
+        </div>
+        <div class="dtl-item">
+          <div class="dtl-name">T6 Platform</div>
+          <div class="dtl-bar-wrap"><div class="dtl-bar"><div class="dtl-fill" style="width:24%;background:#10b981;"></div></div></div>
+          <div class="dtl-val" style="color:#10b981">2.4%</div>
+          <span class="dtl-badge elite">Elite</span>
+        </div>
+      </div>
+      <div style="margin-top:1rem;padding:0.6rem;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:6px;font-size:0.72rem;color:var(--accent4);">
+        ⚠️ T5 Control Plane at 5.2% — just above Elite threshold. Root cause: Wave 2 API Gateway config changes. Canary deployment required for next 30 days.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ PLANE 4: COMPLIANCE & E-DISCOVERY ══════════════════ -->
+  <p class="section-title" style="margin-top:0.5rem;">
+    <span>Plane 4 · Compliance &amp; E-Discovery Health — Real-Time</span>
+    <span class="section-tag" style="background:rgba(245,158,11,0.15);color:var(--accent4);">SEC 17a-4 · FINRA · GDPR</span>
+  </p>
+  <div class="dash-row r3">
+    <!-- Search Latency Gauges -->
+    <div class="widget">
+      <div class="widget-title"><div class="wt-left"><span class="wt-dot" style="background:#10b981;"></span>Search Latency Across 60PB (P99)</div></div>
+      <div class="gauge-row">
+        <div class="gauge-item">
+          <div class="gauge-circle gc-green"><div class="gc-val">420</div><div class="gc-unit">ms</div></div>
+          <div class="gc-label">Hot Tier<br/>(Active)</div>
+        </div>
+        <div class="gauge-item">
+          <div class="gauge-circle gc-blue"><div class="gc-val">2.1</div><div class="gc-unit">sec</div></div>
+          <div class="gc-label">Warm Tier<br/>(&lt;90d)</div>
+        </div>
+        <div class="gauge-item">
+          <div class="gauge-circle gc-amber"><div class="gc-val">12–48</div><div class="gc-unit">hrs</div></div>
+          <div class="gc-label">Cold/Glacier<br/>Retrieval</div>
+        </div>
+      </div>
+      <div style="margin-top:1rem;">
+        <div class="comp-stat-row">
+          <span class="csr-label">Hot tier SLA (&lt;1s P99)</span>
+          <span class="csr-val" style="color:#10b981">420ms</span>
+          <span class="csr-status" style="background:rgba(16,185,129,0.15);color:#10b981;">✓ PASS</span>
+        </div>
+        <div class="comp-stat-row">
+          <span class="csr-label">Warm tier SLA (&lt;10s P99)</span>
+          <span class="csr-val" style="color:#10b981">2.1s</span>
+          <span class="csr-status" style="background:rgba(16,185,129,0.15);color:#10b981;">✓ PASS</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Indexing Queue Depths -->
+    <div class="widget">
+      <div class="widget-title"><div class="wt-left"><span class="wt-dot" style="background:#f59e0b;"></span>Indexing Queue Depths</div></div>
+      <div class="comp-stat-row">
+        <span class="csr-label">Real-Time Index Queue</span>
+        <span class="csr-val" style="color:#10b981">2,200</span>
+        <span class="csr-status" style="background:rgba(16,185,129,0.15);color:#10b981;">Healthy</span>
+      </div>
+      <div class="comp-stat-row">
+        <span class="csr-label">Reindex Backfill Queue</span>
+        <span class="csr-val" style="color:#f59e0b">4.8M msgs</span>
+        <span class="csr-status" style="background:rgba(245,158,11,0.15);color:#f59e0b;">Draining</span>
+      </div>
+      <div class="comp-stat-row">
+        <span class="csr-label">Legal Hold Process Queue</span>
+        <span class="csr-val" style="color:#10b981">180 jobs</span>
+        <span class="csr-status" style="background:rgba(16,185,129,0.15);color:#10b981;">Normal</span>
+      </div>
+      <div class="comp-stat-row">
+        <span class="csr-label">E-Discovery Export Queue</span>
+        <span class="csr-val" style="color:#10b981">3 active</span>
+        <span class="csr-status" style="background:rgba(16,185,129,0.15);color:#10b981;">On-track</span>
+      </div>
+      <div class="comp-stat-row">
+        <span class="csr-label">Glacier Restore Queue</span>
+        <span class="csr-val" style="color:#f59e0b">1.2TB</span>
+        <span class="csr-status" style="background:rgba(245,158,11,0.15);color:#f59e0b;">~4h ETA</span>
+      </div>
+      <div class="comp-stat-row">
+        <span class="csr-label">Consistency Check Delta</span>
+        <span class="csr-val" style="color:#ef4444">0.04%</span>
+        <span class="csr-status" style="background:rgba(239,68,68,0.15);color:#ef4444;">⚠ Backfill</span>
+      </div>
+    </div>
+
+    <!-- Regulatory Compliance Status -->
+    <div class="widget">
+      <div class="widget-title"><div class="wt-left"><span class="wt-dot" style="background:#8b5cf6;"></span>Regulatory Compliance Status</div></div>
+      <div class="comp-stat-row">
+        <span class="csr-label">WORM Immutability (S3 Object Lock)</span>
+        <span class="csr-val" style="color:#10b981">100%</span>
+        <span class="csr-status" style="background:rgba(16,185,129,0.15);color:#10b981;">✓ Compliant</span>
+      </div>
+      <div class="comp-stat-row">
+        <span class="csr-label">SEC 17a-4 / FINRA 4511</span>
+        <span class="csr-val" style="color:#10b981">✓</span>
+        <span class="csr-status" style="background:rgba(16,185,129,0.15);color:#10b981;">✓ Compliant</span>
+      </div>
+      <div class="comp-stat-row">
+        <span class="csr-label">GDPR Data Residency</span>
+        <span class="csr-val" style="color:#10b981">Enforced</span>
+        <span class="csr-status" style="background:rgba(16,185,129,0.15);color:#10b981;">✓ Active SCPs</span>
+      </div>
+      <div class="comp-stat-row">
+        <span class="csr-label">SOX Audit Trail</span>
+        <span class="csr-val" style="color:#10b981">Live</span>
+        <span class="csr-status" style="background:rgba(16,185,129,0.15);color:#10b981;">✓ Append-Only</span>
+      </div>
+      <div class="comp-stat-row">
+        <span class="csr-label">Active Legal Holds</span>
+        <span class="csr-val" style="color:#f59e0b">43</span>
+        <span class="csr-status" style="background:rgba(245,158,11,0.15);color:#f59e0b;">✓ Active</span>
+      </div>
+      <div class="comp-stat-row">
+        <span class="csr-label">Last Compliance Audit</span>
+        <span class="csr-val">Feb 14, 2026</span>
+        <span class="csr-status" style="background:rgba(16,185,129,0.15);color:#10b981;">✓ Passed</span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <strong>Technical Strategy Hub — Output 3: Architecture &amp; Strategy Portal Dashboard</strong> · Message Archiver Platform · Confidential · Internal Use Only
+</footer>
+</body>
+</html>

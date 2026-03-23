@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Engineering Excellence | Ashok Sakthivel</title>
+  <style>
+    :root {
+      --bg: #05080f; --surface: #0d1117; --border: #1e2a3a; --muted: #6b7a99;
+      --text: #e2e8f0; --blue: #3b82f6; --indigo: #6366f1; --green: #10b981;
+      --amber: #f59e0b; --rose: #f43f5e; --purple: #a855f7; --teal: #14b8a6;
+      --cyan: #06b6d4; --orange: #f97316; --sidebar-w: 220px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;display:flex;min-height:100vh}
+    .sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);position:fixed;top:0;left:0;height:100vh;overflow-y:auto;padding:24px 0;z-index:100}
+    .sb-brand{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}
+    .sb-brand .logo{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--indigo);text-transform:uppercase}
+    .sb-brand .name{font-size:13px;color:var(--muted);margin-top:4px}
+    .sb-nav a{display:block;padding:8px 20px;font-size:12px;color:var(--muted);text-decoration:none;border-left:2px solid transparent;transition:.2s}
+    .sb-nav a:hover{color:var(--text);background:rgba(255,255,255,.03)}
+    .sb-nav a.active{color:var(--indigo);border-left-color:var(--indigo);background:rgba(99,102,241,.06)}
+    .sb-section{padding:8px 20px 4px;font-size:10px;letter-spacing:1.5px;color:var(--border);text-transform:uppercase;margin-top:8px}
+    .main{margin-left:var(--sidebar-w);flex:1;padding:0 40px 80px}
+    section{padding:60px 0;border-bottom:1px solid var(--border)}
+    section:last-child{border-bottom:none}
+    .section-tag{font-size:10px;letter-spacing:2px;color:var(--indigo);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+    h1{font-size:36px;font-weight:800;line-height:1.2;margin-bottom:12px}
+    h2{font-size:22px;font-weight:700;margin-bottom:20px}
+    p{color:var(--muted);line-height:1.7;font-size:14px}
+    .hero-meta{display:flex;gap:24px;margin-top:24px;flex-wrap:wrap}
+    .hero-pill{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--indigo)}
+    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:24px}
+    .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;border-top:3px solid}
+    .kpi-card .kpi-label{font-size:11px;color:var(--muted);letter-spacing:.5px;margin-bottom:8px}
+    .kpi-card .kpi-val{font-size:28px;font-weight:800}
+    .kpi-card .kpi-sub{font-size:11px;color:var(--muted);margin-top:4px}
+    .problem-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:24px}
+    .problem-cell{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
+    .problem-cell ul{padding-left:16px;margin-top:10px}
+    .problem-cell li{color:var(--muted);font-size:13px;margin-bottom:6px;line-height:1.5}
+    .ph{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+    .ph-rose{color:var(--rose)} .ph-amber{color:var(--amber)} .ph-green{color:var(--green)}
+    .phase-list{margin-top:24px;display:flex;flex-direction:column;gap:10px}
+    .phase-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+    .phase-hd{display:flex;align-items:center;gap:14px;padding:16px 20px;cursor:pointer;user-select:none}
+    .phase-hd:hover{background:rgba(255,255,255,.02)}
+    .phase-num{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+    .phase-title{flex:1;font-size:14px;font-weight:600}
+    .phase-badge{font-size:11px;background:rgba(255,255,255,.06);border-radius:12px;padding:3px 10px;color:var(--muted)}
+    .phase-arrow{color:var(--muted);transition:.25s;font-size:16px}
+    .phase-item.open .phase-arrow{transform:rotate(90deg)}
+    .phase-body{max-height:0;overflow:hidden;transition:max-height .35s ease}
+    .phase-item.open .phase-body{max-height:600px}
+    .phase-bd-inner{padding:0 20px 20px;border-top:1px solid var(--border)}
+    .phase-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+    .phase-col h4{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+    .phase-col ul{padding-left:14px}
+    .phase-col li{font-size:13px;color:var(--muted);margin-bottom:5px;line-height:1.5}
+    .portal-frame{background:#0a0f1a;border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-top:24px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+    .portal-chrome{background:#111827;padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+    .dot{width:10px;height:10px;border-radius:50%}
+    .dot-r{background:#ff5f57} .dot-y{background:#febc2e} .dot-g{background:#28c840}
+    .portal-url{background:rgba(255,255,255,.05);border-radius:6px;padding:4px 12px;font-size:11px;color:var(--muted);margin-left:8px;flex:1}
+    .portal-inner{display:grid;grid-template-columns:180px 1fr;min-height:340px}
+    .portal-sb{background:#080d16;border-right:1px solid var(--border);padding:16px 0}
+    .portal-sb .p-logo{padding:0 14px 14px;font-size:11px;font-weight:700;color:var(--indigo);border-bottom:1px solid var(--border);margin-bottom:10px}
+    .portal-sb a{display:block;padding:6px 14px;font-size:11px;color:var(--muted);border-radius:4px;margin:1px 6px}
+    .portal-sb a.active{background:rgba(99,102,241,.1);color:var(--indigo)}
+    .portal-content{padding:20px;overflow:hidden}
+    .p-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+    .p-kpi{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center}
+    .p-kpi .v{font-size:20px;font-weight:800;color:var(--indigo)}
+    .p-kpi .l{font-size:10px;color:var(--muted);margin-top:4px}
+    .p-chart-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .p-chart{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:8px;padding:12px}
+    .p-chart .ct{font-size:10px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+    .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+    .bar-lbl{font-size:10px;color:var(--muted);width:70px;flex-shrink:0;text-align:right}
+    .bar-track{flex:1;background:rgba(255,255,255,.05);border-radius:3px;height:8px;overflow:hidden}
+    .bar-fill{height:100%;border-radius:3px}
+    .pane-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:24px}
+    .pane-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
+    .pane-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+    .pane-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+    .pane-title{font-size:13px;font-weight:600}
+    .pane-body{font-size:12px;color:var(--muted);line-height:1.6}
+    .pane-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+    .tag{background:rgba(255,255,255,.06);border-radius:10px;padding:2px 8px;font-size:10px;color:var(--muted)}
+    .viz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;margin-top:24px}
+    .viz-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+    .viz-title{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+    .risk-table{width:100%;border-collapse:collapse;margin-top:24px;font-size:13px}
+    .risk-table th{background:var(--surface);padding:10px 14px;text-align:left;font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
+    .risk-table td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
+    .risk-name{font-weight:600;font-size:13px;margin-bottom:3px}
+    .risk-desc{font-size:11px;color:var(--muted)}
+    .sev{border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700}
+    .sev-h{background:rgba(244,63,94,.15);color:var(--rose)}
+    .sev-m{background:rgba(245,158,11,.15);color:var(--amber)}
+    .sev-l{background:rgba(16,185,129,.15);color:var(--green)}
+    .mitigation{font-size:12px;color:var(--muted);line-height:1.6}
+    .strat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:24px}
+    .strat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
+    .strat-card h4{font-size:13px;font-weight:600;margin-bottom:8px}
+    .strat-card p{font-size:12px}
+    .badge{display:inline-block;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;margin-bottom:8px}
+    /* DORA gauge */
+    .dora-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+    .dora-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+    .dora-label{font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px}
+    .dora-val{font-size:22px;font-weight:800}
+    .dora-target{font-size:10px;color:var(--muted);margin-top:4px}
+    .dora-bar{height:4px;border-radius:2px;margin-top:8px;background:rgba(255,255,255,.05);overflow:hidden}
+    .dora-bar-fill{height:100%;border-radius:2px}
+    /* Pipeline */
+    .pipeline{display:flex;align-items:center;gap:4px;margin-top:16px;flex-wrap:nowrap;overflow-x:auto}
+    .pl-stage{flex:1;min-width:60px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 4px;text-align:center;font-size:10px}
+    .pl-stage .s-name{color:var(--muted);margin-bottom:4px}
+    .pl-stage .s-time{font-weight:700;font-size:12px}
+    .pl-arrow{color:var(--border);font-size:16px;flex-shrink:0}
+  </style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sb-brand">
+    <div class="logo">Project 7</div>
+    <div class="name">Eng Excellence</div>
+  </div>
+  <div class="sb-nav" id="sb-nav">
+    <div class="sb-section">Overview</div>
+    <a href="#challenge">§00 Challenge</a>
+    <a href="#dora">§01 DORA Metrics</a>
+    <div class="sb-section">Strategy</div>
+    <a href="#roadmap">§02 90-Day Roadmap</a>
+    <a href="#portal">§03 SEI Portal</a>
+    <a href="#panes">§04 Pane Specs</a>
+    <a href="#golden-path">§05 Golden Path</a>
+    <div class="sb-section">Insights</div>
+    <a href="#viz">§06 Visualization Lab</a>
+    <a href="#antipatterns">§07 Anti-Pattern Registry</a>
+  </div>
+</nav>
+
+<main class="main">
+
+  <!-- §00 CHALLENGE -->
+  <section id="challenge">
+    <div class="section-tag">§00 — Challenge</div>
+    <h1>Engineering Excellence<br><span style="color:var(--indigo)">DORA Elite in 90 Days</span></h1>
+    <p style="max-width:660px;margin-top:12px">Mimecast's engineering velocity is plateauing. Slow CI/CD pipelines, fragmented tooling, and mounting tech debt are eroding developer experience and product quality. This initiative establishes a measurable, data-driven Engineering Excellence program — transforming the team from High/Medium DORA to Elite in 90 days.</p>
+    <div class="hero-meta">
+      <div class="hero-pill">Ashok Sakthivel · Sr. Director of Engineering</div>
+      <div class="hero-pill">Mimecast · Bangalore Hub</div>
+      <div class="hero-pill">April – June 2026</div>
+      <div class="hero-pill">Target: DORA Elite Tier</div>
+    </div>
+    <div class="problem-grid">
+      <div class="problem-cell">
+        <span class="ph ph-rose">⚠ Current State</span>
+        <ul>
+          <li>Deployment frequency: 1–2×/week (DORA Medium tier)</li>
+          <li>Lead time for changes: 3–5 days from commit to prod</li>
+          <li>MTTR: 4+ hours — no standard incident runbook across teams</li>
+          <li>Change failure rate: 18% — flaky tests masking real failures</li>
+          <li>Tech debt backlog: 340 items, zero prioritisation framework</li>
+          <li>3 different CI tools across 4 squads — no golden path</li>
+        </ul>
+      </div>
+      <div class="problem-cell">
+        <span class="ph ph-amber">⚡ Root Causes</span>
+        <ul>
+          <li><strong>Pipeline Fragmentation:</strong> Each team built their own CI/CD — no shared standards</li>
+          <li><strong>Flaky Test Debt:</strong> 12% of tests intermittently fail — blocking deploys daily</li>
+          <li><strong>No Feature Flags:</strong> Big-bang releases instead of progressive rollout</li>
+          <li><strong>Absent On-Call Discipline:</strong> No PagerDuty rotation; incidents pile on seniors</li>
+          <li><strong>ADR Deficit:</strong> Architecture decisions undocumented — repeated mistakes recur</li>
+        </ul>
+      </div>
+      <div class="problem-cell">
+        <span class="ph ph-green">✅ Target State</span>
+        <ul>
+          <li>Deployment frequency: Daily or multiple times/day (Elite)</li>
+          <li>Lead time: &lt;1 hour from commit to production</li>
+          <li>MTTR: ≤30 minutes with automated runbook execution</li>
+          <li>Change failure rate: ≤5% — feature flags enable instant rollback</li>
+          <li>Golden Path CI/CD template adopted by all 4 squads</li>
+          <li>Tech debt sprint allocation: 20% capacity every sprint</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- §01 DORA -->
+  <section id="dora">
+    <div class="section-tag">§01 — DORA Metrics</div>
+    <h2>North Star — DORA Elite + SEI Signals</h2>
+    <div class="dora-grid">
+      <div class="dora-card">
+        <div class="dora-label">Deployment Frequency</div>
+        <div class="dora-val" style="color:var(--green)">Daily+</div>
+        <div class="dora-target">Current: 1–2×/week</div>
+        <div class="dora-bar"><div class="dora-bar-fill" style="width:30%;background:var(--green)"></div></div>
+      </div>
+      <div class="dora-card">
+        <div class="dora-label">Lead Time for Changes</div>
+        <div class="dora-val" style="color:var(--blue)">&lt;1hr</div>
+        <div class="dora-target">Current: 3–5 days</div>
+        <div class="dora-bar"><div class="dora-bar-fill" style="width:15%;background:var(--blue)"></div></div>
+      </div>
+      <div class="dora-card">
+        <div class="dora-label">MTTR</div>
+        <div class="dora-val" style="color:var(--amber)">≤30min</div>
+        <div class="dora-target">Current: 4+ hours</div>
+        <div class="dora-bar"><div class="dora-bar-fill" style="width:20%;background:var(--amber)"></div></div>
+      </div>
+      <div class="dora-card">
+        <div class="dora-label">Change Failure Rate</div>
+        <div class="dora-val" style="color:var(--rose)">≤5%</div>
+        <div class="dora-target">Current: 18%</div>
+        <div class="dora-bar"><div class="dora-bar-fill" style="width:40%;background:var(--rose)"></div></div>
+      </div>
+    </div>
+    <div class="kpi-grid" style="margin-top:16px">
+      <div class="kpi-card" style="border-top-color:var(--purple)">
+        <div class="kpi-label">TEST COVERAGE</div>
+        <div class="kpi-val" style="color:var(--purple)">≥85%</div>
+        <div class="kpi-sub">Unit + integration coverage on critical paths</div>
+      </div>
+      <div class="kpi-card" style="border-top-color:var(--teal)">
+        <div class="kpi-label">FLAKY TEST RATE</div>
+        <div class="kpi-val" style="color:var(--teal)">≤2%</div>
+        <div class="kpi-sub">Down from 12% — zero tolerance for blocking deploys</div>
+      </div>
+      <div class="kpi-card" style="border-top-color:var(--cyan)">
+        <div class="kpi-label">TECH DEBT BURN</div>
+        <div class="kpi-val" style="color:var(--cyan)">20%</div>
+        <div class="kpi-sub">Sprint capacity reserved every cycle</div>
+      </div>
+      <div class="kpi-card" style="border-top-color:var(--orange)">
+        <div class="kpi-label">PIPELINE ADOPTION</div>
+        <div class="kpi-val" style="color:var(--orange)">100%</div>
+        <div class="kpi-sub">All squads on Golden Path CI/CD template</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §02 ROADMAP -->
+  <section id="roadmap">
+    <div class="section-tag">§02 — 90-Day Roadmap</div>
+    <h2>Four-Phase Excellence Transformation</h2>
+    <div class="phase-list">
+      <div class="phase-item open">
+        <div class="phase-hd" onclick="togglePhase(this)">
+          <div class="phase-num" style="background:rgba(99,102,241,.15);color:var(--indigo)">1</div>
+          <div class="phase-title">Phase 1 — Measure  <span style="color:var(--muted);font-weight:400;font-size:12px">Days 0–30</span></div>
+          <div class="phase-badge">Baseline</div>
+          <div class="phase-arrow">›</div>
+        </div>
+        <div class="phase-body">
+          <div class="phase-bd-inner">
+            <div class="phase-cols">
+              <div class="phase-col">
+                <h4>Deliverables</h4>
+                <ul>
+                  <li>DORA metrics instrumented via DORA Metrics GitHub Action + Datadog</li>
+                  <li>CI/CD pipeline audit: all 4 squads mapped, bottlenecks identified</li>
+                  <li>Tech debt inventory: 340 items categorised, scored by RICE framework</li>
+                  <li>Flaky test identification: 12% flaky test list with owners assigned</li>
+                  <li>SEI signals baseline: code churn, PR review time, deployment lead time</li>
+                </ul>
+              </div>
+              <div class="phase-col">
+                <h4>Success Criteria</h4>
+                <ul>
+                  <li>DORA dashboard live — all 4 metrics updating in real-time</li>
+                  <li>Every squad has a named tech debt owner</li>
+                  <li>Top-20 flaky tests quarantined — unblocking daily deploys</li>
+                  <li>Golden Path template design complete — squad review sign-off</li>
+                  <li>Engineering Excellence OKR agreed with all squad leads</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-item">
+        <div class="phase-hd" onclick="togglePhase(this)">
+          <div class="phase-num" style="background:rgba(16,185,129,.15);color:var(--green)">2</div>
+          <div class="phase-title">Phase 2 — Automate  <span style="color:var(--muted);font-weight:400;font-size:12px">Days 31–60</span></div>
+          <div class="phase-badge">Pipeline</div>
+          <div class="phase-arrow">›</div>
+        </div>
+        <div class="phase-body">
+          <div class="phase-bd-inner">
+            <div class="phase-cols">
+              <div class="phase-col">
+                <h4>Deliverables</h4>
+                <ul>
+                  <li>Golden Path CI/CD template deployed to first 2 squads (GitHub Actions)</li>
+                  <li>Feature flag infrastructure: LaunchDarkly for progressive rollout</li>
+                  <li>Automated incident runbooks: PagerDuty + Runbook Automation for top-5 alert types</li>
+                  <li>PR quality gates: automated test coverage diff, lint, security scan (Snyk)</li>
+                  <li>Flaky test elimination sprint: 12% → 5% flaky rate</li>
+                </ul>
+              </div>
+              <div class="phase-col">
+                <h4>Success Criteria</h4>
+                <ul>
+                  <li>Lead time for 2 pilot squads drops to &lt;4 hours (from 3–5 days)</li>
+                  <li>Deployment frequency for pilot squads: daily deploys begin</li>
+                  <li>MTTR improves to ≤2 hours for automated runbook-covered alerts</li>
+                  <li>Feature flag: first feature shipped via progressive rollout (no big-bang)</li>
+                  <li>CFR drops below 10% with PR quality gates in place</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-item">
+        <div class="phase-hd" onclick="togglePhase(this)">
+          <div class="phase-num" style="background:rgba(245,158,11,.15);color:var(--amber)">3</div>
+          <div class="phase-title">Phase 3 — Govern  <span style="color:var(--muted);font-weight:400;font-size:12px">Days 61–90</span></div>
+          <div class="phase-badge">Standards</div>
+          <div class="phase-arrow">›</div>
+        </div>
+        <div class="phase-body">
+          <div class="phase-bd-inner">
+            <div class="phase-cols">
+              <div class="phase-col">
+                <h4>Deliverables</h4>
+                <ul>
+                  <li>Golden Path adopted by all 4 squads — old pipelines deprecated</li>
+                  <li>ADR (Architecture Decision Records) repository live — 10 critical decisions documented</li>
+                  <li>Tech debt sprint allocation enforced: 20% capacity every sprint</li>
+                  <li>On-call rotation formalised: PagerDuty schedule covers UK/US/IN</li>
+                  <li>Engineering Excellence scorecard published monthly to leadership</li>
+                </ul>
+              </div>
+              <div class="phase-col">
+                <h4>Success Criteria</h4>
+                <ul>
+                  <li>Lead time &lt;1 hour for all squads on Golden Path</li>
+                  <li>Zero deploys blocked by flaky tests for 2 consecutive weeks</li>
+                  <li>MTTR ≤45 minutes with on-call rotation active</li>
+                  <li>No new tech debt added without RICE score and sprint allocation</li>
+                  <li>CFR ≤8% — approaching DORA Elite threshold</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-item">
+        <div class="phase-hd" onclick="togglePhase(this)">
+          <div class="phase-num" style="background:rgba(168,85,247,.15);color:var(--purple)">4</div>
+          <div class="phase-title">Phase 4 — Scale  <span style="color:var(--muted);font-weight:400;font-size:12px">Q2 2026+</span></div>
+          <div class="phase-badge">Culture</div>
+          <div class="phase-arrow">›</div>
+        </div>
+        <div class="phase-body">
+          <div class="phase-bd-inner">
+            <div class="phase-cols">
+              <div class="phase-col">
+                <h4>Deliverables</h4>
+                <ul>
+                  <li>Engineering Excellence Guild: cross-squad practitioner community</li>
+                  <li>DORA Elite recognition: quarterly engineering all-hands scorecard review</li>
+                  <li>AI-assisted code review: GitHub Copilot + CodeQL integrated in Golden Path</li>
+                  <li>Chaos engineering programme: quarterly game days (Chaos Monkey on non-prod)</li>
+                  <li>Hiring bar update: coding standards + CI/CD fluency in interview rubric</li>
+                </ul>
+              </div>
+              <div class="phase-col">
+                <h4>Success Criteria</h4>
+                <ul>
+                  <li>DORA Elite tier sustained for full quarter</li>
+                  <li>CFR ≤5%, MTTR ≤30min consistently</li>
+                  <li>Tech debt inventory reduces by ≥100 items (from 340)</li>
+                  <li>Developer eNPS on engineering craftsmanship ≥70</li>
+                  <li>Engineering Excellence model adopted as Mimecast-wide standard</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §03 PORTAL -->
+  <section id="portal">
+    <div class="section-tag">§03 — SEI Command Center</div>
+    <h2>Portal Preview</h2>
+    <div class="portal-frame">
+      <div class="portal-chrome">
+        <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+        <div class="portal-url">sei.mimecast.internal / eng-excellence · Live</div>
+      </div>
+      <div class="portal-inner">
+        <div class="portal-sb">
+          <div class="p-logo">⚡ Eng Excellence</div>
+          <a class="active" href="#">DORA Dashboard</a>
+          <a href="#">Pipeline Health</a>
+          <a href="#">Tech Debt</a>
+          <a href="#">Test Quality</a>
+          <a href="#">Incident Ops</a>
+          <a href="#">ADR Registry</a>
+          <a href="#">Squad Scores</a>
+          <a href="#">Golden Path</a>
+        </div>
+        <div class="portal-content">
+          <div class="p-row">
+            <div class="p-kpi"><div class="v">Daily</div><div class="l">Deploy Freq</div></div>
+            <div class="p-kpi"><div class="v" style="color:var(--green)">52min</div><div class="l">Lead Time</div></div>
+            <div class="p-kpi"><div class="v" style="color:var(--amber)">38min</div><div class="l">MTTR</div></div>
+            <div class="p-kpi"><div class="v" style="color:var(--rose)">7%</div><div class="l">Change Fail Rate</div></div>
+          </div>
+          <div class="p-chart-row">
+            <div class="p-chart">
+              <div class="ct">Pipeline Stage Times (min)</div>
+              <div class="bar-row"><span class="bar-lbl">Build</span><div class="bar-track"><div class="bar-fill" style="width:20%;background:var(--blue)"></div></div><span style="font-size:9px;color:var(--muted);margin-left:4px">4m</span></div>
+              <div class="bar-row"><span class="bar-lbl">Unit Test</span><div class="bar-track"><div class="bar-fill" style="width:30%;background:var(--indigo)"></div></div><span style="font-size:9px;color:var(--muted);margin-left:4px">6m</span></div>
+              <div class="bar-row"><span class="bar-lbl">SAST</span><div class="bar-track"><div class="bar-fill" style="width:15%;background:var(--amber)"></div></div><span style="font-size:9px;color:var(--muted);margin-left:4px">3m</span></div>
+              <div class="bar-row"><span class="bar-lbl">Integration</span><div class="bar-track"><div class="bar-fill" style="width:55%;background:var(--purple)"></div></div><span style="font-size:9px;color:var(--muted);margin-left:4px">11m</span></div>
+              <div class="bar-row"><span class="bar-lbl">Deploy</span><div class="bar-track"><div class="bar-fill" style="width:25%;background:var(--green)"></div></div><span style="font-size:9px;color:var(--muted);margin-left:4px">5m</span></div>
+            </div>
+            <div class="p-chart">
+              <div class="ct">Tech Debt by Category</div>
+              <div class="bar-row"><span class="bar-lbl">Security</span><div class="bar-track"><div class="bar-fill" style="width:30%;background:var(--rose)"></div></div><span style="font-size:9px;color:var(--muted);margin-left:4px">42</span></div>
+              <div class="bar-row"><span class="bar-lbl">Testing</span><div class="bar-track"><div class="bar-fill" style="width:55%;background:var(--amber)"></div></div><span style="font-size:9px;color:var(--muted);margin-left:4px">82</span></div>
+              <div class="bar-row"><span class="bar-lbl">Infra</span><div class="bar-track"><div class="bar-fill" style="width:40%;background:var(--blue)"></div></div><span style="font-size:9px;color:var(--muted);margin-left:4px">60</span></div>
+              <div class="bar-row"><span class="bar-lbl">Code Quality</span><div class="bar-track"><div class="bar-fill" style="width:65%;background:var(--purple)"></div></div><span style="font-size:9px;color:var(--muted);margin-left:4px">98</span></div>
+              <div class="bar-row"><span class="bar-lbl">Docs</span><div class="bar-track"><div class="bar-fill" style="width:38%;background:var(--muted)"></div></div><span style="font-size:9px;color:var(--muted);margin-left:4px">38</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §04 PANE SPECS -->
+  <section id="panes">
+    <div class="section-tag">§04 — Pane Specifications</div>
+    <h2>SEI Portal Pane Breakdown</h2>
+    <div class="pane-grid">
+      <div class="pane-card">
+        <div class="pane-header">
+          <div class="pane-icon" style="background:rgba(99,102,241,.1);color:var(--indigo)">📊</div>
+          <div class="pane-title">DORA Dashboard</div>
+        </div>
+        <div class="pane-body">Real-time DORA 4 metrics with Elite/High/Medium/Low tier indicator. Trend lines per squad. Anomaly flag when any metric degrades from previous week.</div>
+        <div class="pane-tags"><span class="tag">GitHub Actions</span><span class="tag">Datadog</span><span class="tag">DORA API</span></div>
+      </div>
+      <div class="pane-card">
+        <div class="pane-header">
+          <div class="pane-icon" style="background:rgba(16,185,129,.1);color:var(--green)">🚀</div>
+          <div class="pane-title">Pipeline Health</div>
+        </div>
+        <div class="pane-body">CI/CD stage-by-stage timing heatmap. Success/failure rates per stage. Flaky test quarantine tracker — shows % flaky per suite with owner accountability.</div>
+        <div class="pane-tags"><span class="tag">GitHub Actions</span><span class="tag">BuildKite</span><span class="tag">Allure</span></div>
+      </div>
+      <div class="pane-card">
+        <div class="pane-header">
+          <div class="pane-icon" style="background:rgba(245,158,11,.1);color:var(--amber)">🏗</div>
+          <div class="pane-title">Tech Debt Tracker</div>
+        </div>
+        <div class="pane-body">340-item debt backlog with RICE scores, category tags, sprint allocation status. Burn-down chart. Items added vs closed per sprint — debt velocity metric.</div>
+        <div class="pane-tags"><span class="tag">Jira</span><span class="tag">SonarQube</span><span class="tag">RICE</span></div>
+      </div>
+      <div class="pane-card">
+        <div class="pane-header">
+          <div class="pane-icon" style="background:rgba(244,63,94,.1);color:var(--rose)">🚨</div>
+          <div class="pane-title">Incident Operations</div>
+        </div>
+        <div class="pane-body">Real-time MTTR trend. P1/P2 incident timeline. Automated runbook execution log. On-call rotation schedule: UK/US/IN coverage overlay with no single-point-of-failure view.</div>
+        <div class="pane-tags"><span class="tag">PagerDuty</span><span class="tag">Runbook Automation</span></div>
+      </div>
+      <div class="pane-card">
+        <div class="pane-header">
+          <div class="pane-icon" style="background:rgba(20,184,166,.1);color:var(--teal)">📋</div>
+          <div class="pane-title">ADR Registry</div>
+        </div>
+        <div class="pane-body">Architecture Decision Records indexed by service, date, status (Accepted/Deprecated/Superseded). Decision search. Links to PR and Confluence context. Prevents repeated architectural mistakes.</div>
+        <div class="pane-tags"><span class="tag">ADR Tools</span><span class="tag">GitHub</span><span class="tag">Confluence</span></div>
+      </div>
+      <div class="pane-card">
+        <div class="pane-header">
+          <div class="pane-icon" style="background:rgba(168,85,247,.1);color:var(--purple)">🏆</div>
+          <div class="pane-title">Squad Scorecards</div>
+        </div>
+        <div class="pane-body">Per-squad Engineering Excellence score: DORA tier + tech debt health + test quality + golden path adoption. Monthly trend. Gamified improvement leaderboard.</div>
+        <div class="pane-tags"><span class="tag">Composite Score</span><span class="tag">QuickSight</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §05 GOLDEN PATH -->
+  <section id="golden-path">
+    <div class="section-tag">§05 — Golden Path</div>
+    <h2>Standard CI/CD Pipeline — 7 Stages</h2>
+    <div class="pipeline">
+      <div class="pl-stage"><div class="s-name">Code</div><div class="s-time" style="color:var(--blue)">Commit</div></div>
+      <div class="pl-arrow">›</div>
+      <div class="pl-stage"><div class="s-name">Build</div><div class="s-time" style="color:var(--green)">4min</div></div>
+      <div class="pl-arrow">›</div>
+      <div class="pl-stage"><div class="s-name">Unit Test</div><div class="s-time" style="color:var(--indigo)">6min</div></div>
+      <div class="pl-arrow">›</div>
+      <div class="pl-stage"><div class="s-name">SAST+SCA</div><div class="s-time" style="color:var(--amber)">3min</div></div>
+      <div class="pl-arrow">›</div>
+      <div class="pl-stage"><div class="s-name">Integration</div><div class="s-time" style="color:var(--purple)">11min</div></div>
+      <div class="pl-arrow">›</div>
+      <div class="pl-stage"><div class="s-name">Feature Flag</div><div class="s-time" style="color:var(--teal)">Deploy</div></div>
+      <div class="pl-arrow">›</div>
+      <div class="pl-stage"><div class="s-name">Prod</div><div class="s-time" style="color:var(--green)">5min</div></div>
+    </div>
+    <div class="strat-grid" style="margin-top:24px">
+      <div class="strat-card">
+        <span class="badge" style="background:rgba(99,102,241,.1);color:var(--indigo)">Principle 1</span>
+        <h4>One Pipeline to Rule Them All</h4>
+        <p>Single GitHub Actions workflow template for all squads. Forks prohibited. Customisation via input params, not pipeline edits. Golden Path PRs reviewed by Platform Engineering.</p>
+      </div>
+      <div class="strat-card">
+        <span class="badge" style="background:rgba(16,185,129,.1);color:var(--green)">Principle 2</span>
+        <h4>Feature Flags Over Feature Branches</h4>
+        <p>Every user-facing change shipped behind a LaunchDarkly flag. No big-bang releases. Progressive rollout: 1% → 10% → 50% → 100% with automated rollback on error rate spike.</p>
+      </div>
+      <div class="strat-card">
+        <span class="badge" style="background:rgba(244,63,94,.1);color:var(--rose)">Principle 3</span>
+        <h4>Shift Security Left</h4>
+        <p>Snyk SCA + CodeQL SAST run on every PR. Critical CVEs block merge. High CVEs create Jira P2 automatically. OWASP dependency check weekly on main branch.</p>
+      </div>
+      <div class="strat-card">
+        <span class="badge" style="background:rgba(245,158,11,.1);color:var(--amber)">Principle 4</span>
+        <h4>Quarantine Flaky Tests</h4>
+        <p>Tests that fail intermittently are automatically quarantined — they no longer block deploys but create Jira items with owners. Flaky rate measured weekly; team SLA: resolve in 2 sprints.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- §06 VIZ LAB -->
+  <section id="viz">
+    <div class="section-tag">§06 — Visualization Lab</div>
+    <h2>Engineering Analytics Suite</h2>
+    <div class="viz-grid">
+      <div class="viz-card">
+        <div class="viz-title">DORA Progress — Current vs Elite Target</div>
+        <div class="bar-row"><span class="bar-lbl" style="width:100px">Deploy Freq</span><div class="bar-track"><div class="bar-fill" style="width:65%;background:var(--green)"></div></div><span style="font-size:10px;color:var(--green);margin-left:6px">Daily</span></div>
+        <div class="bar-row"><span class="bar-lbl" style="width:100px">Lead Time</span><div class="bar-track"><div class="bar-fill" style="width:55%;background:var(--blue)"></div></div><span style="font-size:10px;color:var(--blue);margin-left:6px">52min</span></div>
+        <div class="bar-row"><span class="bar-lbl" style="width:100px">MTTR</span><div class="bar-track"><div class="bar-fill" style="width:45%;background:var(--amber)"></div></div><span style="font-size:10px;color:var(--amber);margin-left:6px">38min</span></div>
+        <div class="bar-row"><span class="bar-lbl" style="width:100px">CFR</span><div class="bar-track"><div class="bar-fill" style="width:35%;background:var(--rose)"></div></div><span style="font-size:10px;color:var(--rose);margin-left:6px">7%</span></div>
+        <div style="margin-top:10px;font-size:11px;color:var(--indigo)">"Elite" threshold lines — approaching target on all 4 metrics</div>
+      </div>
+      <div class="viz-card">
+        <div class="viz-title">Tech Debt Burn-Down (Items)</div>
+        <div style="display:flex;gap:6px;align-items:flex-end;height:50px;margin-bottom:8px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1">
+            <div style="width:100%;height:48px;background:var(--rose);border-radius:3px 3px 0 0;opacity:.8"></div>
+            <span style="font-size:9px;color:var(--muted)">340</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1">
+            <div style="width:100%;height:40px;background:var(--amber);border-radius:3px 3px 0 0;opacity:.8"></div>
+            <span style="font-size:9px;color:var(--muted)">283</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1">
+            <div style="width:100%;height:30px;background:var(--blue);border-radius:3px 3px 0 0;opacity:.8"></div>
+            <span style="font-size:9px;color:var(--muted)">212</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1">
+            <div style="width:100%;height:22px;background:var(--green);border-radius:3px 3px 0 0;opacity:.9"></div>
+            <span style="font-size:9px;color:var(--muted)">156</span>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--green);font-weight:700">184 items resolved in 90 days (54% reduction)</div>
+      </div>
+      <div class="viz-card">
+        <div class="viz-title">Squad Excellence Scorecard</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:12px;color:var(--text);width:80px">Archive</span>
+            <div style="flex:1;background:rgba(255,255,255,.05);border-radius:4px;height:10px;overflow:hidden"><div style="width:88%;height:100%;background:var(--green)"></div></div>
+            <span style="font-size:11px;color:var(--green);width:30px;text-align:right">88</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:12px;color:var(--text);width:80px">Search</span>
+            <div style="flex:1;background:rgba(255,255,255,.05);border-radius:4px;height:10px;overflow:hidden"><div style="width:74%;height:100%;background:var(--blue)"></div></div>
+            <span style="font-size:11px;color:var(--blue);width:30px;text-align:right">74</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:12px;color:var(--text);width:80px">Platform</span>
+            <div style="flex:1;background:rgba(255,255,255,.05);border-radius:4px;height:10px;overflow:hidden"><div style="width:92%;height:100%;background:var(--indigo)"></div></div>
+            <span style="font-size:11px;color:var(--indigo);width:30px;text-align:right">92</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:12px;color:var(--text);width:80px">Gateway</span>
+            <div style="flex:1;background:rgba(255,255,255,.05);border-radius:4px;height:10px;overflow:hidden"><div style="width:61%;height:100%;background:var(--amber)"></div></div>
+            <span style="font-size:11px;color:var(--amber);width:30px;text-align:right">61</span>
+          </div>
+        </div>
+      </div>
+      <div class="viz-card">
+        <div class="viz-title">Flaky Test Elimination Progress</div>
+        <div style="text-align:center;padding:8px 0">
+          <div style="display:flex;justify-content:space-around;align-items:flex-end;gap:12px">
+            <div style="text-align:center">
+              <div style="font-size:28px;font-weight:800;color:var(--rose)">12%</div>
+              <div style="font-size:10px;color:var(--muted)">Baseline</div>
+            </div>
+            <div style="font-size:24px;color:var(--muted)">→</div>
+            <div style="text-align:center">
+              <div style="font-size:28px;font-weight:800;color:var(--amber)">5%</div>
+              <div style="font-size:10px;color:var(--muted)">Day 60</div>
+            </div>
+            <div style="font-size:24px;color:var(--muted)">→</div>
+            <div style="text-align:center">
+              <div style="font-size:28px;font-weight:800;color:var(--green)">2%</div>
+              <div style="font-size:10px;color:var(--muted)">Target</div>
+            </div>
+          </div>
+          <div style="margin-top:12px;font-size:11px;color:var(--muted)">Zero blocked deploys from flaky tests since Day 45</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §07 ANTI-PATTERNS -->
+  <section id="antipatterns">
+    <div class="section-tag">§07 — Anti-Pattern Registry</div>
+    <h2>Engineering Excellence Failure Modes</h2>
+    <table class="risk-table">
+      <thead><tr><th>Anti-Pattern</th><th>Severity</th><th>Root Cause</th><th>Mitigation</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><div class="risk-name">🏚 Pipeline Sprawl</div><div class="risk-desc">Each squad built its own CI/CD pipeline — 4 different tools, 4 sets of tribal knowledge, no shared maintenance</div></td>
+          <td><span class="sev sev-h">High</span></td>
+          <td style="font-size:12px;color:var(--muted)">No Platform Engineering team; squads had full autonomy without a paved golden path</td>
+          <td><div class="mitigation"><strong>Golden Path CI/CD template mandatory.</strong> Old pipelines deprecated by Day 90. Waiver process exists but requires VP approval.</div></td>
+        </tr>
+        <tr>
+          <td><div class="risk-name">🎲 Flaky Test Tolerance</div><div class="risk-desc">Teams mark flaky tests as "known issue" and skip them in CI — builds pass but quality signal is broken</div></td>
+          <td><span class="sev sev-h">High</span></td>
+          <td style="font-size:12px;color:var(--muted)">No flaky test policy; skipping tests faster than fixing them; no ownership accountability</td>
+          <td><div class="mitigation"><strong>Quarantine, don't skip.</strong> Flaky tests auto-create Jira P2 with squad owner. 2-sprint SLA to fix. Flaky rate published weekly in engineering digest.</div></td>
+        </tr>
+        <tr>
+          <td><div class="risk-name">💣 Big-Bang Releases</div><div class="risk-desc">Large feature branches merged infrequently — each release is high-risk, high-stress, and hard to roll back</div></td>
+          <td><span class="sev sev-h">High</span></td>
+          <td style="font-size:12px;color:var(--muted)">No feature flag infrastructure; teams afraid of releasing incomplete features</td>
+          <td><div class="mitigation"><strong>LaunchDarkly mandatory for all user-facing changes.</strong> Trunk-based development with feature flags. Progressive rollout prevents blast radius.</div></td>
+        </tr>
+        <tr>
+          <td><div class="risk-name">🧠 Tribal Architecture Knowledge</div><div class="risk-desc">Key architecture decisions exist only in senior engineers' heads — repeated mistakes, slow onboarding, fear of change</div></td>
+          <td><span class="sev sev-m">Medium</span></td>
+          <td style="font-size:12px;color:var(--muted)">No ADR process; design review not documented; architecture review ad-hoc</td>
+          <td><div class="mitigation"><strong>ADR repository live — 10 critical decisions documented in Phase 3.</strong> All future significant decisions require an ADR before implementation PR is merged.</div></td>
+        </tr>
+        <tr>
+          <td><div class="risk-name">📉 Tech Debt Avoidance</div><div class="risk-desc">Tech debt backlog treated as a "rainy day" list — it never gets allocated sprint capacity and grows unbounded</div></td>
+          <td><span class="sev sev-m">Medium</span></td>
+          <td style="font-size:12px;color:var(--muted)">Product pressure always overrides debt allocation; no contractual sprint capacity agreement</td>
+          <td><div class="mitigation"><strong>20% sprint capacity contractually protected.</strong> Debt items scored via RICE. Failure to allocate = engineering lead escalates to SD of Eng. Published in squad scorecard.</div></td>
+        </tr>
+        <tr>
+          <td><div class="risk-name">🦸 On-Call Hero Culture</div><div class="risk-desc">Same 2–3 senior engineers always paged — burnout risk, no knowledge transfer, single point of failure on incidents</div></td>
+          <td><span class="sev sev-m">Medium</span></td>
+          <td style="font-size:12px;color:var(--muted)">No formal PagerDuty rotation; lack of runbook documentation; junior engineers excluded from on-call</td>
+          <td><div class="mitigation"><strong>PagerDuty rotation formalised — all L4+ engineers included.</strong> Automated runbooks for top-5 alert types. Buddy system: junior paired with senior for first 3 on-call weeks.</div></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+<script>
+  function togglePhase(btn) {
+    const item = btn.closest('.phase-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.phase-item.open').forEach(el => el.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+  const sections = document.querySelectorAll('section[id]');
+  const links = document.querySelectorAll('.sb-nav a');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = document.querySelector(`.sb-nav a[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -60% 0px' });
+  sections.forEach(s => io.observe(s));
+</script>
+</body>
+</html>

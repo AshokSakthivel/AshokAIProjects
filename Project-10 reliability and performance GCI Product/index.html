@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GCI Operations Hub — SRE Command Center</title>
+  <style>
+    :root {
+      --bg: #080d12; --surface: #0d1421; --surface2: #111d2e; --border: #1a2d44;
+      --green: #10b981; --red: #ef4444; --amber: #f59e0b; --blue: #3b82f6;
+      --purple: #8b5cf6; --cyan: #06b6d4; --pink: #ec4899;
+      --text: #e2e8f0; --text-muted: #4b6070; --text-dim: #7fa3b8;
+      --sev1: #ef4444; --sev2: #f97316; --sev3: #f59e0b; --sev4: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+    /* ── HEADER ── */
+    header {
+      background: linear-gradient(135deg, #060b10 0%, #0b1826 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--green), var(--cyan));
+      border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px;
+    }
+    .logo-text h1 { font-size: 0.95rem; font-weight: 700; }
+    .logo-text p { font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; }
+    nav { display: flex; gap: 3px; }
+    nav a { color: var(--text-dim); text-decoration: none; padding: 5px 13px; border-radius: 6px; font-size: 0.78rem; font-weight: 500; transition: all 0.2s; border: 1px solid transparent; }
+    nav a:hover { color: var(--text); background: var(--surface2); border-color: var(--border); }
+    nav a.active { color: #fff; background: var(--green); border-color: var(--green); }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .status-pill {
+      padding: 3px 10px; border-radius: 20px; font-size: 0.68rem; font-weight: 700;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .sp-green { background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+    .sp-red { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+    .sp-amber { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+    .dot { width: 6px; height: 6px; border-radius: 50%; animation: pulse 1.5s infinite; }
+    .dot-green { background: var(--green); }
+    .dot-red { background: var(--red); }
+    .dot-amber { background: var(--amber); }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #060b10 0%, #0c1a2e 50%, #060b10 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 2.5rem 2rem 2rem; position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 50% 60% at 80% 40%, rgba(16,185,129,0.07) 0%, transparent 70%);
+    }
+    .hero-content { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
+    .eyebrow { font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--green); font-weight: 700; margin-bottom: 0.6rem; }
+    .hero h2 { font-size: 1.9rem; font-weight: 900; line-height: 1.15; margin-bottom: 0.5rem; }
+    .hero h2 span { background: linear-gradient(135deg, var(--green), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { color: var(--text-dim); font-size: 0.87rem; max-width: 670px; line-height: 1.6; margin-bottom: 1.5rem; }
+    .hero-stats { display: flex; gap: 2.5rem; flex-wrap: wrap; }
+    .hstat .hv { font-size: 1.7rem; font-weight: 900; display: block; }
+    .hstat .hl { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+    /* ── SYSTEM STATUS BAR ── */
+    .status-bar {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0.6rem 2rem;
+    }
+    .sb-inner { max-width: 1400px; margin: 0 auto; display: flex; gap: 2rem; align-items: center; flex-wrap: wrap; }
+    .sb-item { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; }
+    .sb-label { color: var(--text-muted); }
+    .sb-val { font-weight: 700; }
+    .sb-divider { width: 1px; height: 20px; background: var(--border); }
+
+    /* ── MAIN ── */
+    .main { max-width: 1400px; margin: 0 auto; padding: 1.75rem 2rem; }
+
+    /* ── SECTION TITLE ── */
+    .section-title { font-size: 1rem; font-weight: 700; margin-bottom: 1.1rem; display: flex; align-items: center; gap: 10px; }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+
+    /* ── NAV CARDS ── */
+    .nav-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    .nav-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.25rem; text-decoration: none; color: var(--text);
+      transition: all 0.2s; position: relative; overflow: hidden;
+    }
+    .nav-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+    .nc1::before { background: linear-gradient(90deg, var(--green), var(--cyan)); }
+    .nc2::before { background: linear-gradient(90deg, var(--cyan), var(--blue)); }
+    .nc3::before { background: linear-gradient(90deg, var(--red), var(--amber)); }
+    .nc4::before { background: linear-gradient(90deg, var(--purple), var(--pink)); }
+    .nav-card:hover { border-color: var(--green); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(16,185,129,0.1); }
+    .nav-card .nc-icon { font-size: 1.5rem; margin-bottom: 0.7rem; display: block; }
+    .nav-card .nc-title { font-size: 0.84rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .nav-card .nc-desc { font-size: 0.7rem; color: var(--text-muted); line-height: 1.5; }
+    .nc-tag { margin-top: 0.7rem; padding: 2px 8px; font-size: 0.63rem; border-radius: 4px; display: inline-block; font-weight: 700; }
+    .tg { background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
+    .tb { background: rgba(6,182,212,0.12); color: var(--cyan); border: 1px solid rgba(6,182,212,0.25); }
+    .tr { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
+    .tp { background: rgba(139,92,246,0.12); color: var(--purple); border: 1px solid rgba(139,92,246,0.25); }
+
+    /* ── DASHBOARD GRID ── */
+    .dash-grid { display: grid; gap: 1rem; margin-bottom: 1.5rem; }
+    .g4 { grid-template-columns: repeat(4,1fr); }
+    .g3 { grid-template-columns: repeat(3,1fr); }
+    .g2 { grid-template-columns: 1fr 1fr; }
+    .g2a { grid-template-columns: 2fr 1fr; }
+    .widget {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem;
+    }
+    .wt { font-size: 0.67rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: var(--text-muted); margin-bottom: 0.85rem; display: flex; align-items: center; justify-content: space-between; }
+    .wt-left { display: flex; align-items: center; gap: 7px; }
+    .wdot { width: 6px; height: 6px; border-radius: 50%; }
+
+    /* KPI cards */
+    .kv { font-size: 2rem; font-weight: 900; display: block; line-height: 1; margin-bottom: 0.2rem; }
+    .kl { font-size: 0.68rem; color: var(--text-muted); }
+    .kd { font-size: 0.7rem; font-weight: 600; margin-top: 0.35rem; }
+    .up { color: var(--green); } .dn { color: var(--red); } .nt { color: var(--amber); }
+
+    /* SLO burn rate bars */
+    .slo-list { display: flex; flex-direction: column; gap: 0.6rem; }
+    .slo-item { }
+    .slo-header { display: flex; justify-content: space-between; margin-bottom: 0.3rem; font-size: 0.74rem; }
+    .slo-name { color: var(--text-dim); font-weight: 600; }
+    .slo-val { font-weight: 800; }
+    .slo-track { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+    .slo-fill { height: 100%; border-radius: 3px; }
+
+    /* Incident list */
+    .incident-list { display: flex; flex-direction: column; gap: 0.55rem; }
+    .incident-item {
+      padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid;
+      display: flex; align-items: center; gap: 10px; font-size: 0.75rem;
+    }
+    .ii-sev { font-size: 0.62rem; font-weight: 800; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
+    .sev1-bg { background: rgba(239,68,68,0.2); color: var(--sev1); border-color: rgba(239,68,68,0.35); }
+    .sev2-bg { background: rgba(249,115,22,0.15); color: var(--sev2); border-color: rgba(249,115,22,0.3); }
+    .sev3-bg { background: rgba(245,158,11,0.12); color: var(--sev3); border-color: rgba(245,158,11,0.25); }
+    .sev4-bg { background: rgba(16,185,129,0.1); color: var(--sev4); border-color: rgba(16,185,129,0.2); }
+    .sev1-pill { background: rgba(239,68,68,0.2); color: var(--sev1); }
+    .sev2-pill { background: rgba(249,115,22,0.15); color: var(--sev2); }
+    .sev3-pill { background: rgba(245,158,11,0.12); color: var(--sev3); }
+    .sev4-pill { background: rgba(16,185,129,0.1); color: var(--sev4); }
+    .ii-text { flex: 1; line-height: 1.4; color: var(--text-dim); }
+    .ii-text strong { color: var(--text); display: block; margin-bottom: 2px; }
+    .ii-meta { font-size: 0.62rem; color: var(--text-muted); text-align: right; white-space: nowrap; }
+
+    /* Team health grid */
+    .team-health-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.75rem; }
+    .th-card {
+      padding: 0.75rem; border-radius: 9px; border: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .thc-header { display: flex; align-items: center; gap: 8px; margin-bottom: 0.5rem; }
+    .thc-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .thc-name { font-size: 0.76rem; font-weight: 700; }
+    .thc-uptime { font-size: 0.72rem; font-weight: 700; float: right; }
+    .thc-metrics { font-size: 0.68rem; color: var(--text-muted); display: flex; gap: 0.75rem; }
+
+    /* Telemetry mini bars */
+    .tele-row { display: flex; align-items: center; gap: 8px; padding: 0.45rem 0; border-bottom: 1px solid var(--border); }
+    .tele-row:last-child { border-bottom: none; }
+    .tele-label { font-size: 0.72rem; color: var(--text-dim); flex: 1; }
+    .tele-bar-wrap { width: 90px; }
+    .tele-bar { height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+    .tele-fill { height: 100%; border-radius: 3px; }
+    .tele-val { font-size: 0.72rem; font-weight: 700; min-width: 55px; text-align: right; }
+
+    /* Error budget gauge row */
+    .budget-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .budget-item { flex: 1; min-width: 120px; text-align: center; padding: 0.75rem; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); }
+    .bi-val { font-size: 1.3rem; font-weight: 900; display: block; }
+    .bi-label { font-size: 0.62rem; color: var(--text-muted); margin-top: 3px; }
+    .bi-team { font-size: 0.67rem; font-weight: 700; margin-bottom: 4px; }
+
+    /* MTTA/MTTR bars */
+    .mttx-row { display: flex; align-items: center; gap: 8px; padding: 0.4rem 0; }
+    .mttx-label { font-size: 0.72rem; color: var(--text-dim); width: 80px; flex-shrink: 0; }
+    .mttx-bar-wrap { flex: 1; }
+    .mttx-bar { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+    .mttx-fill { height: 100%; border-radius: 3px; }
+    .mttx-val { font-size: 0.72rem; font-weight: 700; min-width: 50px; text-align: right; }
+
+    footer { border-top: 1px solid var(--border); text-align: center; padding: 1.5rem; color: var(--text-muted); font-size: 0.72rem; margin-top: 2rem; }
+    footer strong { color: var(--text-dim); }
+
+    @media (max-width: 1100px) { .nav-grid { grid-template-columns: 1fr 1fr; } .g4 { grid-template-columns: 1fr 1fr; } .g3 { grid-template-columns: 1fr 1fr; } .team-health-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 640px) { nav { display:none; } .nav-grid,.g4,.g3,.g2,.g2a { grid-template-columns:1fr; } .team-health-grid { grid-template-columns:1fr; } .hero-stats { gap:1.5rem; } }
+  </style>
+</head>
+<body>
+
+<!-- ══════════ HEADER ══════════ -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🛡️</div>
+    <div class="logo-text">
+      <h1>GCI Operations Hub</h1>
+      <p>Site Reliability Engineering · Message Archiver Platform</p>
+    </div>
+  </div>
+  <nav>
+    <a href="index.html" class="active">Command Center</a>
+    <a href="reliability-framework.html">Reliability Framework</a>
+    <a href="operations-hub.html">Operations Hub</a>
+    <a href="war-room.html">War Room &amp; Post-Mortems</a>
+  </nav>
+  <div class="header-right">
+    <span class="status-pill sp-amber"><span class="dot dot-amber"></span>1 SEV-2 Active</span>
+    <span class="status-pill sp-green"><span class="dot dot-green"></span>System Operational</span>
+  </div>
+</header>
+
+<!-- ══════════ STATUS BAR ══════════ -->
+<div class="status-bar">
+  <div class="sb-inner">
+    <div class="sb-item"><span class="sb-label">Overall Uptime (30d)</span><span class="sb-val" style="color:var(--green)">99.97%</span></div>
+    <div class="sb-divider"></div>
+    <div class="sb-item"><span class="sb-label">Active Incidents</span><span class="sb-val" style="color:var(--amber)">1 SEV-2 · 0 SEV-1</span></div>
+    <div class="sb-divider"></div>
+    <div class="sb-item"><span class="sb-label">Org Error Budget (30d)</span><span class="sb-val" style="color:var(--green)">62% remaining</span></div>
+    <div class="sb-divider"></div>
+    <div class="sb-item"><span class="sb-label">MTTA (7d avg)</span><span class="sb-val" style="color:var(--green)">4.2 min</span></div>
+    <div class="sb-divider"></div>
+    <div class="sb-item"><span class="sb-label">MTTR (7d avg)</span><span class="sb-val" style="color:var(--green)">18.6 min</span></div>
+    <div class="sb-divider"></div>
+    <div class="sb-item"><span class="sb-label">Open COE Actions</span><span class="sb-val" style="color:var(--amber)">14 open · 3 overdue</span></div>
+    <div class="sb-divider"></div>
+    <div class="sb-item"><span class="sb-label">Last Updated</span><span class="sb-val">Mar 23, 2026 · 09:16 UTC</span></div>
+  </div>
+</div>
+
+<!-- ══════════ HERO ══════════ -->
+<div class="hero">
+  <div class="hero-content">
+    <p class="eyebrow">GCI SRE · Manager, Site Reliability Engineering · Operational Accountability Mandate</p>
+    <h2>Owning Reliability at <span>60 Petabyte Scale</span></h2>
+    <p>
+      The GCI Operations Hub is the single pane of glass for operational accountability across the
+      Message Archiver platform. From ingestion pipeline telemetry to real-time incident war rooms,
+      this portal drives the cultural shift from reactive firefighting to proactive,
+      metrics-driven operational excellence.
+    </p>
+    <div class="hero-stats">
+      <div class="hstat"><span class="hv" style="color:var(--green)">99.97%</span><span class="hl">System Uptime (30d)</span></div>
+      <div class="hstat"><span class="hv" style="color:var(--cyan)">60 PB</span><span class="hl">Data Under Mgmt</span></div>
+      <div class="hstat"><span class="hv" style="color:var(--blue)">6 Teams</span><span class="hl">Domain SRE Owners</span></div>
+      <div class="hstat"><span class="hv" style="color:var(--amber)">4.2 min</span><span class="hl">Avg MTTA</span></div>
+      <div class="hstat"><span class="hv" style="color:var(--purple)">18.6 min</span><span class="hl">Avg MTTR</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MAIN ══════════ -->
+<main class="main">
+
+  <!-- Portal Nav Cards -->
+  <p class="section-title">SRE Portal — Operational Deliverables</p>
+  <div class="nav-grid">
+    <a href="reliability-framework.html" class="nav-card nc1">
+      <span class="nc-icon">📋</span>
+      <div class="nc-title">The Reliability Framework</div>
+      <div class="nc-desc">Phased SRE rollout, SLI/SLO/SLA definitions per team, tiered incident protocol, and COE frameworks.</div>
+      <span class="nc-tag tg">Output 1</span>
+    </a>
+    <a href="operations-hub.html" class="nav-card nc2">
+      <span class="nc-icon">📡</span>
+      <div class="nc-title">Operations Command Center</div>
+      <div class="nc-desc">Executive Reliability Plane, 60PB Telemetry Hub, error budget burn rates, and MTTA/MTTR aggregates.</div>
+      <span class="nc-tag tb">Output 2</span>
+    </a>
+    <a href="war-room.html" class="nav-card nc3">
+      <span class="nc-icon">🚨</span>
+      <div class="nc-title">Incident War Room</div>
+      <div class="nc-desc">Real-time SEV-1/SEV-2 incident management, PagerDuty feeds, Slack channels, and Zoom war room links.</div>
+      <span class="nc-tag tr">Output 2B</span>
+    </a>
+    <a href="war-room.html#postmortem" class="nav-card nc4">
+      <span class="nc-icon">📝</span>
+      <div class="nc-title">Post-Mortem Ledger</div>
+      <div class="nc-desc">COE document tracking, action item accountability per team, blameless retrospective dashboard.</div>
+      <span class="nc-tag tp">Output 2C</span>
+    </a>
+  </div>
+
+  <!-- Executive KPIs -->
+  <p class="section-title">Executive Reliability Plane — Live KPIs</p>
+  <div class="dash-grid g4">
+    <div class="widget">
+      <div class="wt"><div class="wt-left"><span class="wdot" style="background:var(--green);"></span>System Uptime</div></div>
+      <span class="kv" style="color:var(--green)">99.97%</span>
+      <div class="kl">Rolling 30-day availability</div>
+      <div class="kd up">↑ SLO target: 99.95% — 2bp of headroom</div>
+    </div>
+    <div class="widget">
+      <div class="wt"><div class="wt-left"><span class="wdot" style="background:var(--amber);"></span>Error Budget Burn</div></div>
+      <span class="kv" style="color:var(--amber)">38.1%</span>
+      <div class="kl">Consumed this 30-day window</div>
+      <div class="kd nt">⚠ 2 teams in accelerated burn — review</div>
+    </div>
+    <div class="widget">
+      <div class="wt"><div class="wt-left"><span class="wdot" style="background:var(--cyan);"></span>Mean Time to Ack</div></div>
+      <span class="kv" style="color:var(--cyan)">4.2 min</span>
+      <div class="kl">7-day rolling average (all severities)</div>
+      <div class="kd up">↑ Target: &lt;5min — within SLO</div>
+    </div>
+    <div class="widget">
+      <div class="wt"><div class="wt-left"><span class="wdot" style="background:var(--purple);"></span>Mean Time to Resolve</div></div>
+      <span class="kv" style="color:var(--purple)">18.6 min</span>
+      <div class="kl">7-day rolling avg (SEV-1 / SEV-2)</div>
+      <div class="kd up">↑ Target: &lt;30min — healthy</div>
+    </div>
+  </div>
+
+  <!-- SLO Burn + Team Health -->
+  <div class="dash-grid g2">
+    <div class="widget">
+      <div class="wt"><div class="wt-left"><span class="wdot" style="background:var(--amber);"></span>Error Budget Burn Rate — 6 Teams (30d)</div></div>
+      <div class="slo-list">
+        <div class="slo-item">
+          <div class="slo-header"><span class="slo-name">T1 · Ingestion Pipeline</span><span class="slo-val" style="color:var(--green)">18% burned</span></div>
+          <div class="slo-track"><div class="slo-fill" style="width:18%;background:linear-gradient(90deg,#10b981,#34d399);"></div></div>
+        </div>
+        <div class="slo-item">
+          <div class="slo-header"><span class="slo-name">T2 · Search &amp; Indexing</span><span class="slo-val" style="color:var(--amber)">54% burned</span></div>
+          <div class="slo-track"><div class="slo-fill" style="width:54%;background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div></div>
+        </div>
+        <div class="slo-item">
+          <div class="slo-header"><span class="slo-name">T3 · Storage &amp; FinOps</span><span class="slo-val" style="color:var(--green)">12% burned</span></div>
+          <div class="slo-track"><div class="slo-fill" style="width:12%;background:linear-gradient(90deg,#10b981,#34d399);"></div></div>
+        </div>
+        <div class="slo-item">
+          <div class="slo-header"><span class="slo-name">T4 · E-Discovery &amp; Compliance</span><span class="slo-val" style="color:var(--amber)">41% burned</span></div>
+          <div class="slo-track"><div class="slo-fill" style="width:41%;background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div></div>
+        </div>
+        <div class="slo-item">
+          <div class="slo-header"><span class="slo-name">T5 · Control Plane &amp; API</span><span class="slo-val" style="color:var(--red)">79% burned ⚠</span></div>
+          <div class="slo-track"><div class="slo-fill" style="width:79%;background:linear-gradient(90deg,#ef4444,#f97316);"></div></div>
+        </div>
+        <div class="slo-item">
+          <div class="slo-header"><span class="slo-name">T6 · Platform Engineering</span><span class="slo-val" style="color:var(--green)">22% burned</span></div>
+          <div class="slo-track"><div class="slo-fill" style="width:22%;background:linear-gradient(90deg,#10b981,#06b6d4);"></div></div>
+        </div>
+      </div>
+      <div style="margin-top:0.85rem;padding:0.6rem;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);border-radius:6px;font-size:0.72rem;color:var(--red);">
+        🚨 T5 Control Plane at 79% budget burn. Feature freeze recommended. Root cause: Wave 2 API Gateway config churn. SRE review scheduled Tuesday.
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="wt"><div class="wt-left"><span class="wdot" style="background:var(--blue);"></span>Active &amp; Recent Incidents</div></div>
+      <div class="incident-list">
+        <div class="incident-item sev2-bg">
+          <span class="ii-sev sev2-pill">SEV-2</span>
+          <div class="ii-text"><strong>OpenSearch dual-write consistency lag elevated</strong>T2 Search · ACTIVE · IC: Sarah M. · 47m elapsed</div>
+          <div class="ii-meta">Active<br/>PD-4892</div>
+        </div>
+        <div class="incident-item sev3-bg">
+          <span class="ii-sev sev3-pill">SEV-3</span>
+          <div class="ii-text"><strong>Glacier restore queue depth &gt;80% capacity</strong>T3 FinOps · MONITORING · Auto-scaling triggered</div>
+          <div class="ii-meta">3h ago<br/>PD-4891</div>
+        </div>
+        <div class="incident-item sev4-bg">
+          <span class="ii-sev sev4-pill">SEV-4</span>
+          <div class="ii-text"><strong>890GB untagged objects in S3 Raw Zone</strong>T3 FinOps · RESOLVED · Batch tagging job complete</div>
+          <div class="ii-meta">1d ago<br/>PD-4887</div>
+        </div>
+        <div class="incident-item sev3-bg">
+          <span class="ii-sev sev3-pill">SEV-3</span>
+          <div class="ii-text"><strong>T5 API Gateway P99 latency spike: 340ms → 890ms</strong>T5 Control · RESOLVED · Config rollback applied</div>
+          <div class="ii-meta">3d ago<br/>PD-4880</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team Health Grid -->
+  <p class="section-title">6-Team SRE Health Dashboard</p>
+  <div class="team-health-grid">
+    <div class="th-card">
+      <div class="thc-header">
+        <div class="thc-dot" style="background:#10b981;"></div>
+        <span class="thc-name">T1 · Ingestion Pipeline</span>
+        <span class="thc-uptime" style="color:#10b981;">99.99%</span>
+      </div>
+      <div class="thc-metrics">
+        <span>MTTA: 3.1m</span><span>MTTR: 11m</span><span>Budget: 82% left</span>
+      </div>
+    </div>
+    <div class="th-card" style="border-color:rgba(245,158,11,0.3);">
+      <div class="thc-header">
+        <div class="thc-dot" style="background:#f59e0b;"></div>
+        <span class="thc-name">T2 · Search &amp; Indexing</span>
+        <span class="thc-uptime" style="color:#f59e0b;">99.92%</span>
+      </div>
+      <div class="thc-metrics">
+        <span>MTTA: 5.4m</span><span>MTTR: 24m</span><span>Budget: 46% left</span>
+      </div>
+    </div>
+    <div class="th-card">
+      <div class="thc-header">
+        <div class="thc-dot" style="background:#10b981;"></div>
+        <span class="thc-name">T3 · Storage &amp; FinOps</span>
+        <span class="thc-uptime" style="color:#10b981;">100%</span>
+      </div>
+      <div class="thc-metrics">
+        <span>MTTA: 4.8m</span><span>MTTR: 18m</span><span>Budget: 88% left</span>
+      </div>
+    </div>
+    <div class="th-card">
+      <div class="thc-header">
+        <div class="thc-dot" style="background:#10b981;"></div>
+        <span class="thc-name">T4 · E-Discovery &amp; Compliance</span>
+        <span class="thc-uptime" style="color:#10b981;">99.98%</span>
+      </div>
+      <div class="thc-metrics">
+        <span>MTTA: 3.8m</span><span>MTTR: 14m</span><span>Budget: 59% left</span>
+      </div>
+    </div>
+    <div class="th-card" style="border-color:rgba(239,68,68,0.35);">
+      <div class="thc-header">
+        <div class="thc-dot" style="background:#ef4444; animation:pulse 1s infinite;"></div>
+        <span class="thc-name">T5 · Control Plane &amp; API</span>
+        <span class="thc-uptime" style="color:#ef4444;">99.81% ⚠</span>
+      </div>
+      <div class="thc-metrics">
+        <span>MTTA: 6.1m</span><span style="color:#ef4444">MTTR: 42m ⚠</span><span style="color:#ef4444">Budget: 21% left</span>
+      </div>
+    </div>
+    <div class="th-card">
+      <div class="thc-header">
+        <div class="thc-dot" style="background:#10b981;"></div>
+        <span class="thc-name">T6 · Platform Engineering</span>
+        <span class="thc-uptime" style="color:#10b981;">99.99%</span>
+      </div>
+      <div class="thc-metrics">
+        <span>MTTA: 2.9m</span><span>MTTR: 9m</span><span>Budget: 78% left</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 60PB Telemetry Snapshot -->
+  <p class="section-title">60 PB Telemetry — Infrastructure Health Snapshot</p>
+  <div class="dash-grid g3">
+    <div class="widget">
+      <div class="wt"><div class="wt-left"><span class="wdot" style="background:var(--green);"></span>Ingestion Pipeline Health</div></div>
+      <div class="tele-row"><span class="tele-label">Kafka MSK Consumer Lag</span><div class="tele-bar-wrap"><div class="tele-bar"><div class="tele-fill" style="width:12%;background:#10b981;"></div></div></div><span class="tele-val" style="color:#10b981">1,240 msgs</span></div>
+      <div class="tele-row"><span class="tele-label">Ingest Throughput</span><div class="tele-bar-wrap"><div class="tele-bar"><div class="tele-fill" style="width:65%;background:#3b82f6;"></div></div></div><span class="tele-val" style="color:#3b82f6">4.2 TB/day</span></div>
+      <div class="tele-row"><span class="tele-label">Connector Error Rate</span><div class="tele-bar-wrap"><div class="tele-bar"><div class="tele-fill" style="width:3%;background:#10b981;"></div></div></div><span class="tele-val" style="color:#10b981">0.03%</span></div>
+      <div class="tele-row"><span class="tele-label">DLQ (Dead Letter)</span><div class="tele-bar-wrap"><div class="tele-bar"><div class="tele-fill" style="width:5%;background:#10b981;"></div></div></div><span class="tele-val" style="color:#10b981">42 msgs</span></div>
+      <div class="tele-row"><span class="tele-label">S3 Write Latency (P99)</span><div class="tele-bar-wrap"><div class="tele-bar"><div class="tele-fill" style="width:22%;background:#10b981;"></div></div></div><span class="tele-val" style="color:#10b981">88ms</span></div>
+    </div>
+    <div class="widget">
+      <div class="wt"><div class="wt-left"><span class="wdot" style="background:var(--amber);"></span>Search &amp; Indexing Health</div></div>
+      <div class="tele-row"><span class="tele-label">OpenSearch Index Queue</span><div class="tele-bar-wrap"><div class="tele-bar"><div class="tele-fill" style="width:44%;background:#f59e0b;"></div></div></div><span class="tele-val" style="color:#f59e0b">4.8M msgs</span></div>
+      <div class="tele-row"><span class="tele-label">Search P99 Latency (Hot)</span><div class="tele-bar-wrap"><div class="tele-bar"><div class="tele-fill" style="width:42%;background:#10b981;"></div></div></div><span class="tele-val" style="color:#10b981">420ms</span></div>
+      <div class="tele-row"><span class="tele-label">Index Consistency Delta</span><div class="tele-bar-wrap"><div class="tele-bar"><div class="tele-fill" style="width:40%;background:#ef4444;"></div></div></div><span class="tele-val" style="color:#ef4444">0.04% ⚠</span></div>
+      <div class="tele-row"><span class="tele-label">OpenSearch OCU Util.</span><div class="tele-bar-wrap"><div class="tele-bar"><div class="tele-fill" style="width:68%;background:#3b82f6;"></div></div></div><span class="tele-val" style="color:#3b82f6">68%</span></div>
+      <div class="tele-row"><span class="tele-label">Index Error Rate</span><div class="tele-bar-wrap"><div class="tele-bar"><div class="tele-fill" style="width:8%;background:#10b981;"></div></div></div><span class="tele-val" style="color:#10b981">0.08%</span></div>
+    </div>
+    <div class="widget">
+      <div class="wt"><div class="wt-left"><span class="wdot" style="background:var(--blue);"></span>AWS Storage &amp; Compute Anomalies</div></div>
+      <div class="tele-row"><span class="tele-label">S3 API Error Rate</span><div class="tele-bar-wrap"><div class="tele-bar"><div class="tele-fill" style="width:2%;background:#10b981;"></div></div></div><span class="tele-val" style="color:#10b981">0.01%</span></div>
+      <div class="tele-row"><span class="tele-label">Glacier Restore Queue</span><div class="tele-bar-wrap"><div class="tele-bar"><div class="tele-fill" style="width:80%;background:#f59e0b;"></div></div></div><span class="tele-val" style="color:#f59e0b">1.2 TB ⚠</span></div>
+      <div class="tele-row"><span class="tele-label">EKS Node CPU (avg)</span><div class="tele-bar-wrap"><div class="tele-bar"><div class="tele-fill" style="width:52%;background:#3b82f6;"></div></div></div><span class="tele-val" style="color:#3b82f6">52%</span></div>
+      <div class="tele-row"><span class="tele-label">Cost Anomaly Score</span><div class="tele-bar-wrap"><div class="tele-bar"><div class="tele-fill" style="width:18%;background:#10b981;"></div></div></div><span class="tele-val" style="color:#10b981">Low</span></div>
+      <div class="tele-row"><span class="tele-label">WORM Integrity Checks</span><div class="tele-bar-wrap"><div class="tele-bar"><div class="tele-fill" style="width:100%;background:#10b981;"></div></div></div><span class="tele-val" style="color:#10b981">100% ✓</span></div>
+    </div>
+  </div>
+
+</main>
+<footer>
+  <strong>GCI Operations Hub</strong> · Site Reliability Engineering · Message Archiver Platform · Confidential · Internal Use Only · &copy; 2026
+</footer>
+</body>
+</html>

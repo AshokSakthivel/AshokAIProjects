@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>War Room &amp; Post-Mortems — GCI SRE</title>
+  <style>
+    :root {
+      --bg: #080d12; --surface: #0d1421; --surface2: #111d2e; --border: #1a2d44;
+      --green: #10b981; --red: #ef4444; --amber: #f59e0b; --blue: #3b82f6;
+      --purple: #8b5cf6; --cyan: #06b6d4; --orange: #f97316;
+      --text: #e2e8f0; --text-muted: #4b6070; --text-dim: #7fa3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+    header { background: linear-gradient(135deg,#060b10,#0b1826); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 34px; height: 34px; background: linear-gradient(135deg,var(--green),var(--cyan)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .logo-text h1 { font-size: 0.95rem; font-weight: 700; }
+    .logo-text p { font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; }
+    nav { display: flex; gap: 3px; }
+    nav a { color: var(--text-dim); text-decoration: none; padding: 5px 13px; border-radius: 6px; font-size: 0.78rem; font-weight: 500; transition: all 0.2s; border: 1px solid transparent; }
+    nav a:hover { color: var(--text); background: var(--surface2); border-color: var(--border); }
+    nav a.active { color: #fff; background: var(--red); border-color: var(--red); }
+
+    /* War Room Alert Banner */
+    .war-banner { background: linear-gradient(90deg,rgba(239,68,68,0.15),rgba(249,115,22,0.1),rgba(239,68,68,0.08)); border-bottom: 2px solid rgba(239,68,68,0.5); padding: 0.85rem 2rem; display: flex; align-items: center; gap: 1.5rem; }
+    .wb-pulse { width: 12px; height: 12px; border-radius: 50%; background: var(--red); animation: pulse 1.5s infinite; flex-shrink: 0; }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.7);} 50%{box-shadow:0 0 0 8px rgba(239,68,68,0);} }
+    .wb-text { font-size: 0.8rem; }
+    .wb-text strong { color: var(--red); }
+    .wb-links { display: flex; gap: 0.75rem; margin-left: auto; flex-wrap: wrap; }
+    .wb-btn { padding: 0.3rem 0.85rem; border-radius: 6px; font-size: 0.72rem; font-weight: 700; border: 1px solid; cursor: pointer; text-decoration: none; }
+    .wbb-r { background: rgba(239,68,68,0.15); color: var(--red); border-color: rgba(239,68,68,0.4); }
+    .wbb-s { background: rgba(59,130,246,0.12); color: var(--blue); border-color: rgba(59,130,246,0.3); }
+    .wbb-z { background: rgba(139,92,246,0.12); color: var(--purple); border-color: rgba(139,92,246,0.3); }
+
+    .hero { background: linear-gradient(135deg,#060b10,#1a0d0d,#060b10); border-bottom: 1px solid var(--border); padding: 2.2rem 2rem; position: relative; overflow: hidden; }
+    .hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 40% 60% at 30% 50%,rgba(239,68,68,0.06) 0%,transparent 70%); }
+    .hero-content { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: flex-start; }
+    .hero-left { flex: 1; }
+    .eyebrow { font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--red); font-weight: 700; margin-bottom: 0.6rem; }
+    .hero h2 { font-size: 1.8rem; font-weight: 900; margin-bottom: 0.5rem; }
+    .hero h2 span { background: linear-gradient(135deg,var(--red),var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { color: var(--text-dim); font-size: 0.87rem; max-width: 600px; line-height: 1.6; }
+    .hero-stats { display: flex; gap: 1.5rem; margin-left: 3rem; flex-shrink: 0; }
+    .hs { text-align: center; padding: 0.85rem 1.25rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; min-width: 90px; }
+    .hs-val { font-size: 1.7rem; font-weight: 900; line-height: 1; }
+    .hs-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-top: 4px; }
+
+    .main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+    .section-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px; }
+    .section-title::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--border),transparent); }
+
+    /* Active Incident War Room */
+    .active-incident-card {
+      background: linear-gradient(135deg,rgba(239,68,68,0.06),rgba(249,115,22,0.04));
+      border: 2px solid rgba(239,68,68,0.4); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem;
+    }
+    .aic-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; }
+    .aic-id { display: flex; align-items: center; gap: 12px; }
+    .aic-badge { font-size: 0.7rem; padding: 4px 12px; border-radius: 6px; font-weight: 900; }
+    .aic-title { font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; }
+    .aic-sub { font-size: 0.76rem; color: var(--text-dim); }
+    .aic-timer { text-align: right; }
+    .aic-dur { font-size: 1.8rem; font-weight: 900; color: var(--red); line-height: 1; }
+    .aic-dur-label { font-size: 0.65rem; color: var(--text-muted); }
+
+    .aic-grid { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 1.25rem; }
+    .aic-col-title { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 700; margin-bottom: 0.75rem; }
+    .aic-roles { list-style: none; }
+    .aic-roles li { font-size: 0.78rem; color: var(--text-dim); padding: 0.4rem 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+    .aic-roles li:last-child { border-bottom: none; }
+    .role-name { font-weight: 600; color: var(--text); }
+    .aic-impact { list-style: none; }
+    .aic-impact li { font-size: 0.78rem; color: var(--text-dim); padding: 0.4rem 0; border-bottom: 1px solid var(--border); display: flex; gap: 8px; line-height: 1.45; }
+    .aic-impact li:last-child { border-bottom: none; }
+    .aic-impact li::before { content:'→'; flex-shrink:0; }
+
+    /* Timeline */
+    .timeline { list-style: none; padding-left: 0; }
+    .tl-item { display: flex; gap: 1rem; position: relative; padding-bottom: 1.25rem; }
+    .tl-item:last-child { padding-bottom: 0; }
+    .tl-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 80px; }
+    .tl-time { font-size: 0.68rem; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+    .tl-line { flex: 1; width: 1px; background: var(--border); margin-top: 4px; }
+    .tl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+    .tl-body { flex: 1; padding-top: 0; }
+    .tl-event { font-size: 0.8rem; font-weight: 600; margin-bottom: 2px; }
+    .tl-detail { font-size: 0.74rem; color: var(--text-muted); line-height: 1.45; }
+
+    /* COE / Post-Mortem table */
+    .coe-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; margin-bottom: 2rem; }
+    .coe-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+    .coe-table th { background: var(--surface2); color: var(--text-muted); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.55rem 0.75rem; border: 1px solid var(--border); text-align: left; }
+    .coe-table td { padding: 0.65rem 0.75rem; border: 1px solid var(--border); color: var(--text-dim); vertical-align: top; }
+    .coe-table tr:hover td { background: var(--surface2); }
+    .ct { font-size: 0.65rem; padding: 2px 7px; border-radius: 4px; font-weight: 700; }
+    .ct-g { background: rgba(16,185,129,0.15); color: var(--green); }
+    .ct-a { background: rgba(245,158,11,0.15); color: var(--amber); }
+    .ct-r { background: rgba(239,68,68,0.15); color: var(--red); }
+    .ct-b { background: rgba(59,130,246,0.15); color: var(--blue); }
+
+    /* Action Item ledger */
+    .ai-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+    .ai-team-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; }
+    .aitc-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.9rem; }
+    .aitc-title { font-size: 0.88rem; font-weight: 800; }
+    .aitc-count { font-size: 0.72rem; color: var(--text-muted); }
+    .ai-item { padding: 0.65rem; border-radius: 8px; margin-bottom: 0.5rem; border: 1px solid; }
+    .ai-item:last-child { margin-bottom: 0; }
+    .ai-item.ai-done { background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.2); }
+    .ai-item.ai-open { background: rgba(245,158,11,0.05); border-color: rgba(245,158,11,0.2); }
+    .ai-item.ai-late { background: rgba(239,68,68,0.07); border-color: rgba(239,68,68,0.3); }
+    .ai-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+    .ai-name { font-size: 0.78rem; font-weight: 600; line-height: 1.35; }
+    .ai-due { font-size: 0.67rem; }
+    .ai-meta { font-size: 0.7rem; color: var(--text-muted); display: flex; gap: 10px; }
+
+    /* Reliability KPIs over time */
+    .kpi-trend-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-bottom: 2rem; }
+    .kt { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; }
+    .kt-label { font-size: 0.67rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 0.35rem; }
+    .kt-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 0.5rem; }
+    .kt-val { font-size: 1.4rem; font-weight: 900; line-height: 1; }
+    .kt-arr { font-size: 0.78rem; font-weight: 700; }
+    .kt-bars { display: flex; align-items: flex-end; gap: 3px; height: 50px; }
+    .ktb { flex: 1; border-radius: 2px 2px 0 0; min-height: 4px; opacity: 0.8; }
+    .kt-months { display: flex; justify-content: space-between; margin-top: 4px; }
+    .kt-m { font-size: 0.58rem; color: var(--text-muted); }
+
+    /* Blameless retrospective metrics */
+    .retro-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+    .rg { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; }
+    .rg-icon { font-size: 1.4rem; margin-bottom: 0.5rem; display: block; }
+    .rg-title { font-size: 0.82rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .rg-val { font-size: 1.3rem; font-weight: 900; margin-bottom: 0.4rem; }
+    .rg-detail { font-size: 0.72rem; color: var(--text-muted); line-height: 1.5; }
+
+    footer { border-top: 1px solid var(--border); text-align: center; padding: 1.5rem; color: var(--text-muted); font-size: 0.72rem; margin-top: 2rem; }
+    footer strong { color: var(--text-dim); }
+
+    @media (max-width: 1100px) { .aic-grid { grid-template-columns: 1fr 1fr; } .kpi-trend-grid,.retro-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 768px) { nav { display: none; } .hero-content { flex-direction: column; } .hero-stats { margin: 1rem 0 0; } .ai-grid,.aic-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🛡️</div>
+    <div class="logo-text">
+      <h1>GCI Operations Hub</h1>
+      <p>Site Reliability Engineering · Message Archiver</p>
+    </div>
+  </div>
+  <nav>
+    <a href="index.html">Command Center</a>
+    <a href="reliability-framework.html">Reliability Framework</a>
+    <a href="operations-hub.html">Operations Hub</a>
+    <a href="war-room.html" class="active">War Room &amp; Post-Mortems</a>
+  </nav>
+</header>
+
+<!-- War Banner -->
+<div class="war-banner">
+  <div class="wb-pulse"></div>
+  <div class="wb-text">
+    <strong>ACTIVE SEV-2 — PD-4892:</strong> T2 Search · OpenSearch dual-write consistency lag elevated (47 min). IC: @m.okonkwo. Declared 14:33 UTC. MTTR target: 16:00 UTC.
+  </div>
+  <div class="wb-links">
+    <a class="wb-btn wbb-r" href="#">🚨 PagerDuty PD-4892</a>
+    <a class="wb-btn wbb-s" href="#">💬 #inc-20250718-4892</a>
+    <a class="wb-btn wbb-z" href="#">📹 Zoom War Room</a>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-left">
+      <p class="eyebrow">War Room &amp; Post-Mortems · COE Ledger · Action Item Accountability</p>
+      <h2>Incident <span>War Room</span></h2>
+      <p>
+        Active incident command surface, blameless post-mortem ledger, and COE action item
+        accountability tracker for all 6 teams. Every incident is an opportunity to make
+        the system safer. No blame — only better architecture.
+      </p>
+    </div>
+    <div class="hero-stats">
+      <div class="hs"><div class="hs-val" style="color:var(--red);">1</div><div class="hs-label">Active SEV-2</div></div>
+      <div class="hs"><div class="hs-val" style="color:var(--amber);">3</div><div class="hs-label">Open SEV-3</div></div>
+      <div class="hs"><div class="hs-val" style="color:var(--text);">12</div><div class="hs-label">COEs YTD</div></div>
+      <div class="hs"><div class="hs-val" style="color:var(--red);">3</div><div class="hs-label">Actions Overdue</div></div>
+      <div class="hs"><div class="hs-val" style="color:var(--green);">82%</div><div class="hs-label">Closure Rate</div></div>
+    </div>
+  </div>
+</div>
+
+<main class="main">
+
+  <!-- Active Incident War Room -->
+  <p class="section-title">Active Incident War Room — SEV-2 · PD-4892</p>
+  <div class="active-incident-card">
+    <div class="aic-top">
+      <div class="aic-id">
+        <span class="aic-badge" style="background:rgba(249,115,22,0.2);color:var(--orange);border:1px solid rgba(249,115,22,0.4);">SEV-2 ACTIVE</span>
+        <div>
+          <div class="aic-title">OpenSearch Dual-Write Consistency Lag Elevated</div>
+          <div class="aic-sub">T2 · Search &amp; Indexing · Declared 14:33 UTC · PagerDuty PD-4892 · Zoom Bridge: war-room-1</div>
+        </div>
+      </div>
+      <div class="aic-timer">
+        <div class="aic-dur">1h 27m</div>
+        <div class="aic-dur-label">Elapsed · MTTR SLO: 2h remaining</div>
+      </div>
+    </div>
+    <div class="aic-grid">
+      <div>
+        <div class="aic-col-title">Incident Command</div>
+        <ul class="aic-roles">
+          <li><span class="role-name">IC</span><span>@m.okonkwo (T5 Staff)</span></li>
+          <li><span class="role-name">On-Call (T2)</span><span>@priya.rao</span></li>
+          <li><span class="role-name">On-Call (T5)</span><span>@derek.chen</span></li>
+          <li><span class="role-name">Comms Lead</span><span>@fatima.zaidi</span></li>
+          <li><span class="role-name">T4 Notified</span><span>@legal-hold-eng</span></li>
+          <li><span class="role-name">Status Page</span><span style="color:var(--amber);">⚠ Investigating posted</span></li>
+        </ul>
+      </div>
+      <div>
+        <div class="aic-col-title">Blast Radius</div>
+        <ul class="aic-impact">
+          <li>Hot-tier index lag 47 min behind live write stream — new messages not searchable for &lt;47 min</li>
+          <li>3 active legal holds at risk — data completeness gap in ongoing e-discovery queries (T4 hold team briefed)</li>
+          <li>No data loss confirmed — S3 writes nominal; lag is index-only, not durability</li>
+          <li>~12% of search API queries returning stale results for messages ingested in last 47 min</li>
+          <li>SLO breach: T2 Search availability SLO (99.9%) at risk if not resolved within 78 min</li>
+        </ul>
+      </div>
+      <div>
+        <div class="aic-col-title">Live Incident Timeline (UTC)</div>
+        <ul class="timeline">
+          <li class="tl-item">
+            <div class="tl-left"><div class="tl-time">14:33</div><div class="tl-line"></div></div>
+            <div class="tl-dot" style="background:var(--red);"></div>
+            <div class="tl-body"><div class="tl-event" style="color:var(--red);">SEV-2 Declared by IC @m.okonkwo</div><div class="tl-detail">PagerDuty escalation auto-fired on 2% hourly error budget burn rate threshold. IC acknowledged in 4m 12s. War room provisioned.</div></div>
+          </li>
+          <li class="tl-item">
+            <div class="tl-left"><div class="tl-time">14:37</div><div class="tl-line"></div></div>
+            <div class="tl-dot" style="background:var(--amber);"></div>
+            <div class="tl-body"><div class="tl-event">Status Page Updated — "Investigating"</div><div class="tl-detail">Comms lead posted on status.gciarchiver.io. Internal exec brief sent at 14:38 to VP Engineering and Legal Counsel.</div></div>
+          </li>
+          <li class="tl-item">
+            <div class="tl-left"><div class="tl-time">14:42</div><div class="tl-line"></div></div>
+            <div class="tl-dot" style="background:var(--blue);"></div>
+            <div class="tl-body"><div class="tl-event">Root Cause Hypothesis #1: OpenSearch coordinator node overloaded</div><div class="tl-detail">@priya.rao: coordinator node CPU at 94%. Ruled out at 14:51 — CPU returned to 60% but lag persisted. Hypothesis invalidated.</div></div>
+          </li>
+          <li class="tl-item">
+            <div class="tl-left"><div class="tl-time">14:55</div><div class="tl-line"></div></div>
+            <div class="tl-dot" style="background:var(--orange);"></div>
+            <div class="tl-body"><div class="tl-event">Root Cause Hypothesis #2: Dual-write Kafka consumer backpressure (ACTIVE)</div><div class="tl-detail">@priya.rao identified Kafka consumer group os-dual-write-consumer at 100% CPU on 2 of 3 partitions. Scaling ECS task from 3 → 6 replicas as mitigation. Lag not yet reducing.</div></div>
+          </li>
+          <li class="tl-item">
+            <div class="tl-left"><div class="tl-time">16:00</div><div class="tl-line"></div></div>
+            <div class="tl-dot" style="background:var(--text-muted);"></div>
+            <div class="tl-body"><div class="tl-event" style="color:var(--text-muted);">MTTR SLO Target — 30 min remaining</div><div class="tl-detail">If lag not below 5 min by 16:00, SEV escalation to SEV-1 and DR team engaged. IC watching consumer scale-out progress.</div></div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Resolved Incidents -->
+  <p class="section-title">Recent Resolved Incidents — Last 30 Days</p>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:2rem;">
+    <table style="width:100%;border-collapse:collapse;font-size:0.75rem;">
+      <thead>
+        <tr>
+          <th style="background:var(--surface2);color:var(--text-muted);font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;padding:0.55rem 0.75rem;border:1px solid var(--border);text-align:left;">Incident ID</th>
+          <th style="background:var(--surface2);color:var(--text-muted);font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;padding:0.55rem 0.75rem;border:1px solid var(--border);text-align:left;">Severity</th>
+          <th style="background:var(--surface2);color:var(--text-muted);font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;padding:0.55rem 0.75rem;border:1px solid var(--border);text-align:left;">Summary</th>
+          <th style="background:var(--surface2);color:var(--text-muted);font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;padding:0.55rem 0.75rem;border:1px solid var(--border);text-align:left;">Team</th>
+          <th style="background:var(--surface2);color:var(--text-muted);font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;padding:0.55rem 0.75rem;border:1px solid var(--border);text-align:left;">MTTR</th>
+          <th style="background:var(--surface2);color:var(--text-muted);font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;padding:0.55rem 0.75rem;border:1px solid var(--border);text-align:left;">COE Status</th>
+          <th style="background:var(--surface2);color:var(--text-muted);font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;padding:0.55rem 0.75rem;border:1px solid var(--border);text-align:left;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);color:var(--text-dim);"><strong style="color:var(--text);">PD-4812</strong></td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);"><span class="ct ct-r">SEV-1</span></td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);color:var(--text-dim);">Kafka broker leader election failure — 14m ingestion gap. T1 detected via DLQ depth alert.</td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);color:var(--text-dim);">T1 Ingestion</td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);color:var(--green);">12 min ✓</td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);"><span class="ct ct-g">✓ Published</span></td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);"><span class="ct ct-g">3/3 closed</span></td>
+        </tr>
+        <tr>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);color:var(--text-dim);"><strong style="color:var(--text);">PD-4741</strong></td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);"><span class="ct" style="background:rgba(249,115,22,0.15);color:var(--orange);">SEV-2</span></td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);color:var(--text-dim);">T5 API 5xx spike — auth token cache cold start after EKS node restart. 23 min elevated error rate.</td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);color:var(--text-dim);">T5 Control Plane</td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);color:var(--amber);">38 min ⚠ over SLO</td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);"><span class="ct ct-g">✓ Published</span></td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);"><span class="ct ct-r">1/4 overdue 🚨</span></td>
+        </tr>
+        <tr>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);color:var(--text-dim);"><strong style="color:var(--text);">PD-4698</strong></td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);"><span class="ct" style="background:rgba(249,115,22,0.15);color:var(--orange);">SEV-2</span></td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);color:var(--text-dim);">S3 Object Lock misconfiguration on 140 objects during lifecycle policy update. WORM compliance breach for 52 min — no data altered.</td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);color:var(--text-dim);">T3 Storage</td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);color:var(--green);">22 min ✓</td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);"><span class="ct ct-g">✓ Published</span></td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);"><span class="ct ct-g">5/5 closed</span></td>
+        </tr>
+        <tr>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);color:var(--text-dim);"><strong style="color:var(--text);">PD-4615</strong></td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);"><span class="ct ct-a">SEV-2</span></td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);color:var(--text-dim);">Glacier Restore queue saturation during concurrent legal hold processing. 2 restores exceeded SLA by 40 min.</td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);color:var(--text-dim);">T4 Compliance</td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);color:var(--green);">28 min ✓</td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);"><span class="ct ct-g">✓ Published</span></td>
+          <td style="padding:0.65rem 0.75rem;border:1px solid var(--border);"><span class="ct ct-g">3/3 closed</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- COE Ledger -->
+  <p class="section-title">COE Post-Mortem Ledger — All Open Documents</p>
+  <div class="coe-table-wrap">
+    <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:1rem;">
+      Every COE is blameless. Every COE action item is owned. Overdue actions are escalated to VP Architecture weekly.
+      Target: <strong style="color:var(--text);">90% action closure rate within due date.</strong> Current: 82%.
+    </p>
+    <table class="coe-table">
+      <thead>
+        <tr>
+          <th>COE ID</th><th>Incident</th><th>Published</th><th>Author</th>
+          <th>Root Cause (5-Whys Summary)</th><th>Actions Total</th><th>Actions Closed</th><th>COE Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>COE-2025-012</strong></td>
+          <td><span class="ct ct-r">SEV-1 · PD-4812</span></td>
+          <td>2025-07-10</td>
+          <td>@priya.rao</td>
+          <td style="font-size:0.72rem;">Kafka broker ZooKeeper session expiry (network partition) → leader election delayed → consumer lag spike → ingestion pause. Underlying cause: ZooKeeper session timeout too aggressive for network jitter in Private DC.</td>
+          <td>3</td>
+          <td><span class="ct ct-g">3 closed</span></td>
+          <td><span class="ct ct-g">✓ Complete</span></td>
+        </tr>
+        <tr style="background:rgba(239,68,68,0.03);">
+          <td><strong>COE-2025-011</strong></td>
+          <td><span class="ct" style="background:rgba(249,115,22,0.15);color:var(--orange);">SEV-2 · PD-4741</span></td>
+          <td>2025-07-05</td>
+          <td>@derek.chen</td>
+          <td style="font-size:0.72rem;">Auth token cache eviction on EKS node restart not handled → cold requests hit downstream IAM → timeout cascade → 5xx spike. Cache warm-up runbook did not exist; no pre-restart drain procedure.</td>
+          <td>4</td>
+          <td><span class="ct ct-r">1/4 — 1 overdue 🚨</span></td>
+          <td><span class="ct ct-a">⚠ Actions pending</span></td>
+        </tr>
+        <tr>
+          <td><strong>COE-2025-010</strong></td>
+          <td><span class="ct" style="background:rgba(249,115,22,0.15);color:var(--orange);">SEV-2 · PD-4698</span></td>
+          <td>2025-06-28</td>
+          <td>@liu.wei</td>
+          <td style="font-size:0.72rem;">Lifecycle policy Terraform change applied Object Lock MODE: GOVERNANCE instead of COMPLIANCE for 140 objects during a bulk-update job. Missing IaC validation gate for COMPLIANCE mode. No PR review caught the enum change.</td>
+          <td>5</td>
+          <td><span class="ct ct-g">5 closed</span></td>
+          <td><span class="ct ct-g">✓ Complete</span></td>
+        </tr>
+        <tr>
+          <td><strong>COE-2025-009</strong></td>
+          <td><span class="ct ct-a">SEV-2 · PD-4615</span></td>
+          <td>2025-06-22</td>
+          <td>@anika.schmidt</td>
+          <td style="font-size:0.72rem;">Concurrent Glacier Restore requests (2 legal holds + 1 ad-hoc) exceeded AWS restore request rate limit → throttling → SLA breach. No concurrency governor on the restore orchestrator service.</td>
+          <td>3</td>
+          <td><span class="ct ct-g">3 closed</span></td>
+          <td><span class="ct ct-g">✓ Complete</span></td>
+        </tr>
+        <tr style="background:rgba(239,68,68,0.03);">
+          <td><strong>COE-2025-008</strong></td>
+          <td><span class="ct" style="background:rgba(249,115,22,0.15);color:var(--orange);">SEV-2 · PD-4512</span></td>
+          <td>2025-06-14</td>
+          <td>@james.ng</td>
+          <td style="font-size:0.72rem;">API multi-tenant routing config drift after canary deployment — 3% of tenant routing tables mis-populated. Silent failure: tenants still received data, but wrong version of search index routed for 2 accounts.</td>
+          <td>5</td>
+          <td><span class="ct ct-r">3/5 — 2 overdue 🚨</span></td>
+          <td><span class="ct ct-a">⚠ Actions pending</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Action Item Ledger per Team -->
+  <p class="section-title">COE Action Item Accountability — Per Team</p>
+  <div class="ai-grid">
+    <!-- T5 has the most overdue -->
+    <div class="ai-team-card" style="border-color:rgba(239,68,68,0.35);">
+      <div class="aitc-head">
+        <div class="aitc-title" style="color:var(--red);">T5 · Control Plane — 🚨 Actions Overdue</div>
+        <div class="aitc-count">3 open · 2 overdue</div>
+      </div>
+      <div class="ai-item ai-late">
+        <div class="ai-top">
+          <div class="ai-name">Build auth token cache warm-up script — auto-execute on EKS node drain</div>
+          <div class="ai-due" style="color:var(--red);">Due 2025-07-25 🚨 OVERDUE</div>
+        </div>
+        <div class="ai-meta"><span>Owner: @derek.chen</span><span>COE-2025-011</span><span>JIRA: GCI-4401</span></div>
+      </div>
+      <div class="ai-item ai-late">
+        <div class="ai-top">
+          <div class="ai-name">Create runbook: OpenSearch dual-write consumer backpressure mitigation steps</div>
+          <div class="ai-due" style="color:var(--red);">Due 2025-07-20 🚨 OVERDUE</div>
+        </div>
+        <div class="ai-meta"><span>Owner: @priya.rao (T2 collab)</span><span>COE-2025-011</span><span>JIRA: GCI-4402</span></div>
+      </div>
+      <div class="ai-item ai-open">
+        <div class="ai-top">
+          <div class="ai-name">Implement multi-tenant routing canary validation gate in CI/CD pipeline (OPA policy check)</div>
+          <div class="ai-due" style="color:var(--amber);">Due 2025-08-10 · On-Track</div>
+        </div>
+        <div class="ai-meta"><span>Owner: @james.ng</span><span>COE-2025-008</span><span>JIRA: GCI-4512</span></div>
+      </div>
+    </div>
+
+    <div class="ai-team-card">
+      <div class="aitc-head">
+        <div class="aitc-title" style="color:var(--green);">T1 · Ingestion — All Actions Closed</div>
+        <div class="aitc-count">3 closed · 0 open</div>
+      </div>
+      <div class="ai-item ai-done">
+        <div class="ai-top">
+          <div class="ai-name">Increase ZooKeeper session timeout from 6s to 15s in Private DC Kafka cluster</div>
+          <div class="ai-due" style="color:var(--green);">Closed 2025-07-14 ✓</div>
+        </div>
+        <div class="ai-meta"><span>Owner: @chen.yun</span><span>COE-2025-012</span></div>
+      </div>
+      <div class="ai-item ai-done">
+        <div class="ai-top">
+          <div class="ai-name">Add Kafka leader election alert to DLQ runbook — page T1 on-call immediately</div>
+          <div class="ai-due" style="color:var(--green);">Closed 2025-07-12 ✓</div>
+        </div>
+        <div class="ai-meta"><span>Owner: @sofia.okonkwo</span><span>COE-2025-012</span></div>
+      </div>
+      <div class="ai-item ai-done">
+        <div class="ai-top">
+          <div class="ai-name">Add network partition simulation to Q3 Game Day agenda for T1 Kafka cluster</div>
+          <div class="ai-due" style="color:var(--green);">Closed 2025-07-15 ✓</div>
+        </div>
+        <div class="ai-meta"><span>Owner: @chen.yun</span><span>COE-2025-012</span></div>
+      </div>
+    </div>
+
+    <div class="ai-team-card">
+      <div class="aitc-head">
+        <div class="aitc-title" style="color:var(--green);">T3 · Storage &amp; FinOps — All Actions Closed</div>
+        <div class="aitc-count">5 closed · 0 open</div>
+      </div>
+      <div class="ai-item ai-done">
+        <div class="ai-top">
+          <div class="ai-name">Add OPA policy: block Terraform apply if Object Lock MODE != COMPLIANCE on production buckets</div>
+          <div class="ai-due" style="color:var(--green);">Closed 2025-07-02 ✓</div>
+        </div>
+        <div class="ai-meta"><span>Owner: @liu.wei</span><span>COE-2025-010</span></div>
+      </div>
+      <div class="ai-item ai-done">
+        <div class="ai-top">
+          <div class="ai-name">Add pre-merge PR review checklist: Object Lock mode change requires T4 Compliance + T6 Platform sign-off</div>
+          <div class="ai-due" style="color:var(--green);">Closed 2025-07-03 ✓</div>
+        </div>
+        <div class="ai-meta"><span>Owner: @liu.wei</span><span>COE-2025-010</span></div>
+      </div>
+    </div>
+
+    <div class="ai-team-card">
+      <div class="aitc-head">
+        <div class="aitc-title" style="color:var(--green);">T4 · Compliance — All Actions Closed</div>
+        <div class="aitc-count">3 closed · 0 open</div>
+      </div>
+      <div class="ai-item ai-done">
+        <div class="ai-top">
+          <div class="ai-name">Implement concurrency governor on Glacier restore orchestrator (max 2 concurrent restores per account)</div>
+          <div class="ai-due" style="color:var(--green);">Closed 2025-06-30 ✓</div>
+        </div>
+        <div class="ai-meta"><span>Owner: @anika.schmidt</span><span>COE-2025-009</span></div>
+      </div>
+      <div class="ai-item ai-done">
+        <div class="ai-top">
+          <div class="ai-name">Add Glacier restore queue depth metric to T4 Grafana dashboard + PagerDuty alert at 80% capacity</div>
+          <div class="ai-due" style="color:var(--green);">Closed 2025-06-29 ✓</div>
+        </div>
+        <div class="ai-meta"><span>Owner: @anika.schmidt</span><span>COE-2025-009</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rolling Reliability KPI Trends -->
+  <p class="section-title">Rolling Reliability KPIs — 6-Month Trend</p>
+  <div class="kpi-trend-grid">
+    <div class="kt">
+      <div class="kt-label">MTTA — Mean Time to Acknowledge</div>
+      <div class="kt-row">
+        <div class="kt-val" style="color:var(--cyan);">4.2 min</div>
+        <div class="kt-arr" style="color:var(--green);">↓ −28% vs Jan</div>
+      </div>
+      <div class="kt-bars">
+        <div class="ktb" style="height:100%;background:var(--red);"></div>
+        <div class="ktb" style="height:88%;background:var(--amber);"></div>
+        <div class="ktb" style="height:76%;background:var(--amber);"></div>
+        <div class="ktb" style="height:65%;background:var(--cyan);"></div>
+        <div class="ktb" style="height:58%;background:var(--cyan);"></div>
+        <div class="ktb" style="height:50%;background:var(--green);"></div>
+      </div>
+      <div class="kt-months"><span class="kt-m">Feb</span><span class="kt-m">Mar</span><span class="kt-m">Apr</span><span class="kt-m">May</span><span class="kt-m">Jun</span><span class="kt-m">Jul</span></div>
+    </div>
+    <div class="kt">
+      <div class="kt-label">MTTR — Mean Time to Resolve</div>
+      <div class="kt-row">
+        <div class="kt-val" style="color:var(--amber);">18.6 min</div>
+        <div class="kt-arr" style="color:var(--green);">↓ −32% vs Feb</div>
+      </div>
+      <div class="kt-bars">
+        <div class="ktb" style="height:100%;background:var(--red);"></div>
+        <div class="ktb" style="height:90%;background:var(--red);"></div>
+        <div class="ktb" style="height:72%;background:var(--amber);"></div>
+        <div class="ktb" style="height:60%;background:var(--amber);"></div>
+        <div class="ktb" style="height:52%;background:var(--cyan);"></div>
+        <div class="ktb" style="height:42%;background:var(--green);"></div>
+      </div>
+      <div class="kt-months"><span class="kt-m">Feb</span><span class="kt-m">Mar</span><span class="kt-m">Apr</span><span class="kt-m">May</span><span class="kt-m">Jun</span><span class="kt-m">Jul</span></div>
+    </div>
+    <div class="kt">
+      <div class="kt-label">Total SEV-1 + SEV-2 Incidents</div>
+      <div class="kt-row">
+        <div class="kt-val" style="color:var(--green);">4 (30d)</div>
+        <div class="kt-arr" style="color:var(--green);">↓ −60% vs Feb</div>
+      </div>
+      <div class="kt-bars">
+        <div class="ktb" style="height:100%;background:var(--red);"></div>
+        <div class="ktb" style="height:80%;background:var(--red);"></div>
+        <div class="ktb" style="height:65%;background:var(--amber);"></div>
+        <div class="ktb" style="height:50%;background:var(--amber);"></div>
+        <div class="ktb" style="height:40%;background:var(--green);"></div>
+        <div class="ktb" style="height:25%;background:var(--green);"></div>
+      </div>
+      <div class="kt-months"><span class="kt-m">Feb</span><span class="kt-m">Mar</span><span class="kt-m">Apr</span><span class="kt-m">May</span><span class="kt-m">Jun</span><span class="kt-m">Jul</span></div>
+    </div>
+    <div class="kt">
+      <div class="kt-label">COE Action Closure Rate</div>
+      <div class="kt-row">
+        <div class="kt-val" style="color:var(--amber);">82%</div>
+        <div class="kt-arr" style="color:var(--amber);">Target: 90%</div>
+      </div>
+      <div class="kt-bars">
+        <div class="ktb" style="height:55%;background:var(--red);"></div>
+        <div class="ktb" style="height:60%;background:var(--amber);"></div>
+        <div class="ktb" style="height:65%;background:var(--amber);"></div>
+        <div class="ktb" style="height:72%;background:var(--amber);"></div>
+        <div class="ktb" style="height:78%;background:var(--green);"></div>
+        <div class="ktb" style="height:82%;background:var(--green);"></div>
+      </div>
+      <div class="kt-months"><span class="kt-m">Feb</span><span class="kt-m">Mar</span><span class="kt-m">Apr</span><span class="kt-m">May</span><span class="kt-m">Jun</span><span class="kt-m">Jul</span></div>
+    </div>
+    <div class="kt">
+      <div class="kt-label">Alert Actionability Rate</div>
+      <div class="kt-row">
+        <div class="kt-val" style="color:var(--green);">74%</div>
+        <div class="kt-arr" style="color:var(--green);">↑ +18% vs Feb</div>
+      </div>
+      <div class="kt-bars">
+        <div class="ktb" style="height:56%;background:var(--red);"></div>
+        <div class="ktb" style="height:58%;background:var(--amber);"></div>
+        <div class="ktb" style="height:62%;background:var(--amber);"></div>
+        <div class="ktb" style="height:66%;background:var(--cyan);"></div>
+        <div class="ktb" style="height:71%;background:var(--green);"></div>
+        <div class="ktb" style="height:74%;background:var(--green);"></div>
+      </div>
+      <div class="kt-months"><span class="kt-m">Feb</span><span class="kt-m">Mar</span><span class="kt-m">Apr</span><span class="kt-m">May</span><span class="kt-m">Jun</span><span class="kt-m">Jul</span></div>
+    </div>
+    <div class="kt">
+      <div class="kt-label">Toil % of Sprint Capacity</div>
+      <div class="kt-row">
+        <div class="kt-val" style="color:var(--amber);">17%</div>
+        <div class="kt-arr" style="color:var(--green);">↓ −3% vs Q4 baseline</div>
+      </div>
+      <div class="kt-bars">
+        <div class="ktb" style="height:100%;background:var(--red);"></div>
+        <div class="ktb" style="height:95%;background:var(--amber);"></div>
+        <div class="ktb" style="height:90%;background:var(--amber);"></div>
+        <div class="ktb" style="height:87%;background:var(--amber);"></div>
+        <div class="ktb" style="height:88%;background:var(--amber);"></div>
+        <div class="ktb" style="height:85%;background:var(--cyan);"></div>
+      </div>
+      <div class="kt-months"><span class="kt-m">Feb</span><span class="kt-m">Mar</span><span class="kt-m">Apr</span><span class="kt-m">May</span><span class="kt-m">Jun</span><span class="kt-m">Jul</span></div>
+    </div>
+  </div>
+
+  <!-- Blameless Retrospective Metrics -->
+  <p class="section-title">Blameless Retrospective Culture Metrics</p>
+  <div class="retro-grid">
+    <div class="rg">
+      <span class="rg-icon">🤝</span>
+      <div class="rg-title">Blameless Language Compliance</div>
+      <div class="rg-val" style="color:var(--green);">96%</div>
+      <div class="rg-detail">% of COE documents passing blameless language review (no individual named as cause). SRE Manager reviewed all 12 COEs YTD. 1 revision requested (Jan COE) — corrected within 24h.</div>
+    </div>
+    <div class="rg">
+      <span class="rg-icon">📅</span>
+      <div class="rg-title">COE Publication Timeliness</div>
+      <div class="rg-val" style="color:var(--amber);">83%</div>
+      <div class="rg-detail">% of COEs published within 5-business-day SLO. 2 of 12 COEs this year were published late (6–7 business days). Both involved T5 Control Plane — higher blast radius complexity cited.</div>
+    </div>
+    <div class="rg">
+      <span class="rg-icon">🎓</span>
+      <div class="rg-title">Recurring Failure Rate</div>
+      <div class="rg-val" style="color:var(--green);">8%</div>
+      <div class="rg-detail">% of incidents with a contributing factor matching a prior COE root cause — i.e., the system failed in the same way twice. Target &lt;10%. 1 recurrence in 12 incidents (T5 cache invalidation pattern appeared in PD-4741 and PD-4512).</div>
+    </div>
+    <div class="rg">
+      <span class="rg-icon">⚡</span>
+      <div class="rg-title">Near-Miss Reporting Rate</div>
+      <div class="rg-val" style="color:var(--cyan);">7 reports</div>
+      <div class="rg-detail">Near-miss (close call) reports filed voluntarily by engineers in the last 90 days — situations that could have become incidents but didn't. Indicates a healthy safety culture. Target: upward trend quarter-over-quarter.</div>
+    </div>
+    <div class="rg">
+      <span class="rg-icon">📊</span>
+      <div class="rg-title">COE Action Closure Rate</div>
+      <div class="rg-val" style="color:var(--amber);">82%</div>
+      <div class="rg-detail">% of COE action items closed within their committed due date across all 12 COEs. Target: 90%. T5 owns 3 of the 5 overdue actions — SRE Manager has escalated to VP Architecture in weekly reliability report.</div>
+    </div>
+    <div class="rg">
+      <span class="rg-icon">🏆</span>
+      <div class="rg-title">Engineer Participation Rate</div>
+      <div class="rg-val" style="color:var(--green);">94%</div>
+      <div class="rg-detail">% of required engineers attending COE review meetings. 94% participation (57 of 60 engineers involved in at least 1 COE retro this year). Reflects strong organizational investment in the blameless culture mandate.</div>
+    </div>
+  </div>
+
+</main>
+<footer>
+  <strong>GCI Operations Hub — War Room &amp; Post-Mortems</strong> · Blameless Culture · Incident Accountability · Confidential · Internal Use Only
+</footer>
+</body>
+</html>

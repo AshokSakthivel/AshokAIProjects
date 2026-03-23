@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>DB Cost Optimisation | Ashok Sakthivel</title>
+  <style>
+    :root {
+      --bg: #05080f; --surface: #0d1117; --border: #1e2a3a; --muted: #6b7a99;
+      --text: #e2e8f0; --blue: #3b82f6; --indigo: #6366f1; --green: #10b981;
+      --amber: #f59e0b; --rose: #f43f5e; --purple: #a855f7; --teal: #14b8a6;
+      --cyan: #06b6d4; --orange: #f97316; --sidebar-w: 220px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;display:flex;min-height:100vh}
+    .sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);position:fixed;top:0;left:0;height:100vh;overflow-y:auto;padding:24px 0;z-index:100}
+    .sb-brand{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}
+    .sb-brand .logo{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--cyan);text-transform:uppercase}
+    .sb-brand .name{font-size:13px;color:var(--muted);margin-top:4px}
+    .sb-nav a{display:block;padding:8px 20px;font-size:12px;color:var(--muted);text-decoration:none;border-left:2px solid transparent;transition:.2s}
+    .sb-nav a:hover{color:var(--text);background:rgba(255,255,255,.03)}
+    .sb-nav a.active{color:var(--cyan);border-left-color:var(--cyan);background:rgba(6,182,212,.06)}
+    .sb-section{padding:8px 20px 4px;font-size:10px;letter-spacing:1.5px;color:var(--border);text-transform:uppercase;margin-top:8px}
+    .main{margin-left:var(--sidebar-w);flex:1;padding:0 40px 80px}
+    section{padding:60px 0;border-bottom:1px solid var(--border)}
+    section:last-child{border-bottom:none}
+    .section-tag{font-size:10px;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+    h1{font-size:36px;font-weight:800;line-height:1.2;margin-bottom:12px}
+    h2{font-size:22px;font-weight:700;margin-bottom:20px}
+    h3{font-size:15px;font-weight:600;margin-bottom:10px}
+    p{color:var(--muted);line-height:1.7;font-size:14px}
+    .hero-meta{display:flex;gap:24px;margin-top:24px;flex-wrap:wrap}
+    .hero-pill{background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.3);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--cyan)}
+    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:24px}
+    .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;border-top:3px solid}
+    .kpi-card .kpi-label{font-size:11px;color:var(--muted);letter-spacing:.5px;margin-bottom:8px}
+    .kpi-card .kpi-val{font-size:28px;font-weight:800}
+    .kpi-card .kpi-sub{font-size:11px;color:var(--muted);margin-top:4px}
+    .problem-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:24px}
+    .problem-cell{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
+    .problem-cell ul{padding-left:16px;margin-top:10px}
+    .problem-cell li{color:var(--muted);font-size:13px;margin-bottom:6px;line-height:1.5}
+    .ph{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+    .ph-rose{color:var(--rose)} .ph-amber{color:var(--amber)} .ph-green{color:var(--green)}
+    .phase-list{margin-top:24px;display:flex;flex-direction:column;gap:10px}
+    .phase-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+    .phase-hd{display:flex;align-items:center;gap:14px;padding:16px 20px;cursor:pointer;user-select:none}
+    .phase-hd:hover{background:rgba(255,255,255,.02)}
+    .phase-num{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+    .phase-title{flex:1;font-size:14px;font-weight:600}
+    .phase-badge{font-size:11px;background:rgba(255,255,255,.06);border-radius:12px;padding:3px 10px;color:var(--muted)}
+    .phase-arrow{color:var(--muted);transition:.25s;font-size:16px}
+    .phase-item.open .phase-arrow{transform:rotate(90deg)}
+    .phase-body{max-height:0;overflow:hidden;transition:max-height .35s ease}
+    .phase-item.open .phase-body{max-height:600px}
+    .phase-bd-inner{padding:0 20px 20px;border-top:1px solid var(--border)}
+    .phase-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+    .phase-col h4{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+    .phase-col ul{padding-left:14px}
+    .phase-col li{font-size:13px;color:var(--muted);margin-bottom:5px;line-height:1.5}
+    .portal-frame{background:#0a0f1a;border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-top:24px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+    .portal-chrome{background:#111827;padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+    .dot{width:10px;height:10px;border-radius:50%}
+    .dot-r{background:#ff5f57} .dot-y{background:#febc2e} .dot-g{background:#28c840}
+    .portal-url{background:rgba(255,255,255,.05);border-radius:6px;padding:4px 12px;font-size:11px;color:var(--muted);margin-left:8px;flex:1}
+    .portal-inner{display:grid;grid-template-columns:180px 1fr;min-height:340px}
+    .portal-sb{background:#080d16;border-right:1px solid var(--border);padding:16px 0}
+    .portal-sb .p-logo{padding:0 14px 14px;font-size:11px;font-weight:700;color:var(--cyan);border-bottom:1px solid var(--border);margin-bottom:10px}
+    .portal-sb a{display:block;padding:6px 14px;font-size:11px;color:var(--muted);border-radius:4px;margin:1px 6px}
+    .portal-sb a.active{background:rgba(6,182,212,.1);color:var(--cyan)}
+    .portal-content{padding:20px;overflow:hidden}
+    .p-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+    .p-kpi{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center}
+    .p-kpi .v{font-size:20px;font-weight:800;color:var(--cyan)}
+    .p-kpi .l{font-size:10px;color:var(--muted);margin-top:4px}
+    .p-chart-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .p-chart{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:8px;padding:12px}
+    .p-chart .ct{font-size:10px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+    .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+    .bar-lbl{font-size:10px;color:var(--muted);width:70px;flex-shrink:0;text-align:right}
+    .bar-track{flex:1;background:rgba(255,255,255,.05);border-radius:3px;height:8px;overflow:hidden}
+    .bar-fill{height:100%;border-radius:3px}
+    .pane-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:24px}
+    .pane-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
+    .pane-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+    .pane-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+    .pane-title{font-size:13px;font-weight:600}
+    .pane-body{font-size:12px;color:var(--muted);line-height:1.6}
+    .pane-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+    .tag{background:rgba(255,255,255,.06);border-radius:10px;padding:2px 8px;font-size:10px;color:var(--muted)}
+    .viz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;margin-top:24px}
+    .viz-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+    .viz-title{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+    .risk-table{width:100%;border-collapse:collapse;margin-top:24px;font-size:13px}
+    .risk-table th{background:var(--surface);padding:10px 14px;text-align:left;font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
+    .risk-table td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
+    .risk-name{font-weight:600;font-size:13px;margin-bottom:3px}
+    .risk-desc{font-size:11px;color:var(--muted)}
+    .sev{border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700}
+    .sev-h{background:rgba(244,63,94,.15);color:var(--rose)}
+    .sev-m{background:rgba(245,158,11,.15);color:var(--amber)}
+    .sev-l{background:rgba(16,185,129,.15);color:var(--green)}
+    .mitigation{font-size:12px;color:var(--muted);line-height:1.6}
+    .strat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:24px}
+    .strat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
+    .strat-card h4{font-size:13px;font-weight:600;margin-bottom:8px}
+    .strat-card p{font-size:12px}
+    .badge{display:inline-block;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;margin-bottom:8px}
+  </style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sb-brand">
+    <div class="logo">Project 6</div>
+    <div class="name">DB Cost Optimisation</div>
+  </div>
+  <div class="sb-nav" id="sb-nav">
+    <div class="sb-section">Overview</div>
+    <a href="#challenge">§00 Challenge</a>
+    <a href="#kpis">§01 North Star KPIs</a>
+    <div class="sb-section">Strategy</div>
+    <a href="#roadmap">§02 90-Day Roadmap</a>
+    <a href="#portal">§03 DB Ops Portal</a>
+    <a href="#panes">§04 Pane Specs</a>
+    <a href="#db-strategy">§05 Optimisation Levers</a>
+    <div class="sb-section">Insights</div>
+    <a href="#viz">§06 Visualization Lab</a>
+    <a href="#antipatterns">§07 Anti-Pattern Registry</a>
+  </div>
+</nav>
+
+<main class="main">
+
+  <!-- §00 CHALLENGE -->
+  <section id="challenge">
+    <div class="section-tag">§00 — Challenge</div>
+    <h1>Database Fleet<br><span style="color:var(--cyan)">Slash Cost, Preserve Performance</span></h1>
+    <p style="max-width:660px;margin-top:12px">Mimecast's database fleet — 60PB of email archive data plus transactional DB clusters — is the single largest cost driver in the AWS bill. Oversized instances, cold data sitting in hot storage, and manual operations inflate cost by an estimated 40–50% above optimal. This initiative changes that.</p>
+    <div class="hero-meta">
+      <div class="hero-pill">Ashok Sakthivel · Sr. Director of Engineering</div>
+      <div class="hero-pill">Mimecast · Global Engineering</div>
+      <div class="hero-pill">April – June 2026</div>
+      <div class="hero-pill">Target: 40% DB Cost Reduction</div>
+    </div>
+    <div class="problem-grid">
+      <div class="problem-cell">
+        <span class="ph ph-rose">⚠ Current State</span>
+        <ul>
+          <li>$4.2M/year DB spend — 45% of total AWS bill</li>
+          <li>30% of RDS instances oversized (p50 CPU &lt; 15%)</li>
+          <li>60PB archive: 90% stored in S3 Standard — should be Glacier Deep Archive</li>
+          <li>No connection pooling — each Lambda creates direct DB connections</li>
+          <li>Snapshots retained indefinitely — 8TB of weekly snapshot clutter</li>
+          <li>Query P99 latency degraded by unindexed eDiscovery queries on archive</li>
+        </ul>
+      </div>
+      <div class="problem-cell">
+        <span class="ph ph-amber">⚡ Root Causes</span>
+        <ul>
+          <li><strong>Fear-Based Sizing:</strong> "Larger = safer" mentality with no post-launch review</li>
+          <li><strong>Cold Data in Hot Storage:</strong> No lifecycle policy on archive S3 buckets</li>
+          <li><strong>No Query Governor:</strong> Expensive full-table scans not gated at app layer</li>
+          <li><strong>Snapshot Sprawl:</strong> Manual snapshots never deleted; automated retention uncapped</li>
+          <li><strong>No RDS Proxy:</strong> Connection storm on eviction events spikes DB CPU</li>
+        </ul>
+      </div>
+      <div class="problem-cell">
+        <span class="ph ph-green">✅ Target State</span>
+        <ul>
+          <li>DB monthly spend reduced ≥40% — $1.68M/year savings</li>
+          <li>60PB archive: S3 Intelligent-Tiering + Glacier Deep Archive for 7yr+ data</li>
+          <li>All RDS clusters rightsized — CPU p50 ≥40% utilisation</li>
+          <li>RDS Proxy deployed — connection pooling for all Lambda-backed services</li>
+          <li>Automated snapshot lifecycle: 7-day transactional, 30-day archive, delete rest</li>
+          <li>eDiscovery queries served by Athena — zero production DB query load</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- §01 KPIS -->
+  <section id="kpis">
+    <div class="section-tag">§01 — North Star KPIs</div>
+    <h2>Database Optimisation Metrics</h2>
+    <div class="kpi-grid">
+      <div class="kpi-card" style="border-top-color:var(--cyan)">
+        <div class="kpi-label">DB COST REDUCTION</div>
+        <div class="kpi-val" style="color:var(--cyan)">-40%</div>
+        <div class="kpi-sub">$4.2M → $2.5M annually</div>
+      </div>
+      <div class="kpi-card" style="border-top-color:var(--green)">
+        <div class="kpi-label">STORAGE COST ($/GB)</div>
+        <div class="kpi-val" style="color:var(--green)">-65%</div>
+        <div class="kpi-sub">S3 Standard → Glacier Deep Archive</div>
+      </div>
+      <div class="kpi-card" style="border-top-color:var(--blue)">
+        <div class="kpi-label">RI COVERAGE (RDS)</div>
+        <div class="kpi-val" style="color:var(--blue)">≥85%</div>
+        <div class="kpi-sub">Baseline DB fleet on 1yr Reserved Instances</div>
+      </div>
+      <div class="kpi-card" style="border-top-color:var(--amber)">
+        <div class="kpi-label">QUERY P99 LATENCY</div>
+        <div class="kpi-val" style="color:var(--amber)">≤200ms</div>
+        <div class="kpi-sub">eDiscovery + reporting queries via Athena</div>
+      </div>
+      <div class="kpi-card" style="border-top-color:var(--purple)">
+        <div class="kpi-label">CPU UTILISATION</div>
+        <div class="kpi-val" style="color:var(--purple)">≥40%</div>
+        <div class="kpi-sub">RDS instance p50 CPU after rightsizing</div>
+      </div>
+      <div class="kpi-card" style="border-top-color:var(--teal)">
+        <div class="kpi-label">SNAPSHOT STORAGE</div>
+        <div class="kpi-val" style="color:var(--teal)">-80%</div>
+        <div class="kpi-sub">Automated lifecycle: 7-day txn / 30-day archive</div>
+      </div>
+      <div class="kpi-card" style="border-top-color:var(--rose)">
+        <div class="kpi-label">CONNECTION ERRORS</div>
+        <div class="kpi-val" style="color:var(--rose)">≤0.1%</div>
+        <div class="kpi-sub">RDS Proxy eliminates connection storm events</div>
+      </div>
+      <div class="kpi-card" style="border-top-color:var(--orange)">
+        <div class="kpi-label">AUTOMATION COVERAGE</div>
+        <div class="kpi-val" style="color:var(--orange)">100%</div>
+        <div class="kpi-sub">All DB ops: backup, scaling, patch via automation</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §02 ROADMAP -->
+  <section id="roadmap">
+    <div class="section-tag">§02 — 90-Day Roadmap</div>
+    <h2>Four-Phase DB Optimisation Plan</h2>
+    <div class="phase-list">
+      <div class="phase-item open">
+        <div class="phase-hd" onclick="togglePhase(this)">
+          <div class="phase-num" style="background:rgba(6,182,212,.15);color:var(--cyan)">1</div>
+          <div class="phase-title">Phase 1 — Audit & Baseline  <span style="color:var(--muted);font-weight:400;font-size:12px">Days 0–30</span></div>
+          <div class="phase-badge">Discovery</div>
+          <div class="phase-arrow">›</div>
+        </div>
+        <div class="phase-body">
+          <div class="phase-bd-inner">
+            <div class="phase-cols">
+              <div class="phase-col">
+                <h4>Deliverables</h4>
+                <ul>
+                  <li>Full RDS/Aurora fleet inventory: engine, class, CPU/IOPS utilisation heatmap</li>
+                  <li>S3 bucket storage class audit — identify cold data wrongly in Standard tier</li>
+                  <li>Query performance analysis via Performance Insights + pg_stat_statements</li>
+                  <li>Snapshot inventory — identify orphaned, aged, and duplicate snapshots</li>
+                  <li>Cost attribution: DB cost per product team established</li>
+                </ul>
+              </div>
+              <div class="phase-col">
+                <h4>Success Criteria</h4>
+                <ul>
+                  <li>Every DB instance classified: oversize / right-size / undersize</li>
+                  <li>Storage class migration opportunity quantified in $ savings</li>
+                  <li>Top-10 slow queries identified and assigned to owners</li>
+                  <li>Snapshot waste estimated: $Xk/month savings potential</li>
+                  <li>Team DB cost dashboard live in QuickSight</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-item">
+        <div class="phase-hd" onclick="togglePhase(this)">
+          <div class="phase-num" style="background:rgba(16,185,129,.15);color:var(--green)">2</div>
+          <div class="phase-title">Phase 2 — Rightsizing  <span style="color:var(--muted);font-weight:400;font-size:12px">Days 31–60</span></div>
+          <div class="phase-badge">Compute</div>
+          <div class="phase-arrow">›</div>
+        </div>
+        <div class="phase-body">
+          <div class="phase-bd-inner">
+            <div class="phase-cols">
+              <div class="phase-col">
+                <h4>Deliverables</h4>
+                <ul>
+                  <li>RDS instance downsizing: db.r5.4xlarge → db.r6g.2xlarge (Graviton3, -35% cost)</li>
+                  <li>RDS Proxy deployed on all Lambda-backed services — connection pooling active</li>
+                  <li>Aurora Serverless v2 migration for dev/test clusters (auto-pause saves ~$15K/mo)</li>
+                  <li>Delete approved snapshot waste identified in Phase 1</li>
+                  <li>1-year RDS Reserved Instances purchased for top-5 production clusters</li>
+                </ul>
+              </div>
+              <div class="phase-col">
+                <h4>Success Criteria</h4>
+                <ul>
+                  <li>RDS compute cost reduced ≥25% with no P1/P2 incidents</li>
+                  <li>Connection error rate at Lambda-RDS boundary &lt;0.1%</li>
+                  <li>Dev/test DB cost down ≥60% with Aurora Serverless auto-pause</li>
+                  <li>Snapshot storage reduced ≥70%</li>
+                  <li>RI coverage reaches 60% of steady-state DB fleet</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-item">
+        <div class="phase-hd" onclick="togglePhase(this)">
+          <div class="phase-num" style="background:rgba(245,158,11,.15);color:var(--amber)">3</div>
+          <div class="phase-title">Phase 3 — Storage Tiering  <span style="color:var(--muted);font-weight:400;font-size:12px">Days 61–75</span></div>
+          <div class="phase-badge">Archive</div>
+          <div class="phase-arrow">›</div>
+        </div>
+        <div class="phase-body">
+          <div class="phase-bd-inner">
+            <div class="phase-cols">
+              <div class="phase-col">
+                <h4>Deliverables</h4>
+                <ul>
+                  <li>S3 Intelligent-Tiering on all archive buckets ≥1TB (0–2yr data)</li>
+                  <li>S3 Glacier Instant Retrieval for 2–7 year archive data</li>
+                  <li>S3 Glacier Deep Archive for 7yr+ compliance data ($0.00099/GB)</li>
+                  <li>Athena + Glue catalog deployed for eDiscovery — zero RDS query load</li>
+                  <li>Per-tenant S3 lifecycle policies automated via CDK</li>
+                </ul>
+              </div>
+              <div class="phase-col">
+                <h4>Success Criteria</h4>
+                <ul>
+                  <li>60PB archive: &lt;10% in S3 Standard by end of Phase 3</li>
+                  <li>Storage cost drops ≥65% vs Phase 1 baseline</li>
+                  <li>eDiscovery P99 query latency ≤200ms via Athena</li>
+                  <li>Legal hold tags respected — zero Glacier data frozen incorrectly</li>
+                  <li>All tenant lifecycle policies tested with 3-tenant dry run first</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-item">
+        <div class="phase-hd" onclick="togglePhase(this)">
+          <div class="phase-num" style="background:rgba(168,85,247,.15);color:var(--purple)">4</div>
+          <div class="phase-title">Phase 4 — Automation & Governance  <span style="color:var(--muted);font-weight:400;font-size:12px">Days 76–90+</span></div>
+          <div class="phase-badge">Sustain</div>
+          <div class="phase-arrow">›</div>
+        </div>
+        <div class="phase-body">
+          <div class="phase-bd-inner">
+            <div class="phase-cols">
+              <div class="phase-col">
+                <h4>Deliverables</h4>
+                <ul>
+                  <li>DB cost guardrails in Terraform: instance class budget policy</li>
+                  <li>Automated snapshot lifecycle Lambda — class-based retention enforced</li>
+                  <li>Quarterly DB fleet review: Compute Optimizer recommendations auto-filed to Jira</li>
+                  <li>RDS RI renewal automation — 60-day pre-expiry purchase workflow</li>
+                  <li>DB cost per-tenant dashboard for customer-level cost visibility</li>
+                </ul>
+              </div>
+              <div class="phase-col">
+                <h4>Success Criteria</h4>
+                <ul>
+                  <li>DB cost reduction ≥40% vs baseline — sustained for 2 months</li>
+                  <li>Zero manual DB size changes — all via automated recommendations</li>
+                  <li>RI coverage ≥85% for steady-state production clusters</li>
+                  <li>Monthly DB cost report auto-delivered to leadership</li>
+                  <li>All DB ops runbooks converted to Lambda automation</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §03 PORTAL -->
+  <section id="portal">
+    <div class="section-tag">§03 — DB Ops Command Center</div>
+    <h2>Portal Preview</h2>
+    <div class="portal-frame">
+      <div class="portal-chrome">
+        <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+        <div class="portal-url">dbops.mimecast.internal / cost-optimisation · Live</div>
+      </div>
+      <div class="portal-inner">
+        <div class="portal-sb">
+          <div class="p-logo">🗄 DB Cost Ops</div>
+          <a class="active" href="#">Fleet Overview</a>
+          <a href="#">Rightsizing</a>
+          <a href="#">Storage Classes</a>
+          <a href="#">RI Coverage</a>
+          <a href="#">Query Perf</a>
+          <a href="#">Snapshots</a>
+          <a href="#">eDiscovery</a>
+          <a href="#">Cost by Tenant</a>
+        </div>
+        <div class="portal-content">
+          <div class="p-row">
+            <div class="p-kpi"><div class="v">$350K</div><div class="l">Monthly DB Spend</div></div>
+            <div class="p-kpi"><div class="v" style="color:var(--green)">-38%</div><div class="l">vs Baseline</div></div>
+            <div class="p-kpi"><div class="v" style="color:var(--amber)">82%</div><div class="l">RI Coverage</div></div>
+            <div class="p-kpi"><div class="v" style="color:var(--rose)">3</div><div class="l">Rightsizing Alerts</div></div>
+          </div>
+          <div class="p-chart-row">
+            <div class="p-chart">
+              <div class="ct">DB Spend by Engine</div>
+              <div class="bar-row"><span class="bar-lbl">Aurora PG</span><div class="bar-track"><div class="bar-fill" style="width:70%;background:var(--cyan)"></div></div></div>
+              <div class="bar-row"><span class="bar-lbl">RDS MySQL</span><div class="bar-track"><div class="bar-fill" style="width:40%;background:var(--blue)"></div></div></div>
+              <div class="bar-row"><span class="bar-lbl">ElastiCache</span><div class="bar-track"><div class="bar-fill" style="width:25%;background:var(--purple)"></div></div></div>
+              <div class="bar-row"><span class="bar-lbl">DynamoDB</span><div class="bar-track"><div class="bar-fill" style="width:15%;background:var(--amber)"></div></div></div>
+              <div class="bar-row"><span class="bar-lbl">Snapshots</span><div class="bar-track"><div class="bar-fill" style="width:8%;background:var(--rose)"></div></div></div>
+            </div>
+            <div class="p-chart">
+              <div class="ct">Storage Class Distribution (60PB)</div>
+              <div class="bar-row"><span class="bar-lbl">Std</span><div class="bar-track"><div class="bar-fill" style="width:8%;background:var(--rose)"></div></div><span style="font-size:9px;color:var(--muted);margin-left:4px">4.8PB</span></div>
+              <div class="bar-row"><span class="bar-lbl">Int-Tier</span><div class="bar-track"><div class="bar-fill" style="width:25%;background:var(--amber)"></div></div><span style="font-size:9px;color:var(--muted);margin-left:4px">15PB</span></div>
+              <div class="bar-row"><span class="bar-lbl">Glacier IR</span><div class="bar-track"><div class="bar-fill" style="width:30%;background:var(--blue)"></div></div><span style="font-size:9px;color:var(--muted);margin-left:4px">18PB</span></div>
+              <div class="bar-row"><span class="bar-lbl">Deep Arc</span><div class="bar-track"><div class="bar-fill" style="width:37%;background:var(--green)"></div></div><span style="font-size:9px;color:var(--muted);margin-left:4px">22.2PB</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §04 PANE SPECS -->
+  <section id="panes">
+    <div class="section-tag">§04 — Pane Specifications</div>
+    <h2>Portal Pane Breakdown</h2>
+    <div class="pane-grid">
+      <div class="pane-card">
+        <div class="pane-header">
+          <div class="pane-icon" style="background:rgba(6,182,212,.1);color:var(--cyan)">🗄</div>
+          <div class="pane-title">Fleet Overview</div>
+        </div>
+        <div class="pane-body">All RDS/Aurora/DynamoDB instances with CPU/memory utilisation heatmap, monthly cost, and rightsizing recommendation status (accepted/pending/dismissed).</div>
+        <div class="pane-tags"><span class="tag">Compute Optimizer</span><span class="tag">CloudWatch</span></div>
+      </div>
+      <div class="pane-card">
+        <div class="pane-header">
+          <div class="pane-icon" style="background:rgba(16,185,129,.1);color:var(--green)">📦</div>
+          <div class="pane-title">Storage Class Map</div>
+        </div>
+        <div class="pane-body">60PB archive split by S3 storage class with cost-per-TB overlay. Migration progress bar per tenant. Legal-hold flag respects zero-touch policy.</div>
+        <div class="pane-tags"><span class="tag">S3 Storage Lens</span><span class="tag">Intelligent-Tiering</span></div>
+      </div>
+      <div class="pane-card">
+        <div class="pane-header">
+          <div class="pane-icon" style="background:rgba(245,158,11,.1);color:var(--amber)">⚡</div>
+          <div class="pane-title">Query Performance</div>
+        </div>
+        <div class="pane-body">Top-20 slow queries ranked by total execution cost. P50/P99 latency trend. Athena eDiscovery query analysis. Missing index recommendations.</div>
+        <div class="pane-tags"><span class="tag">Performance Insights</span><span class="tag">Athena</span></div>
+      </div>
+      <div class="pane-card">
+        <div class="pane-header">
+          <div class="pane-icon" style="background:rgba(99,102,241,.1);color:var(--indigo)">🔒</div>
+          <div class="pane-title">RI Coverage</div>
+        </div>
+        <div class="pane-body">DB Reserved Instance coverage by engine and class. On-Demand exposure heat map. Renewal calendar with 60-day advance purchase alert and ROI calculator.</div>
+        <div class="pane-tags"><span class="tag">RDS RI</span><span class="tag">Cost Explorer</span></div>
+      </div>
+      <div class="pane-card">
+        <div class="pane-header">
+          <div class="pane-icon" style="background:rgba(244,63,94,.1);color:var(--rose)">📸</div>
+          <div class="pane-title">Snapshot Tracker</div>
+        </div>
+        <div class="pane-body">Automated snapshot lifecycle compliance. Cost by snapshot age bucket. Orphaned snapshots with 1-click delete. Retention policy enforcement status per cluster.</div>
+        <div class="pane-tags"><span class="tag">AWS Backup</span><span class="tag">Lambda</span></div>
+      </div>
+      <div class="pane-card">
+        <div class="pane-header">
+          <div class="pane-icon" style="background:rgba(168,85,247,.1);color:var(--purple)">👥</div>
+          <div class="pane-title">Cost by Tenant</div>
+        </div>
+        <div class="pane-body">Per-tenant DB cost breakdown (storage + compute + IOPS). Month-over-month delta. Tenant-level $/GB and $/query unit economics for SaaS pricing model alignment.</div>
+        <div class="pane-tags"><span class="tag">Tag-based</span><span class="tag">Athena</span><span class="tag">QuickSight</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §05 DB STRATEGY -->
+  <section id="db-strategy">
+    <div class="section-tag">§05 — Optimisation Levers</div>
+    <h2>Six-Lever Database Cost Strategy</h2>
+    <div class="strat-grid">
+      <div class="strat-card">
+        <span class="badge" style="background:rgba(6,182,212,.1);color:var(--cyan)">Lever 1</span>
+        <h4>Graviton3 Migration</h4>
+        <p>Migrate Aurora PostgreSQL to Graviton3 (db.r6g / db.t4g) for -35% instance cost with equivalent performance. Validated by AWS Graviton migration guide on Mimecast workload profiles.</p>
+      </div>
+      <div class="strat-card">
+        <span class="badge" style="background:rgba(16,185,129,.1);color:var(--green)">Lever 2</span>
+        <h4>Glacier Deep Archive</h4>
+        <p>7yr+ compliance email archive at $0.00099/GB vs $0.023/GB in S3 Standard — 95% cost reduction on cold archive. Per-tenant S3 Lifecycle rules auto-tier data by ingestion age.</p>
+      </div>
+      <div class="strat-card">
+        <span class="badge" style="background:rgba(245,158,11,.1);color:var(--amber)">Lever 3</span>
+        <h4>RDS Proxy + Connection Pools</h4>
+        <p>RDS Proxy eliminates Lambda-RDS connection storms. Reduces DB CPU by 15–20% during eviction bursts. Required before any further Lambda function scale-up.</p>
+      </div>
+      <div class="strat-card">
+        <span class="badge" style="background:rgba(99,102,241,.1);color:var(--indigo)">Lever 4</span>
+        <h4>Athena for eDiscovery</h4>
+        <p>Route all reporting and eDiscovery queries to Athena + Glue catalog over S3. Eliminates production DB query load. Athena cost model: $5/TB scanned vs RDS IOPS charges.</p>
+      </div>
+      <div class="strat-card">
+        <span class="badge" style="background:rgba(168,85,247,.1);color:var(--purple)">Lever 5</span>
+        <h4>Aurora Serverless v2</h4>
+        <p>Replace fixed-size dev/test Aurora clusters with Serverless v2 (0.5 ACU auto-pause). Saves ~$15K/month on 8 non-production environments that are idle 14+ hours/day.</p>
+      </div>
+      <div class="strat-card">
+        <span class="badge" style="background:rgba(20,184,166,.1);color:var(--teal)">Lever 6</span>
+        <h4>Snapshot Lifecycle Automation</h4>
+        <p>Lambda-triggered snapshot cleanup: 7-day retention for transactional, 30-day for archive, delete all else. Eliminates 8TB of redundant snapshots costing $160/TB/month.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- §06 VIZ LAB -->
+  <section id="viz">
+    <div class="section-tag">§06 — Visualization Lab</div>
+    <h2>DB Analytics Suite</h2>
+    <div class="viz-grid">
+      <div class="viz-card">
+        <div class="viz-title">Storage Class Migration Progress (60PB)</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Target: &lt;10% in S3 Standard by Day 75</div>
+        <div class="bar-row"><span class="bar-lbl" style="width:80px">S3 Standard</span><div class="bar-track"><div class="bar-fill" style="width:8%;background:var(--rose)"></div></div><span style="font-size:10px;color:var(--rose);margin-left:6px">4.8PB</span></div>
+        <div class="bar-row"><span class="bar-lbl" style="width:80px">Int-Tiering</span><div class="bar-track"><div class="bar-fill" style="width:25%;background:var(--amber)"></div></div><span style="font-size:10px;color:var(--amber);margin-left:6px">15PB</span></div>
+        <div class="bar-row"><span class="bar-lbl" style="width:80px">Glacier IR</span><div class="bar-track"><div class="bar-fill" style="width:30%;background:var(--blue)"></div></div><span style="font-size:10px;color:var(--blue);margin-left:6px">18PB</span></div>
+        <div class="bar-row"><span class="bar-lbl" style="width:80px">Deep Archive</span><div class="bar-track"><div class="bar-fill" style="width:37%;background:var(--green)"></div></div><span style="font-size:10px;color:var(--green);margin-left:6px">22.2PB</span></div>
+        <div style="margin-top:10px;font-size:11px;color:var(--green);font-weight:700">Savings vs all-Standard: $2.1M/year</div>
+      </div>
+      <div class="viz-card">
+        <div class="viz-title">RDS Instance CPU Utilisation (Pre vs Post)</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px">p50 CPU — target ≥40% after rightsizing</div>
+        <div class="bar-row"><span class="bar-lbl" style="width:90px">Before</span><div class="bar-track"><div class="bar-fill" style="width:15%;background:var(--rose)"></div></div><span style="font-size:10px;color:var(--rose);margin-left:6px">15%</span></div>
+        <div class="bar-row"><span class="bar-lbl" style="width:90px">After</span><div class="bar-track"><div class="bar-fill" style="width:48%;background:var(--green)"></div></div><span style="font-size:10px;color:var(--green);margin-left:6px">48%</span></div>
+        <div style="margin-top:10px;font-size:11px;color:var(--muted)">3× better resource utilisation. DB class reduced from r5.4xl → r6g.2xl</div>
+      </div>
+      <div class="viz-card">
+        <div class="viz-title">Rightsizing Opportunity Matrix</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
+          <div style="background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.2);border-radius:8px;padding:10px;text-align:center">
+            <div style="color:var(--rose);font-size:20px;font-weight:800">6</div>
+            <div style="color:var(--muted);font-size:10px;margin-top:4px">Severely Oversized<br>(&lt;15% CPU p50)</div>
+          </div>
+          <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:10px;text-align:center">
+            <div style="color:var(--amber);font-size:20px;font-weight:800">11</div>
+            <div style="color:var(--muted);font-size:10px;margin-top:4px">Moderately Oversized<br>(15–30% CPU)</div>
+          </div>
+          <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;padding:10px;text-align:center">
+            <div style="color:var(--green);font-size:20px;font-weight:800">18</div>
+            <div style="color:var(--muted);font-size:10px;margin-top:4px">Right-Sized<br>(30–70% CPU)</div>
+          </div>
+          <div style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:8px;padding:10px;text-align:center">
+            <div style="color:var(--indigo);font-size:20px;font-weight:800">4</div>
+            <div style="color:var(--muted);font-size:10px;margin-top:4px">Scale-Up Candidate<br>(&gt;75% CPU p95)</div>
+          </div>
+        </div>
+      </div>
+      <div class="viz-card">
+        <div class="viz-title">DB Cost Reduction Timeline</div>
+        <div style="display:flex;gap:6px;align-items:flex-end;height:60px;margin-bottom:8px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1">
+            <div style="width:100%;height:55px;background:var(--rose);border-radius:3px 3px 0 0;opacity:.8"></div>
+            <span style="font-size:9px;color:var(--muted)">Baseline</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1">
+            <div style="width:100%;height:42px;background:var(--amber);border-radius:3px 3px 0 0;opacity:.8"></div>
+            <span style="font-size:9px;color:var(--muted)">Day 30</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1">
+            <div style="width:100%;height:34px;background:var(--blue);border-radius:3px 3px 0 0;opacity:.8"></div>
+            <span style="font-size:9px;color:var(--muted)">Day 60</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1">
+            <div style="width:100%;height:22px;background:var(--green);border-radius:3px 3px 0 0;opacity:.9"></div>
+            <span style="font-size:9px;color:var(--muted)">Day 90</span>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--green);font-weight:700">$4.2M → $2.5M annual DB spend (-40%)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §07 ANTI-PATTERNS -->
+  <section id="antipatterns">
+    <div class="section-tag">§07 — Anti-Pattern Registry</div>
+    <h2>DB Optimisation Failure Modes</h2>
+    <table class="risk-table">
+      <thead><tr><th>Anti-Pattern</th><th>Severity</th><th>Root Cause</th><th>Mitigation</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><div class="risk-name">📦 Cold Data in Hot Storage</div><div class="risk-desc">7-year email archive sitting in S3 Standard at $0.023/GB — 23× the cost of Glacier Deep Archive</div></td>
+          <td><span class="sev sev-h">High</span></td>
+          <td style="font-size:12px;color:var(--muted)">No lifecycle policy applied at bucket creation; "set and forget" approach</td>
+          <td><div class="mitigation"><strong>S3 Lifecycle rules via CDK.</strong> Intelligent-Tiering for 0–2yr, Glacier IR for 2–7yr, Deep Archive for 7yr+. Legal hold tag prevents aggressive tiering on litigation data.</div></td>
+        </tr>
+        <tr>
+          <td><div class="risk-name">⚡ Lambda-RDS Connection Storm</div><div class="risk-desc">Lambda functions open direct DB connections — 1000 concurrent invocations = 1000 DB connections, spiking CPU and causing connection refused errors</div></td>
+          <td><span class="sev sev-h">High</span></td>
+          <td style="font-size:12px;color:var(--muted)">No RDS Proxy; Lambda treated as stateful service despite ephemeral nature</td>
+          <td><div class="mitigation"><strong>RDS Proxy mandatory for all Lambda-RDS pairs.</strong> Connection limit config. Alarm when DB connections &gt;80% of max_connections.</div></td>
+        </tr>
+        <tr>
+          <td><div class="risk-name">📊 eDiscovery on Production DB</div><div class="risk-desc">Legal/compliance teams run full-table reporting queries directly on production Aurora — causes IOPS spikes, query latency degradation, and unpredictable cost</div></td>
+          <td><span class="sev sev-h">High</span></td>
+          <td style="font-size:12px;color:var(--muted)">No dedicated analytics tier; Athena not deployed; ad-hoc SQL access given to legal team</td>
+          <td><div class="mitigation"><strong>Athena + Glue over S3 archive.</strong> Revoke direct DB access for non-engineering roles. Athena workgroup with query cost limits per user.</div></td>
+        </tr>
+        <tr>
+          <td><div class="risk-name">💾 Snapshot Sprawl</div><div class="risk-desc">Manual and automated snapshots accumulating without retention policy — 8TB of redundant snapshots at $0.05/GB/month</div></td>
+          <td><span class="sev sev-m">Medium</span></td>
+          <td style="font-size:12px;color:var(--muted)">No AWS Backup policy; default "never delete" manual snapshot behaviour</td>
+          <td><div class="mitigation"><strong>AWS Backup plans: 7-day for transactional, 30-day for archive.</strong> Lambda to auto-delete snapshots exceeding policy. Monthly cost report to engineering leads.</div></td>
+        </tr>
+        <tr>
+          <td><div class="risk-name">💤 Always-On Dev DB Clusters</div><div class="risk-desc">8 non-production Aurora clusters running 24×7 at full production capacity — idle 14+ hours/day</div></td>
+          <td><span class="sev sev-m">Medium</span></td>
+          <td style="font-size:12px;color:var(--muted)">No Aurora Serverless v2 adoption; engineers assume dedicated cluster = better performance</td>
+          <td><div class="mitigation"><strong>Aurora Serverless v2 for all non-production clusters.</strong> Auto-pause after 30min idle. Capacity range: 0.5–8 ACU (never idle-costs full r5.4xlarge equivalent).</div></td>
+        </tr>
+        <tr>
+          <td><div class="risk-name">📉 Fear-Based Instance Sizing</div><div class="risk-desc">Engineers refuse rightsizing recommendations citing "Black Friday risk" — applies to non-seasonal workloads year-round</div></td>
+          <td><span class="sev sev-l">Low</span></td>
+          <td style="font-size:12px;color:var(--muted)">No data-driven sizing culture; one high-traffic incident drove over-provisioning for all clusters</td>
+          <td><div class="mitigation"><strong>30-day monitoring window pre-downsize.</strong> Scheduled scaling for known peak events. Performance Insights baseline shared with team lead before change approval.</div></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+<script>
+  function togglePhase(btn) {
+    const item = btn.closest('.phase-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.phase-item.open').forEach(el => el.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+  const sections = document.querySelectorAll('section[id]');
+  const links = document.querySelectorAll('.sb-nav a');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = document.querySelector(`.sb-nav a[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -60% 0px' });
+  sections.forEach(s => io.observe(s));
+</script>
+</body>
+</html>

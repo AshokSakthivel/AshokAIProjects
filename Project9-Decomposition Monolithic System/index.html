@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Technical Strategy Hub — Message Archiver Platform</title>
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --surface: #111827;
+      --surface2: #1a2236;
+      --border: #1e2d45;
+      --accent: #3b82f6;
+      --accent2: #8b5cf6;
+      --accent3: #10b981;
+      --accent4: #f59e0b;
+      --accent5: #ef4444;
+      --text: #e2e8f0;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── TOP NAV ── */
+    header {
+      background: linear-gradient(135deg, #0d1b2e 0%, #0f2241 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .logo-text h1 { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .logo-text p { font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    nav { display: flex; gap: 4px; }
+    nav a {
+      color: var(--text-dim);
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+    nav a:hover { color: var(--text); background: var(--surface2); border-color: var(--border); }
+    nav a.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .badge-live {
+      background: rgba(16,185,129,0.15); color: var(--accent3);
+      border: 1px solid rgba(16,185,129,0.3);
+      padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .dot-live { width: 6px; height: 6px; border-radius: 50%; background: var(--accent3); animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #0d1b2e 0%, #0f1f3a 50%, #0d1b2e 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 3rem 2rem 2.5rem;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse 60% 40% at 80% 50%, rgba(59,130,246,0.08) 0%, transparent 70%);
+    }
+    .hero-content { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
+    .hero-eyebrow {
+      font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent); font-weight: 600; margin-bottom: 0.75rem;
+    }
+    .hero h2 { font-size: 2rem; font-weight: 800; line-height: 1.2; margin-bottom: 0.5rem; }
+    .hero h2 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { color: var(--text-dim); font-size: 0.9rem; max-width: 650px; line-height: 1.6; margin-bottom: 1.5rem; }
+    .hero-metrics { display: flex; gap: 2rem; flex-wrap: wrap; }
+    .hero-metric { text-align: left; }
+    .hero-metric .val { font-size: 1.8rem; font-weight: 800; display: block; }
+    .hero-metric .lbl { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .val.blue { color: var(--accent); }
+    .val.purple { color: var(--accent2); }
+    .val.green { color: var(--accent3); }
+    .val.amber { color: var(--accent4); }
+
+    /* ── MAIN LAYOUT ── */
+    .main { max-width: 1400px; margin: 2rem auto; padding: 0 2rem; }
+
+    /* ── NAV CARDS (Outputs) ── */
+    .nav-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem; margin-bottom: 2rem;
+    }
+    .nav-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .nav-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+    .nav-card.c1::before { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+    .nav-card.c2::before { background: linear-gradient(90deg, var(--accent2), #ec4899); }
+    .nav-card.c3::before { background: linear-gradient(90deg, var(--accent3), var(--accent4)); }
+    .nav-card.c4::before { background: linear-gradient(90deg, var(--accent4), var(--accent5)); }
+    .nav-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(59,130,246,0.15); }
+    .nav-card .nc-icon { font-size: 1.5rem; margin-bottom: 0.75rem; display: block; }
+    .nav-card .nc-title { font-size: 0.85rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .nav-card .nc-desc { font-size: 0.72rem; color: var(--text-muted); line-height: 1.5; }
+    .nav-card .nc-tag { margin-top: 0.75rem; padding: 2px 8px; font-size: 0.65rem; border-radius: 4px; display: inline-block; font-weight: 600; }
+    .tag-blue { background: rgba(59,130,246,0.15); color: var(--accent); border: 1px solid rgba(59,130,246,0.25); }
+    .tag-purple { background: rgba(139,92,246,0.15); color: var(--accent2); border: 1px solid rgba(139,92,246,0.25); }
+    .tag-green { background: rgba(16,185,129,0.15); color: var(--accent3); border: 1px solid rgba(16,185,129,0.25); }
+    .tag-amber { background: rgba(245,158,11,0.15); color: var(--accent4); border: 1px solid rgba(245,158,11,0.25); }
+
+    /* ── OVERVIEW SUMMARY ── */
+    .section-title {
+      font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+    .card-title { font-size: 0.8rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1rem; }
+
+    /* ── DATA GRAVITY PLANE ── */
+    .storage-bar { margin-bottom: 1rem; }
+    .storage-bar .sb-header { display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 0.4rem; }
+    .sb-label { color: var(--text-dim); }
+    .sb-val { font-weight: 700; }
+    .sb-track { height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+    .sb-fill { height: 100%; border-radius: 4px; }
+    .fill-hot { background: linear-gradient(90deg, #ef4444, #f97316); }
+    .fill-warm { background: linear-gradient(90deg, #f59e0b, #eab308); }
+    .fill-cool { background: linear-gradient(90deg, var(--accent), #6366f1); }
+    .fill-cold { background: linear-gradient(90deg, #64748b, #475569); }
+    .fill-archive { background: linear-gradient(90deg, #1e3a5f, #1d4ed8); }
+
+    /* ── WAVE PROGRESS ── */
+    .wave-timeline { position: relative; padding-left: 2rem; }
+    .wave-item {
+      position: relative; padding: 0.75rem 0 0.75rem 1rem;
+      border-left: 2px solid var(--border);
+      margin-left: 0.5rem;
+    }
+    .wave-item::before {
+      content: '';
+      position: absolute; left: -7px; top: 1rem;
+      width: 12px; height: 12px;
+      border-radius: 50%; border: 2px solid var(--border);
+      background: var(--bg);
+    }
+    .wave-item.done { border-left-color: var(--accent3); }
+    .wave-item.done::before { background: var(--accent3); border-color: var(--accent3); }
+    .wave-item.active { border-left-color: var(--accent); }
+    .wave-item.active::before { background: var(--accent); border-color: var(--accent); animation: pulse 1.5s infinite; }
+    .wave-item .wi-title { font-size: 0.8rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .wave-item .wi-desc { font-size: 0.72rem; color: var(--text-muted); }
+    .wi-status {
+      display: inline-block;
+      padding: 2px 8px; border-radius: 4px;
+      font-size: 0.65rem; font-weight: 600; margin-left: 8px;
+    }
+    .ws-complete { background: rgba(16,185,129,0.15); color: var(--accent3); }
+    .ws-active { background: rgba(59,130,246,0.15); color: var(--accent); }
+    .ws-pending { background: rgba(100,116,139,0.15); color: var(--text-muted); }
+
+    /* ── TEAM CARDS ── */
+    .team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    .team-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.1rem;
+      transition: all 0.2s;
+    }
+    .team-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .tc-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.75rem; }
+    .tc-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; font-size: 1rem;
+    }
+    .tc-info .tc-name { font-size: 0.82rem; font-weight: 700; }
+    .tc-info .tc-count { font-size: 0.7rem; color: var(--text-muted); }
+    .tc-badge { font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
+    .tc-desc { font-size: 0.72rem; color: var(--text-dim); line-height: 1.5; margin-bottom: 0.75rem; }
+    .tc-owns { display: flex; flex-wrap: wrap; gap: 4px; }
+    .own-tag {
+      font-size: 0.62rem; padding: 2px 7px; border-radius: 4px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+
+    /* ── DORA METRICS ── */
+    .dora-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 2rem; }
+    .dora-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .dora-val { font-size: 1.6rem; font-weight: 800; display: block; margin-bottom: 0.25rem; }
+    .dora-name { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .dora-trend { font-size: 0.7rem; margin-top: 0.4rem; }
+    .trend-up { color: var(--accent3); }
+    .trend-down { color: var(--accent5); }
+
+    /* ── COMPLIANCE ── */
+    .compliance-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); }
+    .compliance-row:last-child { border-bottom: none; }
+    .cr-label { font-size: 0.78rem; color: var(--text-dim); }
+    .cr-val { font-size: 0.85rem; font-weight: 700; }
+    .cr-bar-wrap { flex: 1; margin: 0 1rem; }
+    .cr-bar { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+    .cr-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--accent3), var(--accent)); }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 3rem;
+    }
+    footer strong { color: var(--text-dim); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .nav-grid { grid-template-columns: repeat(2, 1fr); }
+      .three-col, .team-grid { grid-template-columns: 1fr 1fr; }
+      .dora-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .nav-grid, .two-col, .three-col, .team-grid, .dora-grid { grid-template-columns: 1fr; }
+      nav { display: none; }
+      .hero-metrics { gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════ HEADER ════════════════════════════════ -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🗄️</div>
+    <div class="logo-text">
+      <h1>Technical Strategy Hub</h1>
+      <p>Message Archiver Platform · VP Architecture &amp; Sr. Director Engineering</p>
+    </div>
+  </div>
+  <nav>
+    <a href="index.html" class="active">Overview</a>
+    <a href="team-topology.html">Team Topology</a>
+    <a href="wave-model.html">Wave Model</a>
+    <a href="strategy-dashboard.html">Strategy Dashboard</a>
+    <a href="infographic.html">All-Hands Infographic</a>
+  </nav>
+  <div class="header-right">
+    <span class="badge-live"><span class="dot-live"></span>Live · Updated Mar 23, 2026</span>
+  </div>
+</header>
+
+<!-- ════════════════════════════════ HERO ═══════════════════════════════════ -->
+<div class="hero">
+  <div class="hero-content">
+    <p class="hero-eyebrow">Enterprise Message Archiver Platform · Modernization Initiative 2025–2027</p>
+    <h2>Decomposing the Monolith at <span>60 Petabyte</span> Scale</h2>
+    <p>
+      A comprehensive technical strategy to safely migrate and modernize a 60PB immutable archive system—
+      decoupling ingestion, search, and storage without disrupting compliance SLAs—while rebuilding
+      organizational capability across 6 domain-aligned engineering teams.
+    </p>
+    <div class="hero-metrics">
+      <div class="hero-metric"><span class="val blue">60 PB</span><span class="lbl">Archive Footprint</span></div>
+      <div class="hero-metric"><span class="val purple">6 Teams</span><span class="lbl">Engineering Squads</span></div>
+      <div class="hero-metric"><span class="val green">60 Eng</span><span class="lbl">Total Headcount</span></div>
+      <div class="hero-metric"><span class="val amber">Wave 2</span><span class="lbl">Current Phase</span></div>
+      <div class="hero-metric"><span class="val" style="color:#ef4444">99.99%</span><span class="lbl">Compliance Uptime SLA</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ MAIN ══════════════════════════════════ -->
+<main class="main">
+
+  <!-- ── Portal Navigation Cards ── -->
+  <p class="section-title">Strategic Deliverables</p>
+  <div class="nav-grid">
+    <a href="team-topology.html" class="nav-card c1">
+      <span class="nc-icon">🏗️</span>
+      <div class="nc-title">Domain-Driven Team Topology</div>
+      <div class="nc-desc">6-team DDD org structure, architectural ownership maps, and Conway's Law alignment for the decoupled platform.</div>
+      <span class="nc-tag tag-blue">Output 1</span>
+    </a>
+    <a href="wave-model.html" class="nav-card c2">
+      <span class="nc-icon">🌊</span>
+      <div class="nc-title">The Wave Modernization Plan</div>
+      <div class="nc-desc">Phased Strangler Fig decomposition across 4 waves—FinOps levers, tech debt strategy, and data plane migration.</div>
+      <span class="nc-tag tag-purple">Output 2</span>
+    </a>
+    <a href="strategy-dashboard.html" class="nav-card c3">
+      <span class="nc-icon">📊</span>
+      <div class="nc-title">Architecture & Strategy Portal</div>
+      <div class="nc-desc">Live Data Gravity Plane, Decomposition State matrix, SEI/DORA hub, and Compliance & E-Discovery health.</div>
+      <span class="nc-tag tag-green">Output 3</span>
+    </a>
+    <a href="infographic.html" class="nav-card c4">
+      <span class="nc-icon">🎯</span>
+      <div class="nc-title">All-Hands Infographic</div>
+      <div class="nc-desc">High-impact visual showing the monolith-to-microservices transition and team-to-architecture alignment.</div>
+      <span class="nc-tag tag-amber">Output 4</span>
+    </a>
+  </div>
+
+  <!-- ── Data Gravity + Wave Progress ── -->
+  <p class="section-title">Data Gravity Plane · Snapshot</p>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">60 PB Storage Tier Distribution</div>
+      <div class="storage-bar">
+        <div class="sb-header"><span class="sb-label">🔥 Hot — S3 Standard (Active Ingestion)</span><span class="sb-val" style="color:#ef4444">3 PB · 5%</span></div>
+        <div class="sb-track"><div class="sb-fill fill-hot" style="width:5%"></div></div>
+      </div>
+      <div class="storage-bar">
+        <div class="sb-header"><span class="sb-label">🌡️ Warm — S3-IA (Recent Archive, 30–90d)</span><span class="sb-val" style="color:#f59e0b">9 PB · 15%</span></div>
+        <div class="sb-track"><div class="sb-fill fill-warm" style="width:15%"></div></div>
+      </div>
+      <div class="storage-bar">
+        <div class="sb-header"><span class="sb-label">❄️ Cool — S3 Intelligent-Tiering (90d–2yr)</span><span class="sb-val" style="color:var(--accent)">18 PB · 30%</span></div>
+        <div class="sb-track"><div class="sb-fill fill-cool" style="width:30%"></div></div>
+      </div>
+      <div class="storage-bar">
+        <div class="sb-header"><span class="sb-label">🧊 Cold — Glacier Flexible Retrieval (&gt;2yr)</span><span class="sb-val" style="color:#64748b">21 PB · 35%</span></div>
+        <div class="sb-track"><div class="sb-fill fill-cold" style="width:35%"></div></div>
+      </div>
+      <div class="storage-bar">
+        <div class="sb-header"><span class="sb-label">🏔️ Deep Archive — Glacier Deep Archive (&gt;7yr)</span><span class="sb-val" style="color:#3b72c2">9 PB · 15%</span></div>
+        <div class="sb-track"><div class="sb-fill fill-archive" style="width:15%"></div></div>
+      </div>
+      <div style="margin-top:1rem; padding: 0.75rem; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border);">
+        <div style="display:flex; justify-content:space-between; font-size:0.78rem;">
+          <span style="color:var(--text-muted)">Daily Ingestion Rate</span><strong>~4.2 TB/day</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.78rem; margin-top:0.4rem;">
+          <span style="color:var(--text-muted)">Daily Cloud COGS (est.)</span><strong style="color:var(--accent4)">$24,800 / day</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.78rem; margin-top:0.4rem;">
+          <span style="color:var(--text-muted)">FinOps Target (post-Wave 3)</span><strong style="color:var(--accent3)">$16,400 / day (−34%)</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Modernization Wave Progress</div>
+      <div class="wave-timeline">
+        <div class="wave-item done">
+          <div class="wi-title">Wave 0 — Foundation <span class="wi-status ws-complete">✓ Complete</span></div>
+          <div class="wi-desc">Observability stack, IaC baseline, team topology restructuring, distributed tracing (OTel), and AWS Landing Zone.</div>
+        </div>
+        <div class="wave-item done">
+          <div class="wi-title">Wave 1 — Ingestion Decoupling <span class="wi-status ws-complete">✓ Complete</span></div>
+          <div class="wi-desc">Message ingestion workers extracted to Kafka-backed microservices. S3 Intelligent-Tiering activated on 18 PB.</div>
+        </div>
+        <div class="wave-item active">
+          <div class="wi-title">Wave 2 — Search Plane Extraction <span class="wi-status ws-active">● In Progress</span></div>
+          <div class="wi-desc">OpenSearch Serverless carve-out from monolith. Control plane API Gateway deployed. E-Discovery indexing queue decoupled.</div>
+        </div>
+        <div class="wave-item">
+          <div class="wi-title">Wave 3 — Data Plane & FinOps <span class="wi-status ws-pending">Planned Q3 2026</span></div>
+          <div class="wi-desc">Full control/data plane split. Glacier Deep Archive lifecycle migration. Metadata cold-store to DynamoDB.</div>
+        </div>
+        <div class="wave-item">
+          <div class="wi-title">Wave 4 — Legacy Deprecation <span class="wi-status ws-pending">Planned Q1 2027</span></div>
+          <div class="wi-desc">Monolith retirement. Full microservices + event mesh in production. 100% Strangler Fig complete.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 6 Teams Summary ── -->
+  <p class="section-title">6-Team Domain Topology · At a Glance</p>
+  <div class="team-grid">
+    <div class="team-card">
+      <div class="tc-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="tc-icon" style="background:rgba(239,68,68,0.15); color:#ef4444;">📥</div>
+          <div class="tc-info">
+            <div class="tc-name">Ingestion Pipeline</div>
+            <div class="tc-count">10 Engineers</div>
+          </div>
+        </div>
+        <span class="tc-badge" style="background:rgba(239,68,68,0.1);color:#ef4444;">Team 1</span>
+      </div>
+      <div class="tc-desc">Owns the entire message intake path — from customer SMTP/IMAP/API connectors through Kafka topics to durable raw storage in S3.</div>
+      <div class="tc-owns">
+        <span class="own-tag">Kafka Brokers</span><span class="own-tag">Connectors</span>
+        <span class="own-tag">S3 Raw Zone</span><span class="own-tag">Dead-Letter Queue</span>
+      </div>
+    </div>
+    <div class="team-card">
+      <div class="tc-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="tc-icon" style="background:rgba(99,102,241,0.15); color:#6366f1;">🔍</div>
+          <div class="tc-info">
+            <div class="tc-name">Search &amp; Indexing</div>
+            <div class="tc-count">12 Engineers</div>
+          </div>
+        </div>
+        <span class="tc-badge" style="background:rgba(99,102,241,0.1);color:#6366f1;">Team 2</span>
+      </div>
+      <div class="tc-desc">Architects and operates the OpenSearch domain, index lifecycle management, and full-text relevance layers for 60PB searchability.</div>
+      <div class="tc-owns">
+        <span class="own-tag">OpenSearch Serverless</span><span class="own-tag">Index Policies</span>
+        <span class="own-tag">ILM</span><span class="own-tag">Query Optimizer</span>
+      </div>
+    </div>
+    <div class="team-card">
+      <div class="tc-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="tc-icon" style="background:rgba(16,185,129,0.15); color:#10b981;">💰</div>
+          <div class="tc-info">
+            <div class="tc-name">Storage Lifecycle &amp; FinOps</div>
+            <div class="tc-count">8 Engineers</div>
+          </div>
+        </div>
+        <span class="tc-badge" style="background:rgba(16,185,129,0.1);color:#10b981;">Team 3</span>
+      </div>
+      <div class="tc-desc">Drives cloud cost engineering — lifecycle policies, tiering automation, storage unit economics, and AWS cost anomaly governance.</div>
+      <div class="tc-owns">
+        <span class="own-tag">S3 Lifecycle</span><span class="own-tag">Glacier Policies</span>
+        <span class="own-tag">Cost Dashboards</span><span class="own-tag">Savings Plans</span>
+      </div>
+    </div>
+    <div class="team-card">
+      <div class="tc-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="tc-icon" style="background:rgba(245,158,11,0.15); color:#f59e0b;">⚖️</div>
+          <div class="tc-info">
+            <div class="tc-name">E-Discovery &amp; Compliance</div>
+            <div class="tc-count">10 Engineers</div>
+          </div>
+        </div>
+        <span class="tc-badge" style="background:rgba(245,158,11,0.1);color:#f59e0b;">Team 4</span>
+      </div>
+      <div class="tc-desc">Builds and operates legal hold, e-discovery export, WORM immutability enforcement, audit trail, and SEC/FINRA/GDPR compliance surfaces.</div>
+      <div class="tc-owns">
+        <span class="own-tag">Legal Hold API</span><span class="own-tag">WORM Storage</span>
+        <span class="own-tag">Audit Log</span><span class="own-tag">Export Engine</span>
+      </div>
+    </div>
+    <div class="team-card">
+      <div class="tc-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="tc-icon" style="background:rgba(59,130,246,0.15); color:#3b82f6;">🔌</div>
+          <div class="tc-info">
+            <div class="tc-name">Control Plane &amp; API</div>
+            <div class="tc-count">10 Engineers</div>
+          </div>
+        </div>
+        <span class="tc-badge" style="background:rgba(59,130,246,0.1);color:#3b82f6;">Team 5</span>
+      </div>
+      <div class="tc-desc">Owns the tenant management control plane, API Gateway, multi-tenancy isolation, RBAC, and the customer-facing configuration surface.</div>
+      <div class="tc-owns">
+        <span class="own-tag">API Gateway</span><span class="own-tag">Tenant Config</span>
+        <span class="own-tag">RBAC/AuthN</span><span class="own-tag">Rate Limiting</span>
+      </div>
+    </div>
+    <div class="team-card">
+      <div class="tc-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="tc-icon" style="background:rgba(139,92,246,0.15); color:#8b5cf6;">⚙️</div>
+          <div class="tc-info">
+            <div class="tc-name">Platform Engineering</div>
+            <div class="tc-count">10 Engineers</div>
+          </div>
+        </div>
+        <span class="tc-badge" style="background:rgba(139,92,246,0.1);color:#8b5cf6;">Team 6</span>
+      </div>
+      <div class="tc-desc">The internal platform team — builds the golden paths, CI/CD pipelines, Kubernetes platform, observability stack, and service mesh.</div>
+      <div class="tc-owns">
+        <span class="own-tag">EKS Platform</span><span class="own-tag">CI/CD</span>
+        <span class="own-tag">Observability</span><span class="own-tag">Service Mesh</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DORA Metrics ── -->
+  <p class="section-title">DORA Metrics · Engineering Velocity</p>
+  <div class="dora-grid">
+    <div class="dora-card">
+      <span class="dora-val" style="color:var(--accent3)">4.2×</span>
+      <div class="dora-name">Deploy Frequency / Week</div>
+      <div class="dora-trend trend-up">↑ Elite (was 0.5×/wk in monolith)</div>
+    </div>
+    <div class="dora-card">
+      <span class="dora-val" style="color:var(--accent)">38 min</span>
+      <div class="dora-name">Lead Time for Changes</div>
+      <div class="dora-trend trend-up">↑ Elite (&lt;1 hour)</div>
+    </div>
+    <div class="dora-card">
+      <span class="dora-val" style="color:var(--accent4)">12 min</span>
+      <div class="dora-name">Mean Time to Restore</div>
+      <div class="dora-trend trend-up">↑ High (target: &lt;1 hour)</div>
+    </div>
+    <div class="dora-card">
+      <span class="dora-val" style="color:var(--accent5)">3.1%</span>
+      <div class="dora-name">Change Failure Rate</div>
+      <div class="dora-trend trend-up">↑ Elite (&lt;5%)</div>
+    </div>
+  </div>
+
+  <!-- ── Compliance Health ── -->
+  <p class="section-title">Compliance &amp; E-Discovery Health</p>
+  <div class="three-col">
+    <div class="card">
+      <div class="card-title">Search Latency SLA (P99)</div>
+      <div class="compliance-row">
+        <span class="cr-label">Hot tier (active)</span>
+        <div class="cr-bar-wrap"><div class="cr-bar"><div class="cr-fill" style="width:98%; background: linear-gradient(90deg,#10b981,#3b82f6);"></div></div></div>
+        <span class="cr-val" style="color:var(--accent3)">420ms</span>
+      </div>
+      <div class="compliance-row">
+        <span class="cr-label">Warm tier (&lt;90d)</span>
+        <div class="cr-bar-wrap"><div class="cr-bar"><div class="cr-fill" style="width:90%; background: linear-gradient(90deg,#3b82f6,#8b5cf6);"></div></div></div>
+        <span class="cr-val" style="color:var(--accent)">2.1s</span>
+      </div>
+      <div class="compliance-row">
+        <span class="cr-label">Cold tier retrieval</span>
+        <div class="cr-bar-wrap"><div class="cr-bar"><div class="cr-fill" style="width:60%; background: linear-gradient(90deg,#f59e0b,#ef4444);"></div></div></div>
+        <span class="cr-val" style="color:var(--accent4)">12–48h</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Indexing Queue Depth</div>
+      <div class="compliance-row">
+        <span class="cr-label">Real-time Index Queue</span>
+        <div class="cr-bar-wrap"><div class="cr-bar"><div class="cr-fill" style="width:22%;"></div></div></div>
+        <span class="cr-val" style="color:var(--accent3)">2,200 msgs</span>
+      </div>
+      <div class="compliance-row">
+        <span class="cr-label">Reindex Backfill Queue</span>
+        <div class="cr-bar-wrap"><div class="cr-bar"><div class="cr-fill" style="width:55%; background: linear-gradient(90deg,#f59e0b,#eab308);"></div></div></div>
+        <span class="cr-val" style="color:var(--accent4)">4.8M msgs</span>
+      </div>
+      <div class="compliance-row">
+        <span class="cr-label">Legal Hold Processing</span>
+        <div class="cr-bar-wrap"><div class="cr-bar"><div class="cr-fill" style="width:8%;"></div></div></div>
+        <span class="cr-val" style="color:var(--accent3)">180 jobs</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Regulatory Compliance Status</div>
+      <div class="compliance-row">
+        <span class="cr-label">WORM Immutability</span>
+        <div class="cr-bar-wrap"><div class="cr-bar"><div class="cr-fill" style="width:100%;"></div></div></div>
+        <span class="cr-val" style="color:var(--accent3)">✓ 100%</span>
+      </div>
+      <div class="compliance-row">
+        <span class="cr-label">SEC 17a-4 / FINRA</span>
+        <div class="cr-bar-wrap"><div class="cr-bar"><div class="cr-fill" style="width:100%;"></div></div></div>
+        <span class="cr-val" style="color:var(--accent3)">✓ Compliant</span>
+      </div>
+      <div class="compliance-row">
+        <span class="cr-label">GDPR Data Residency</span>
+        <div class="cr-bar-wrap"><div class="cr-bar"><div class="cr-fill" style="width:100%;"></div></div></div>
+        <span class="cr-val" style="color:var(--accent3)">✓ Enforced</span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <strong>Technical Strategy Hub</strong> · Message Archiver Platform · VP Architecture &amp; Senior Director Engineering
+  <br/>Confidential · Internal Use Only · &copy; 2026 Enterprise Engineering
+</footer>
+
+</body>
+</html>

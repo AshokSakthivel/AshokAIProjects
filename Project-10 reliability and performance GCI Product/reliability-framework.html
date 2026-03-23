@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reliability Framework — GCI SRE</title>
+  <style>
+    :root {
+      --bg: #080d12; --surface: #0d1421; --surface2: #111d2e; --border: #1a2d44;
+      --green: #10b981; --red: #ef4444; --amber: #f59e0b; --blue: #3b82f6;
+      --purple: #8b5cf6; --cyan: #06b6d4;
+      --text: #e2e8f0; --text-muted: #4b6070; --text-dim: #7fa3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+    header { background: linear-gradient(135deg,#060b10,#0b1826); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 34px; height: 34px; background: linear-gradient(135deg,var(--green),var(--cyan)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .logo-text h1 { font-size: 0.95rem; font-weight: 700; }
+    .logo-text p { font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; }
+    nav { display: flex; gap: 3px; }
+    nav a { color: var(--text-dim); text-decoration: none; padding: 5px 13px; border-radius: 6px; font-size: 0.78rem; font-weight: 500; transition: all 0.2s; border: 1px solid transparent; }
+    nav a:hover { color: var(--text); background: var(--surface2); border-color: var(--border); }
+    nav a.active { color: #fff; background: var(--green); border-color: var(--green); }
+
+    .hero { background: linear-gradient(135deg,#060b10,#0c1a2e,#060b10); border-bottom: 1px solid var(--border); padding: 2.5rem 2rem; position: relative; overflow: hidden; }
+    .hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 60% 50% at 20% 60%,rgba(16,185,129,0.07) 0%,transparent 70%); }
+    .hero-content { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
+    .eyebrow { font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--green); font-weight: 700; margin-bottom: 0.6rem; }
+    .hero h2 { font-size: 1.8rem; font-weight: 900; margin-bottom: 0.5rem; }
+    .hero h2 span { background: linear-gradient(135deg,var(--green),var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { color: var(--text-dim); font-size: 0.87rem; max-width: 680px; line-height: 1.6; }
+
+    .main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+    .section-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px; }
+    .section-title::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--border),transparent); }
+
+    /* Mandate box */
+    .mandate-box {
+      background: linear-gradient(135deg,rgba(16,185,129,0.08),rgba(6,182,212,0.05));
+      border: 1px solid rgba(16,185,129,0.25); border-radius: 14px; padding: 1.5rem;
+      margin-bottom: 2rem; display: flex; gap: 1.5rem; align-items: flex-start;
+    }
+    .mb-icon { font-size: 2.5rem; flex-shrink: 0; }
+    .mb-text h3 { font-size: 1rem; font-weight: 700; color: var(--green); margin-bottom: 0.5rem; }
+    .mb-text p { font-size: 0.82rem; color: var(--text-dim); line-height: 1.65; }
+    .mb-text strong { color: var(--text); }
+
+    /* Phase cards */
+    .phase-grid { display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2rem; }
+    .phase-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .phase-card.active-phase { border-color: rgba(6,182,212,0.4); box-shadow: 0 0 0 1px rgba(6,182,212,0.1); }
+    .pc-header { padding: 1.25rem 1.75rem; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 1.25rem; }
+    .pc-num { width: 50px; height: 50px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+    .pc-num .pn { font-size: 1rem; font-weight: 900; line-height: 1; }
+    .pc-num .pl { font-size: 0.52rem; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.8; }
+    .pc-meta { flex: 1; }
+    .pc-meta h3 { font-size: 1.05rem; font-weight: 800; margin-bottom: 0.2rem; }
+    .pc-meta .ps { font-size: 0.8rem; color: var(--text-muted); }
+    .pc-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.68rem; font-weight: 700; align-self: flex-start; flex-shrink: 0; }
+    .pc-body { padding: 1.25rem 1.75rem; }
+    .pc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; }
+    .pc-col-title { font-size: 0.67rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; padding: 0.3rem 0.8rem; border-radius: 5px; display: inline-block; margin-bottom: 0.75rem; }
+    .pct-green { background: rgba(16,185,129,0.12); color: var(--green); }
+    .pct-cyan { background: rgba(6,182,212,0.12); color: var(--cyan); }
+    .pct-amber { background: rgba(245,158,11,0.12); color: var(--amber); }
+    .pc-list { list-style: none; }
+    .pc-list li { font-size: 0.78rem; color: var(--text-dim); padding: 0.4rem 0; border-bottom: 1px solid var(--border); line-height: 1.5; display: flex; gap: 7px; }
+    .pc-list li:last-child { border-bottom: none; }
+    .pc-list li::before { content: '▸'; flex-shrink: 0; margin-top: 1px; }
+    .pc-outcomes { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+    .oc { padding: 0.35rem 0.85rem; border-radius: 7px; font-size: 0.72rem; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+    .og { background: rgba(16,185,129,0.1); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
+    .oc2 { background: rgba(6,182,212,0.1); color: var(--cyan); border: 1px solid rgba(6,182,212,0.25); }
+    .oa { background: rgba(245,158,11,0.1); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+    .op { background: rgba(139,92,246,0.1); color: var(--purple); border: 1px solid rgba(139,92,246,0.25); }
+
+    /* SLI/SLO tables */
+    .slo-section { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; margin-bottom: 2rem; }
+    .slo-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+    .slo-table th { background: var(--surface2); color: var(--text-muted); font-size: 0.67rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.55rem 0.75rem; border: 1px solid var(--border); text-align: left; }
+    .slo-table td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); color: var(--text-dim); vertical-align: top; line-height: 1.45; }
+    .slo-table tr:hover td { background: var(--surface2); }
+    .slt { font-size: 0.65rem; padding: 2px 7px; border-radius: 4px; font-weight: 700; white-space: nowrap; }
+    .slt-g { background: rgba(16,185,129,0.15); color: var(--green); }
+    .slt-a { background: rgba(245,158,11,0.15); color: var(--amber); }
+    .slt-r { background: rgba(239,68,68,0.15); color: var(--red); }
+    .slt-b { background: rgba(59,130,246,0.15); color: var(--blue); }
+    .team-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+
+    /* Incident tier diagram */
+    .tier-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin-bottom: 2rem; }
+    .tier-card { background: var(--surface); border: 1px solid; border-radius: 12px; padding: 1.1rem; }
+    .tc-sev { font-size: 1.2rem; font-weight: 900; display: block; margin-bottom: 6px; }
+    .tc-name { font-size: 0.82rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .tc-body { font-size: 0.74rem; color: var(--text-dim); line-height: 1.55; }
+    .tc-targets { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+    .tc-t { font-size: 0.65rem; padding: 2px 7px; border-radius: 4px; font-weight: 700; }
+    .tier1 { border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.06); }
+    .tier2 { border-color: rgba(249,115,22,0.35); background: rgba(249,115,22,0.05); }
+    .tier3 { border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.05); }
+    .tier4 { border-color: rgba(16,185,129,0.25); background: rgba(16,185,129,0.04); }
+
+    /* Roles table */
+    .roles-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-bottom: 2rem; }
+    .role-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; }
+    .rc-icon { font-size: 1.4rem; margin-bottom: 0.6rem; display: block; }
+    .rc-title { font-size: 0.9rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .rc-sub { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+    .rc-list { list-style: none; }
+    .rc-list li { font-size: 0.76rem; color: var(--text-dim); padding: 0.35rem 0; border-bottom: 1px solid var(--border); display: flex; gap: 7px; line-height: 1.45; }
+    .rc-list li:last-child { border-bottom: none; }
+    .rc-list li::before { content: '→'; flex-shrink: 0; color: var(--text-muted); }
+
+    /* COE / Game Day cards */
+    .ci-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+    .ci-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; }
+    .ci-header { display: flex; align-items: center; gap: 10px; margin-bottom: 0.9rem; }
+    .ci-icon { font-size: 1.5rem; }
+    .ci-title { font-size: 0.95rem; font-weight: 800; }
+    .ci-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+    .ci-list { list-style: none; margin-bottom: 1rem; }
+    .ci-list li { font-size: 0.78rem; color: var(--text-dim); padding: 0.4rem 0; border-bottom: 1px solid var(--border); display: flex; gap: 8px; line-height: 1.5; }
+    .ci-list li:last-child { border-bottom: none; }
+    .ci-list li::before { content: '▸'; flex-shrink: 0; color: var(--text-muted); }
+    .ci-tag-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .ci-tag { font-size: 0.67rem; padding: 3px 9px; border-radius: 5px; font-weight: 600; background: var(--surface2); border: 1px solid var(--border); color: var(--text-dim); }
+
+    footer { border-top: 1px solid var(--border); text-align: center; padding: 1.5rem; color: var(--text-muted); font-size: 0.72rem; margin-top: 2rem; }
+    footer strong { color: var(--text-dim); }
+
+    @media (max-width: 1024px) { .pc-grid { grid-template-columns: 1fr; } .tier-grid { grid-template-columns: 1fr 1fr; } .roles-grid { grid-template-columns: 1fr 1fr; } .ci-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) { nav { display: none; } .tier-grid,.roles-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🛡️</div>
+    <div class="logo-text">
+      <h1>GCI Operations Hub</h1>
+      <p>Site Reliability Engineering · Message Archiver</p>
+    </div>
+  </div>
+  <nav>
+    <a href="index.html">Command Center</a>
+    <a href="reliability-framework.html" class="active">Reliability Framework</a>
+    <a href="operations-hub.html">Operations Hub</a>
+    <a href="war-room.html">War Room &amp; Post-Mortems</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <div class="hero-content">
+    <p class="eyebrow">Output 1 · SRE Strategic Plan · Operational Maturity Mandate</p>
+    <h2>The <span>GCI Reliability Framework</span></h2>
+    <p>
+      A phased operational mandate to transform 6 engineering teams from reactive firefighters into
+      proactive reliability engineers. Define SLIs. Set SLOs. Build blameless culture.
+      Survive chaos deliberately before it survives you accidentally.
+    </p>
+  </div>
+</div>
+
+<main class="main">
+
+  <!-- SRE Mandate -->
+  <div class="mandate-box">
+    <div class="mb-icon">⚡</div>
+    <div class="mb-text">
+      <h3>The SRE Mandate — Why This Exists</h3>
+      <p>
+        <strong>Operational accountability is not optional at 60PB scale.</strong> Every minute of unplanned downtime on the
+        ingestion pipeline violates data retention compliance for thousands of customers. Every search SLA breach during
+        an active legal hold puts the organization at regulatory risk. We are moving from a culture where engineers
+        <em>react to pages</em> to a culture where engineers <em>design for failure</em>.
+        <br/><br/>
+        This framework applies to all 6 domain teams. It is not a suggestion — it is the operating model.
+        Teams without defined SLOs cannot argue for feature velocity. Teams with empty error budgets freeze features until reliability is restored.
+        <strong>Reliability is the product.</strong>
+      </p>
+    </div>
+  </div>
+
+  <!-- PHASES -->
+  <p class="section-title">Phased SRE Rollout — 4 Operational Maturity Phases</p>
+  <div class="phase-grid">
+
+    <!-- Phase 0 -->
+    <div class="phase-card">
+      <div class="pc-header">
+        <div class="pc-num" style="background:rgba(99,102,241,0.15); color:#6366f1;">
+          <div class="pn">P0</div><div class="pl">Phase 0</div>
+        </div>
+        <div class="pc-meta">
+          <h3>Instrument Everything — "You Can't Fix What You Can't See"</h3>
+          <div class="ps">Q1 2025 · 8 weeks · Foundation · All 6 Teams Required</div>
+        </div>
+        <span class="pc-badge" style="background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.3);">✓ Complete</span>
+      </div>
+      <div class="pc-body">
+        <div class="pc-grid">
+          <div>
+            <div class="pc-col-title pct-green">Strategic Focus</div>
+            <ul class="pc-list">
+              <li>Achieve 100% observability coverage across all 6 domain services before any SLO is defined. You cannot set targets you cannot measure.</li>
+              <li>Deploy OpenTelemetry collectors to all EKS workloads. Instrument all Kafka consumers, S3 operations, and OpenSearch queries with distributed traces.</li>
+              <li>Stand up Grafana dashboards per team — every team must have a service health view before Phase 1.</li>
+              <li>Identify the top 5 "unobserved failure modes" per team through structured GameDay prep interviews.</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pc-col-title pct-cyan">SLI/SLO Boot Camp</div>
+            <ul class="pc-list">
+              <li>Workshop: Every team selects 3–5 SLIs meaningful to their domain. SLIs must be measurable from existing telemetry within 48h of definition.</li>
+              <li>SLI candidates: request success rate, latency P99, throughput, error rate, data freshness lag, queue depth.</li>
+              <li>Draft SLO values are conservative: start at 99.5% — tighten as measurement baseline is established.</li>
+              <li>No SLA can be promised to customers for a domain whose SLO is not yet baselined for 30 days.</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pc-col-title pct-amber">Foundation Toil Audit</div>
+            <ul class="pc-list">
+              <li>Each team runs a 2-hour "Toil Sprint": catalog every manual, repetitive operational task they perform weekly.</li>
+              <li>Classify: Toil (automate), Overhead (streamline), or Genuine Engineering (keep).</li>
+              <li>Toil cap established: no team spends &gt;20% of sprint capacity on toil. Violating teams get Platform Engineering (T6) embed.</li>
+              <li>Result: Toil register published in Backstage. Updated quarterly.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="pc-outcomes">
+          <span class="oc og">✓ OTel on 100% of services</span>
+          <span class="oc oc2">✓ 18 SLIs defined across 6 teams</span>
+          <span class="oc oa">✓ Toil register published</span>
+          <span class="oc op">✓ Grafana dashboards live per team</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 1 -->
+    <div class="phase-card">
+      <div class="pc-header">
+        <div class="pc-num" style="background:rgba(16,185,129,0.15); color:var(--green);">
+          <div class="pn">P1</div><div class="pl">Phase 1</div>
+        </div>
+        <div class="pc-meta">
+          <h3>Define &amp; Enforce SLOs — "Set the Bar, Hold the Bar"</h3>
+          <div class="ps">Q2 2025 · 10 weeks · SLO Governance · All 6 Teams</div>
+        </div>
+        <span class="pc-badge" style="background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.3);">✓ Complete</span>
+      </div>
+      <div class="pc-body">
+        <div class="pc-grid">
+          <div>
+            <div class="pc-col-title pct-green">SLO Ratification</div>
+            <ul class="pc-list">
+              <li>All 6 teams present SLO proposals in a 2-hour "SLO Review" — Product, SRE Manager, and VP Architecture must sign off before SLOs are published.</li>
+              <li>SLOs are encoded in infrastructure as code: Terraform-managed CloudWatch alarms and Grafana alert rules enforce SLO burn rates automatically.</li>
+              <li>Error budget policy published: 100% budget consumed = feature freeze + SRE review board convenes within 48h.</li>
+              <li>SLOs are reviewed quarterly. Teams may propose tightening (never loosening without post-mortem justification).</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pc-col-title pct-cyan">PagerDuty On-Call Rotation</div>
+            <ul class="pc-list">
+              <li>Each domain team establishes a formal on-call rotation: minimum 2 engineers per schedule, weekly rotation, no consecutive on-call without 48h gap.</li>
+              <li>On-Call Runbook required for every alert: alert name, expected blast radius, immediate mitigation steps, escalation path.</li>
+              <li>On-Call metrics tracked: pages per week, actionable vs. noisy, time spent per incident. Reported in weekly SRE standup.</li>
+              <li>Alert fatigue policy: any alert that doesn't require human action within 30 days is deleted. No alert cemetery in PagerDuty.</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pc-col-title pct-amber">Error Budget Governance</div>
+            <ul class="pc-list">
+              <li>Weekly error budget review in all team standups — SRE Manager attends T5 (Control Plane) due to accelerated burn.</li>
+              <li>Burn rate alerts: 2% hourly burn (1h window) triggers SEV-2 auto-escalation. 5% hourly burn triggers SEV-1.</li>
+              <li>Error budget spend on planned maintenance: teams may "spend" budget on chaos experiments — this is a feature, not a bug.</li>
+              <li>Unused budget at month-end: teams with &gt;80% remaining receive "reliability dividend" — freed sprint capacity for technical debt.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="pc-outcomes">
+          <span class="oc og">✓ 18 SLOs ratified across 6 teams</span>
+          <span class="oc oc2">✓ PagerDuty rotations live</span>
+          <span class="oc oa">✓ Error budget policy enforced</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="phase-card active-phase">
+      <div class="pc-header">
+        <div class="pc-num" style="background:rgba(6,182,212,0.15); color:var(--cyan);">
+          <div class="pn">P2</div><div class="pl">Phase 2</div>
+        </div>
+        <div class="pc-meta">
+          <h3>Incident Mastery &amp; Blameless Culture — "Own Your Blast Radius" 🔵 ACTIVE</h3>
+          <div class="ps">Q3 2025 – Q2 2026 · On-going · Incident Maturity</div>
+        </div>
+        <span class="pc-badge" style="background:rgba(6,182,212,0.15);color:var(--cyan);border:1px solid rgba(6,182,212,0.3);">● In Progress</span>
+      </div>
+      <div class="pc-body">
+        <div class="pc-grid">
+          <div>
+            <div class="pc-col-title pct-green">Incident Command System</div>
+            <ul class="pc-list">
+              <li>Tiered incident protocol live: SEV-1 through SEV-4 with defined MTTA/MTTR SLOs per tier (see Incident Tiers below).</li>
+              <li>Incident Commander (IC) role rotates through senior engineers across teams — not permanently assigned to SRE. Every team owns incidents in their domain.</li>
+              <li>War Room protocol: SEV-1/SEV-2 auto-creates #inc-{{timestamp}} Slack channel, provisions Zoom bridge, and pages IC within 60 seconds.</li>
+              <li>Incident Commander has final authority during active SEV-1: can make unilateral architectural rollback decisions without approval chain.</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pc-col-title pct-cyan">Blameless Post-Mortem (COE)</div>
+            <ul class="pc-list">
+              <li>Every SEV-1 and SEV-2 requires a Correction of Error (COE) document published within 5 business days.</li>
+              <li>COE structure: Timeline (UTC timestamps), contributing factors (5-Whys), blast radius assessment, customer impact, immediate mitigations applied, and Action Items with owners + due dates.</li>
+              <li>COE review meeting: 45-min blameless retro with all teams involved. SRE Manager facilitates. No naming individuals in public COE without consent.</li>
+              <li>Action Items are SMART: Specific, Measurable, Assigned, Realistic, Time-bound. Tracked in the Post-Mortem Ledger — visible to VP Architecture weekly.</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pc-col-title pct-amber">Continuous Improvement</div>
+            <ul class="pc-list">
+              <li>Weekly SRE Sync (30 min): Top 3 reliability signals, error budget burn status, overdue COE actions flagged.</li>
+              <li>Monthly Reliability Review: VP Architecture reviews MTTA/MTTR trends, team-by-team SLO performance, and top toil sources.</li>
+              <li>Reliability KPIs published in the GCI Operations Hub — visible to all 60 engineers. Transparency creates accountability.</li>
+              <li>COE Action Item closure rate target: 90% within due date. Teams below 80% enter SRE Reliability Improvement Plan (RIP).</li>
+            </ul>
+          </div>
+        </div>
+        <div class="pc-outcomes">
+          <span class="oc oc2">🔵 IC rotation live across 6 teams</span>
+          <span class="oc og">🔵 COE process: 12 docs published YTD</span>
+          <span class="oc oa">🔵 Action closure rate: 82% (target 90%)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="phase-card">
+      <div class="pc-header">
+        <div class="pc-num" style="background:rgba(139,92,246,0.12); color:var(--purple);">
+          <div class="pn">P3</div><div class="pl">Phase 3</div>
+        </div>
+        <div class="pc-meta">
+          <h3>Chaos Engineering &amp; Proactive Resilience — "Break It Before It Breaks You"</h3>
+          <div class="ps">Q3 2026 → Continuous · Advanced Resilience · Game Days</div>
+        </div>
+        <span class="pc-badge" style="background:rgba(139,92,246,0.12);color:var(--purple);border:1px solid rgba(139,92,246,0.3);">Planned Q3 2026</span>
+      </div>
+      <div class="pc-body">
+        <div class="pc-grid">
+          <div>
+            <div class="pc-col-title pct-green">Game Day Program</div>
+            <ul class="pc-list">
+              <li>Quarterly Game Days: full-team simulated failure scenarios in production-equivalent staging environment. Mandatory for T1, T2, T4 (direct compliance impact).</li>
+              <li>Scenarios: S3 bucket ACL misconfiguration; Kafka broker failure; OpenSearch cluster split-brain; Glacier restore under e-discovery deadline; full region failover drill.</li>
+              <li>Game Day report required within 48h: what broke, what held, what runbooks need updating, error budget impact of deliberate failures.</li>
+              <li>Results feed into next-quarter SLO review. Consistently-failing scenarios get reliability sprint allocation.</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pc-col-title pct-cyan">AWS Fault Injection Service</div>
+            <ul class="pc-list">
+              <li>AWS FIS experiments codified in Terraform and scheduled monthly. Automatically target a random 15% of EKS nodes for CPU overload.</li>
+              <li>FIS experiments run during business hours only — never on-call hours. Engineers must observe blast radius live, not discover from alerts.</li>
+              <li>Chaos hypotheses documented before each experiment: "We believe the ingestion pipeline will continue processing at &gt;90% during a single Kafka broker failure."</li>
+              <li>Hypothesis validation tracked in the Post-Mortem Ledger alongside reactive COEs — proactive and reactive share the same accountability surface.</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pc-col-title pct-amber">Reliability Automation Targets</div>
+            <ul class="pc-list">
+              <li>SLO burn auto-remediation: build Lambda runbooks that automatically roll back the last deployment when 2% hourly error budget burn is detected.</li>
+              <li>Self-healing Kafka consumer lag: ECS task count auto-scales when consumer lag exceeds 50,000 messages — no human paging for predictable load events.</li>
+              <li>Automated compliance checks: daily Lambda validates WORM compliance across 100% of new S3 objects — pages T4 if any object escapes Object Lock.</li>
+              <li>Toil target: &lt;10% of team sprint capacity on toil by end of Phase 3 (down from 20% cap in Phase 0).</li>
+            </ul>
+          </div>
+        </div>
+        <div class="pc-outcomes">
+          <span class="oc op">Target: 4 Game Days/year per high-risk team</span>
+          <span class="oc og">Target: &lt;10% toil per team</span>
+          <span class="oc oc2">Target: 80% of runbooks automated</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLI/SLO Table per Team -->
+  <p class="section-title">SLI/SLO/SLA Reference — 6 Domain Teams</p>
+  <div class="slo-section">
+    <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:1rem;line-height:1.55;">
+      SLIs measure what matters. SLOs set the internal objective. SLAs are the contractual commitment to customers.
+      <strong style="color:var(--text);">SLO must always be tighter than SLA.</strong> Error Budget = 1 − SLO target.
+    </p>
+    <table class="slo-table">
+      <thead>
+        <tr>
+          <th>Team</th><th>Key SLI</th><th>Measurement</th><th>SLO Target</th><th>SLA Commitment</th><th>Error Budget/mo</th><th>Current Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="team-dot" style="background:#ef4444;"></span><strong>T1 Ingestion</strong></td>
+          <td>Message Durability Rate</td>
+          <td>Successful Kafka → S3 writes / total messages</td>
+          <td><span class="slt slt-g">99.999%</span></td>
+          <td>99.99%</td>
+          <td>26 sec/mo</td>
+          <td><span class="slt slt-g">✓ 18% burned</span></td>
+        </tr>
+        <tr>
+          <td><span class="team-dot" style="background:#ef4444;"></span><strong>T1 Ingestion</strong></td>
+          <td>Ingest Latency P99</td>
+          <td>Time from connector receipt to S3 write ACK</td>
+          <td><span class="slt slt-g">&lt;500ms P99</span></td>
+          <td>&lt;1s P99</td>
+          <td>N/A (latency)</td>
+          <td><span class="slt slt-g">✓ 88ms avg</span></td>
+        </tr>
+        <tr>
+          <td><span class="team-dot" style="background:#6366f1;"></span><strong>T2 Search</strong></td>
+          <td>Search Success Rate</td>
+          <td>Non-5xx responses / total search API calls</td>
+          <td><span class="slt slt-a">99.9%</span></td>
+          <td>99.5%</td>
+          <td>43.8 min/mo</td>
+          <td><span class="slt slt-a">⚠ 54% burned</span></td>
+        </tr>
+        <tr>
+          <td><span class="team-dot" style="background:#6366f1;"></span><strong>T2 Search</strong></td>
+          <td>Hot-Tier Search P99 Latency</td>
+          <td>GraphQL search.v2 P99 over 5-min window</td>
+          <td><span class="slt slt-g">&lt;1 second</span></td>
+          <td>&lt;3 seconds</td>
+          <td>N/A (latency)</td>
+          <td><span class="slt slt-g">✓ 420ms P99</span></td>
+        </tr>
+        <tr>
+          <td><span class="team-dot" style="background:#10b981;"></span><strong>T3 FinOps</strong></td>
+          <td>Lifecycle Policy Compliance</td>
+          <td>% objects with correct tier and tags</td>
+          <td><span class="slt slt-g">100%</span></td>
+          <td>99.9%</td>
+          <td>43.8 min/mo</td>
+          <td><span class="slt slt-g">✓ 12% burned</span></td>
+        </tr>
+        <tr>
+          <td><span class="team-dot" style="background:#f59e0b;"></span><strong>T4 Compliance</strong></td>
+          <td>WORM Immutability Coverage</td>
+          <td>% new objects with S3 Object Lock COMPLIANCE</td>
+          <td><span class="slt slt-g">100%</span></td>
+          <td>100%</td>
+          <td>0 sec (hard)</td>
+          <td><span class="slt slt-g">✓ 100%</span></td>
+        </tr>
+        <tr>
+          <td><span class="team-dot" style="background:#f59e0b;"></span><strong>T4 Compliance</strong></td>
+          <td>Legal Hold Apply Time</td>
+          <td>Time from legal hold API call to full propagation</td>
+          <td><span class="slt slt-g">&lt;4 hours</span></td>
+          <td>&lt;8 hours</td>
+          <td>N/A (latency)</td>
+          <td><span class="slt slt-g">✓ 41% burned</span></td>
+        </tr>
+        <tr>
+          <td><span class="team-dot" style="background:#3b82f6;"></span><strong>T5 Control Plane</strong></td>
+          <td>API Availability</td>
+          <td>Successful API responses / total (excl. 429s)</td>
+          <td><span class="slt slt-a">99.95%</span></td>
+          <td>99.9%</td>
+          <td>21.9 min/mo</td>
+          <td><span class="slt slt-r">🚨 79% burned</span></td>
+        </tr>
+        <tr>
+          <td><span class="team-dot" style="background:#3b82f6;"></span><strong>T5 Control Plane</strong></td>
+          <td>AuthN Latency P99</td>
+          <td>OAuth token validation end-to-end P99</td>
+          <td><span class="slt slt-g">&lt;50ms P99</span></td>
+          <td>&lt;200ms P99</td>
+          <td>N/A (latency)</td>
+          <td><span class="slt slt-g">✓ 38ms avg</span></td>
+        </tr>
+        <tr>
+          <td><span class="team-dot" style="background:#8b5cf6;"></span><strong>T6 Platform</strong></td>
+          <td>CI/CD Pipeline Availability</td>
+          <td>Successful pipeline runs / total triggered</td>
+          <td><span class="slt slt-g">99.9%</span></td>
+          <td>99.5%</td>
+          <td>43.8 min/mo</td>
+          <td><span class="slt slt-g">✓ 22% burned</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Incident Tiers -->
+  <p class="section-title">Incident Response Protocol — Severity Tiers</p>
+  <div class="tier-grid">
+    <div class="tier-card tier1">
+      <span class="tc-sev" style="color:var(--red);">SEV-1</span>
+      <div class="tc-name" style="color:var(--red);">Total Outage / Compliance Break</div>
+      <div class="tc-body">
+        Complete service unavailability OR WORM integrity violated OR legal hold failed across ANY tenant. Regulatory SLA at risk.
+        <br/><br/>
+        <strong style="color:var(--text);">Examples:</strong> Kafka broker complete loss; OpenSearch unavailable; S3 Object Lock misconfigured on new objects; legal hold fail-to-apply.
+      </div>
+      <div class="tc-targets">
+        <span class="tc-t" style="background:rgba(239,68,68,0.2);color:#ef4444;">MTTA: &lt;2 min</span>
+        <span class="tc-t" style="background:rgba(239,68,68,0.2);color:#ef4444;">MTTR: &lt;15 min</span>
+        <span class="tc-t" style="background:rgba(239,68,68,0.2);color:#ef4444;">COE: Mandatory</span>
+        <span class="tc-t" style="background:rgba(239,68,68,0.2);color:#ef4444;">Comms: &lt;5 min</span>
+      </div>
+    </div>
+    <div class="tier-card tier2">
+      <span class="tc-sev" style="color:#f97316;">SEV-2</span>
+      <div class="tc-name" style="color:#f97316;">Significant Degradation</div>
+      <div class="tc-body">
+        Partial service degradation affecting &gt;10% of tenants. SLO burn rate &gt;2%/hr. Search latency exceeds SLO for active e-discovery cases.
+        <br/><br/>
+        <strong style="color:var(--text);">Examples:</strong> OpenSearch index lag &gt;30min; API P99 &gt;3× SLO; Glacier restore queue saturation during active litigation.
+      </div>
+      <div class="tc-targets">
+        <span class="tc-t" style="background:rgba(249,115,22,0.15);color:#f97316;">MTTA: &lt;5 min</span>
+        <span class="tc-t" style="background:rgba(249,115,22,0.15);color:#f97316;">MTTR: &lt;30 min</span>
+        <span class="tc-t" style="background:rgba(249,115,22,0.15);color:#f97316;">COE: Required</span>
+        <span class="tc-t" style="background:rgba(249,115,22,0.15);color:#f97316;">Comms: &lt;15 min</span>
+      </div>
+    </div>
+    <div class="tier-card tier3">
+      <span class="tc-sev" style="color:var(--amber);">SEV-3</span>
+      <div class="tc-name" style="color:var(--amber);">Minor Degradation</div>
+      <div class="tc-body">
+        Non-critical component degraded. &lt;10% of tenants impacted. No SLA breach imminent. Workarounds exist.
+        <br/><br/>
+        <strong style="color:var(--text);">Examples:</strong> Consumer lag elevated &gt;5,000 msgs; cost anomaly alert; single connector failure; DLQ depth growing.
+      </div>
+      <div class="tc-targets">
+        <span class="tc-t" style="background:rgba(245,158,11,0.12);color:#f59e0b;">MTTA: &lt;15 min</span>
+        <span class="tc-t" style="background:rgba(245,158,11,0.12);color:#f59e0b;">MTTR: &lt;2 hrs</span>
+        <span class="tc-t" style="background:rgba(245,158,11,0.12);color:#f59e0b;">COE: Optional</span>
+      </div>
+    </div>
+    <div class="tier-card tier4">
+      <span class="tc-sev" style="color:var(--green);">SEV-4</span>
+      <div class="tc-name" style="color:var(--green);">Operational Notice</div>
+      <div class="tc-body">
+        Informational alert. No user impact. Proactive observation requiring investigation during business hours.
+        <br/><br/>
+        <strong style="color:var(--text);">Examples:</strong> Untagged S3 objects; certificate expiry &gt;30 days out; cost optimization opportunity identified.
+      </div>
+      <div class="tc-targets">
+        <span class="tc-t" style="background:rgba(16,185,129,0.1);color:#10b981;">MTTA: Next business day</span>
+        <span class="tc-t" style="background:rgba(16,185,129,0.1);color:#10b981;">No COE</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Incident Roles -->
+  <p class="section-title">Incident Response Roles</p>
+  <div class="roles-grid">
+    <div class="role-card">
+      <span class="rc-icon">🎯</span>
+      <div class="rc-title">Incident Commander (IC)</div>
+      <div class="rc-sub">Rotates through all domain team Staff/Senior Engineers — not an SRE-only role</div>
+      <ul class="rc-list">
+        <li>Declares severity level within 2 minutes of page receipt</li>
+        <li>Owns the incident timeline — defines what is in scope and explicitly out of scope</li>
+        <li>Has unilateral authority to trigger a rollback or initiate DR — no approval chain during SEV-1</li>
+        <li>Delegates investigation to domain engineers; does not investigate themselves during active incident</li>
+        <li>Calls the "clear" when incident is resolved — owns the 5-business-day COE deadline</li>
+        <li>Updates Slack war room every 15 minutes during SEV-1, every 30 minutes during SEV-2</li>
+      </ul>
+    </div>
+    <div class="role-card">
+      <span class="rc-icon">🔧</span>
+      <div class="rc-title">On-Call Engineer</div>
+      <div class="rc-sub">Domain team member. First responder for their bounded context</div>
+      <ul class="rc-list">
+        <li>Acknowledges PagerDuty page within MTTA SLO for their team's severity tier</li>
+        <li>Posts initial assessment to Slack war room within 5 minutes of ack: "What I see, what I've ruled out, what I'm doing next"</li>
+        <li>Executes runbook steps — escalates to IC if runbook doesn't resolve within 10 minutes</li>
+        <li>Does NOT attempt heroic solo fixes without IC awareness during SEV-1/SEV-2</li>
+        <li>Owns the technical timeline entries in the COE document</li>
+        <li>Completes on-call handoff checklist at end of shift: open issues, monitoring anomalies, pending actions</li>
+      </ul>
+    </div>
+    <div class="role-card">
+      <span class="rc-icon">📣</span>
+      <div class="rc-title">Communications Lead (Comms)</div>
+      <div class="rc-sub">Dedicated role during SEV-1/SEV-2 — separate from IC and On-Call</div>
+      <ul class="rc-list">
+        <li>Posts customer-facing status page update within 5 minutes of SEV-1 declaration (even if "investigating")</li>
+        <li>Drafts and sends internal executive briefing at 15 minutes for any SEV-1 — VP Engineering and Legal must be looped for compliance incidents</li>
+        <li>Manages #inc-* Slack channel visibility — pins status updates, links to runbooks, removes noise</li>
+        <li>Coordinates cross-team stakeholder communication — T4 Compliance must be looped on any storage-related SEV-1</li>
+        <li>Publishes "All Clear" notification with resolution summary to internal status page</li>
+        <li>Owns the "customer impact" section of the COE document</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- COE & Game Day -->
+  <p class="section-title">Continuous Improvement — COE &amp; Game Day Framework</p>
+  <div class="ci-grid">
+    <div class="ci-card">
+      <div class="ci-header">
+        <span class="ci-icon">📋</span>
+        <div>
+          <div class="ci-title">Blameless Post-Mortem (COE Document)</div>
+          <div class="ci-sub">Correction of Error · Required for SEV-1 and SEV-2 · Due within 5 business days</div>
+        </div>
+      </div>
+      <ul class="ci-list">
+        <li><strong>Section 1 — Impact Summary:</strong> Customer impact (# tenants, data affected), duration (UTC start to clear), regulatory implications if any.</li>
+        <li><strong>Section 2 — Timeline:</strong> Minute-by-minute UTC event log from first signal to resolution. No passive voice. No pronouns. "The cache miss caused X" not "Someone misconfigured Y."</li>
+        <li><strong>Section 3 — Root Cause Analysis:</strong> 5-Whys technique applied. Primary contributing factor + compounding factors. Systemic issues vs. one-offs distinguished.</li>
+        <li><strong>Section 4 — What Went Well:</strong> Blameless means celebrating what worked. Runbooks that fired correctly. Alerts that triggered. Engineers who escalated correctly.</li>
+        <li><strong>Section 5 — Action Items:</strong> Minimum 3 action items per SEV-1. Each has: owner (named individual), due date, and verification method. JIRA ticket linked.</li>
+        <li><strong>Section 6 — Error Budget Impact:</strong> How many minutes/hours of SLO were consumed. Impact on current month's error budget per team.</li>
+        <li>COE Review Meeting: 45 minutes, facilitated by SRE Manager, recorded but not shared outside team. No blame language permitted — facilitator corrects immediately.</li>
+        <li>COE published in Backstage. Searchable by teams. "We've seen this before" is a failure of our system, not people.</li>
+      </ul>
+      <div class="ci-tag-row">
+        <span class="ci-tag">5-Whys Method</span><span class="ci-tag">JIRA Integration</span>
+        <span class="ci-tag">Backstage Docs</span><span class="ci-tag">Blameless Facilitation</span>
+        <span class="ci-tag">90% Closure Rate Target</span>
+      </div>
+    </div>
+    <div class="ci-card">
+      <div class="ci-header">
+        <span class="ci-icon">💥</span>
+        <div>
+          <div class="ci-title">Game Day &amp; Chaos Engineering Program</div>
+          <div class="ci-sub">Quarterly Game Days · AWS FIS Monthly Experiments · Phase 3 (Q3 2026)</div>
+        </div>
+      </div>
+      <ul class="ci-list">
+        <li><strong>Purpose:</strong> Failure is inevitable. Practice makes it boring. Every Game Day converts a surprise into a rehearsed drill. Engineers who run the drill own the runbook.</li>
+        <li><strong>Game Day Format (Half-Day):</strong> 1h scenario briefing → 2h live failure drill in staging → 30min immediate debrief → 48h written report. Teams rotate ownership each quarter.</li>
+        <li><strong>Mandatory Scenarios — T1 Ingestion:</strong> Single Kafka broker failure; simulate 3× normal ingest load (Black Friday test); SMTP connector cert expiry.</li>
+        <li><strong>Mandatory Scenarios — T2 Search:</strong> OpenSearch node failure under active e-discovery query load; dual-write pipeline failure mid-migration; index rebuild trigger during peak search.</li>
+        <li><strong>Mandatory Scenarios — T4 Compliance:</strong> Legal hold apply during S3 outage; Glacier restore SLA test for 10-year-old data; WORM Object Lock bypass attempt (verify it fails).</li>
+        <li><strong>AWS FIS Monthly Experiments:</strong> CPU stress on 15% of EKS nodes; inject Kafka broker latency (200ms artificial delay); throttle S3 PUT rate by 50%; inject Lambda timeout.</li>
+        <li><strong>Hypothesis-Driven Chaos:</strong> All experiments start with a written hypothesis. "Under X failure, we expect Y behavior with Z outcome." Invalidated hypotheses are immediate action items.</li>
+        <li><strong>Budget for Chaos:</strong> Game Days intentionally consume error budget. This is planned spend — teams notify SRE Manager 5 business days before executing. Budget protected by policy.</li>
+      </ul>
+      <div class="ci-tag-row">
+        <span class="ci-tag">AWS Fault Injection Service</span><span class="ci-tag">Quarterly Cadence</span>
+        <span class="ci-tag">Hypothesis Docs</span><span class="ci-tag">Production-Equivalent Staging</span>
+        <span class="ci-tag">Error Budget Pre-Approval</span>
+      </div>
+    </div>
+  </div>
+
+</main>
+<footer>
+  <strong>GCI Operations Hub — Output 1: Reliability Framework</strong> · Site Reliability Engineering · Confidential · Internal Use Only
+</footer>
+</body>
+</html>

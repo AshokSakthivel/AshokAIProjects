@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wave Modernization Model — Technical Strategy Hub</title>
+  <style>
+    :root {
+      --bg: #0a0e1a; --surface: #111827; --surface2: #1a2236; --border: #1e2d45;
+      --accent: #3b82f6; --accent2: #8b5cf6; --accent3: #10b981; --accent4: #f59e0b;
+      --accent5: #ef4444; --text: #e2e8f0; --text-muted: #64748b; --text-dim: #94a3b8;
+      --w0: #6366f1; --w1: #10b981; --w2: #3b82f6; --w3: #f59e0b; --w4: #8b5cf6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+    header {
+      background: linear-gradient(135deg, #0d1b2e, #0f2241); border-bottom: 1px solid var(--border);
+      padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg,var(--accent),var(--accent2)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .logo-text h1 { font-size: 1rem; font-weight: 700; }
+    .logo-text p { font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    nav { display: flex; gap: 4px; }
+    nav a { color: var(--text-dim); text-decoration: none; padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 500; transition: all 0.2s; border: 1px solid transparent; }
+    nav a:hover { color: var(--text); background: var(--surface2); border-color: var(--border); }
+    nav a.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+
+    .hero { background: linear-gradient(135deg, #0d1b2e, #0f1f3a, #0d1b2e); border-bottom: 1px solid var(--border); padding: 2.5rem 2rem; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 40% at 30% 60%, rgba(59,130,246,0.08) 0%, transparent 70%); }
+    .hero-content { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
+    .eyebrow { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 0.6rem; }
+    .hero h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .hero h2 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { color: var(--text-dim); font-size: 0.88rem; max-width: 700px; line-height: 1.6; }
+
+    .main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+    .section-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px; }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+
+    /* Timeline bar */
+    .timeline-bar {
+      display: flex; gap: 0; margin-bottom: 2.5rem; border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .tb-seg {
+      flex: 1; padding: 0.75rem 1rem; text-align: center; position: relative;
+      transition: filter 0.2s;
+    }
+    .tb-seg .tbs-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+    .tb-seg .tbs-dates { font-size: 0.65rem; margin-top: 3px; opacity: 0.7; }
+    .tb-seg.done { background: rgba(16,185,129,0.12); border-right: 1px solid rgba(16,185,129,0.25); }
+    .tb-seg.active { background: rgba(59,130,246,0.18); border-right: 1px solid rgba(59,130,246,0.35); }
+    .tb-seg.planned { background: rgba(30,45,69,0.5); border-right: 1px solid var(--border); }
+    .tb-arrow { width: 0; height: 0; position: absolute; right: -10px; top: 50%; transform: translateY(-50%); z-index: 2; border-left: 10px solid; border-top: 22px solid transparent; border-bottom: 22px solid transparent; }
+
+    /* Wave Cards */
+    .wave-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+    .wave-card:hover { box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+    .wave-card.active-wave { border-color: rgba(59,130,246,0.35); box-shadow: 0 0 0 1px rgba(59,130,246,0.15), 0 8px 32px rgba(59,130,246,0.1); }
+
+    .wc-header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: flex-start; gap: 1.5rem;
+    }
+    .wc-num {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .wc-num .wn { font-size: 1.1rem; font-weight: 900; line-height: 1; }
+    .wc-num .wl { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.8; }
+    .wc-title-block { flex: 1; }
+    .wc-title-block h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .wc-title-block .wc-sub { font-size: 0.8rem; color: var(--text-muted); }
+    .wc-status-block { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+    .wc-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
+    .wc-dates { font-size: 0.7rem; color: var(--text-muted); }
+
+    .wc-body { padding: 1.5rem 2rem; }
+    .wc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; }
+    .wc-pillar { }
+    .wcp-title {
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;
+      margin-bottom: 0.75rem; padding: 0.35rem 0.75rem; border-radius: 6px; display: inline-block;
+    }
+    .tpbl { background: rgba(59,130,246,0.12); color: var(--accent); }
+    .tpbf { background: rgba(16,185,129,0.12); color: var(--accent3); }
+    .tpbt { background: rgba(245,158,11,0.12); color: var(--accent4); }
+    .wcp-list { list-style: none; padding: 0; }
+    .wcp-list li {
+      font-size: 0.78rem; color: var(--text-dim); padding: 0.45rem 0;
+      border-bottom: 1px solid var(--border); line-height: 1.5;
+      display: flex; gap: 8px;
+    }
+    .wcp-list li:last-child { border-bottom: none; }
+    .wcp-list li::before { content: '▸'; flex-shrink: 0; margin-top: 1px; }
+
+    /* Outcomes row */
+    .wc-outcomes {
+      margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);
+      display: flex; gap: 1rem; flex-wrap: wrap;
+    }
+    .outcome-chip {
+      padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .oc-green { background: rgba(16,185,129,0.12); color: var(--accent3); border: 1px solid rgba(16,185,129,0.25); }
+    .oc-blue { background: rgba(59,130,246,0.12); color: var(--accent); border: 1px solid rgba(59,130,246,0.25); }
+    .oc-purple { background: rgba(139,92,246,0.12); color: var(--accent2); border: 1px solid rgba(139,92,246,0.25); }
+    .oc-amber { background: rgba(245,158,11,0.12); color: var(--accent4); border: 1px solid rgba(245,158,11,0.25); }
+
+    /* Tech Debt Matrix */
+    .debt-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin-bottom: 2rem; }
+    .debt-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; }
+    .debt-header { display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; }
+    .debt-icon { font-size: 1.1rem; }
+    .debt-title { font-size: 0.82rem; font-weight: 700; }
+    .debt-body { font-size: 0.75rem; color: var(--text-dim); line-height: 1.55; }
+    .debt-priority { margin-top: 0.75rem; padding: 4px 10px; border-radius: 6px; font-size: 0.68rem; font-weight: 700; display: inline-block; }
+    .dp-critical { background: rgba(239,68,68,0.15); color: var(--accent5); }
+    .dp-high { background: rgba(245,158,11,0.15); color: var(--accent4); }
+    .dp-medium { background: rgba(59,130,246,0.15); color: var(--accent); }
+    .dp-low { background: rgba(100,116,139,0.15); color: var(--text-muted); }
+    .debt-impact { font-size: 0.68rem; color: var(--text-muted); margin-top: 6px; }
+
+    /* Risk Register */
+    .risk-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+    .risk-table th { background: var(--surface2); color: var(--text-dim); font-weight: 600; text-transform: uppercase; font-size: 0.67rem; letter-spacing: 0.06em; padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: left; }
+    .risk-table td { padding: 0.65rem 0.75rem; border: 1px solid var(--border); color: var(--text-dim); vertical-align: top; line-height: 1.45; }
+    .risk-table tr:hover td { background: var(--surface2); }
+    .risk-badge { padding: 2px 8px; border-radius: 4px; font-size: 0.67rem; font-weight: 700; white-space: nowrap; }
+    .rb-critical { background: rgba(239,68,68,0.15); color: #ef4444; }
+    .rb-high { background: rgba(245,158,11,0.15); color: #f59e0b; }
+    .rb-medium { background: rgba(59,130,246,0.15); color: #3b82f6; }
+    .rb-low { background: rgba(16,185,129,0.15); color: #10b981; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 2rem; }
+
+    footer { border-top: 1px solid var(--border); text-align: center; padding: 1.5rem; color: var(--text-muted); font-size: 0.75rem; margin-top: 2rem; }
+    footer strong { color: var(--text-dim); }
+
+    @media (max-width: 1024px) { .wc-grid { grid-template-columns: 1fr; } .debt-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 640px) { nav { display: none; } .wc-header { flex-direction: column; } .debt-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🗄️</div>
+    <div class="logo-text">
+      <h1>Technical Strategy Hub</h1>
+      <p>Message Archiver Platform · VP Architecture</p>
+    </div>
+  </div>
+  <nav>
+    <a href="index.html">Overview</a>
+    <a href="team-topology.html">Team Topology</a>
+    <a href="wave-model.html" class="active">Wave Model</a>
+    <a href="strategy-dashboard.html">Strategy Dashboard</a>
+    <a href="infographic.html">All-Hands Infographic</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <div class="hero-content">
+    <p class="eyebrow">Output 2 · Required Deliverable · Modernization Strategy</p>
+    <h2>The <span>Wave Modernization</span> Strategic Plan</h2>
+    <p>
+      A phased Strangler Fig decomposition model spanning 5 waves over 30 months.
+      Each wave extracts a bounded context from the monolith, applies targeted FinOps levers,
+      and retires technical debt — without ever dark-releasing compliance functionality or pausing ingestion.
+    </p>
+  </div>
+</div>
+
+<main class="main">
+
+  <!-- Timeline Bar -->
+  <p class="section-title">Modernization Timeline</p>
+  <div class="timeline-bar">
+    <div class="tb-seg done" style="color:var(--w0);">
+      <div class="tbs-label">Wave 0 · Foundation</div>
+      <div class="tbs-dates">Q1–Q2 2025 · ✓ Complete</div>
+    </div>
+    <div class="tb-seg done" style="color:var(--w1);">
+      <div class="tbs-label">Wave 1 · Ingestion</div>
+      <div class="tbs-dates">Q3–Q4 2025 · ✓ Complete</div>
+    </div>
+    <div class="tb-seg active" style="color:var(--w2);">
+      <div class="tbs-label">Wave 2 · Search Plane</div>
+      <div class="tbs-dates">Q1–Q2 2026 · ● Active</div>
+    </div>
+    <div class="tb-seg planned" style="color:var(--w3);">
+      <div class="tbs-label">Wave 3 · Data Plane</div>
+      <div class="tbs-dates">Q3–Q4 2026 · Planned</div>
+    </div>
+    <div class="tb-seg planned" style="color:var(--w4);">
+      <div class="tbs-label">Wave 4 · Deprecation</div>
+      <div class="tbs-dates">Q1–Q2 2027 · Planned</div>
+    </div>
+  </div>
+
+  <!-- ══════════ WAVE 0 ══════════ -->
+  <div class="wave-card">
+    <div class="wc-header">
+      <div class="wc-num" style="background:rgba(99,102,241,0.15); color:var(--w0);">
+        <div class="wn">W0</div>
+        <div class="wl">Wave 0</div>
+      </div>
+      <div class="wc-title-block">
+        <h3>Foundation Layer — "Build Before You Deconstruct"</h3>
+        <div class="wc-sub">Establish observability, IaC baseline, AWS Landing Zone, and re-org team topology before touching the monolith. You cannot safely decompose a system you cannot observe.</div>
+      </div>
+      <div class="wc-status-block">
+        <span class="wc-badge" style="background:rgba(16,185,129,0.15);color:var(--accent3);border:1px solid rgba(16,185,129,0.3);">✓ COMPLETE</span>
+        <span class="wc-dates">Q1–Q2 2025 · 6 months</span>
+      </div>
+    </div>
+    <div class="wc-body">
+      <div class="wc-grid">
+        <div class="wc-pillar">
+          <div class="wcp-title tpbl">Strategic Focus</div>
+          <ul class="wcp-list">
+            <li>Deploy OpenTelemetry collectors across all monolith services — establish distributed traces before first cut.</li>
+            <li>Adopt Terraform Enterprise for IaC across all 6 AWS accounts. No manual console changes.</li>
+            <li>Implement AWS Landing Zone with service control policies (SCPs) and guardrails per team account.</li>
+            <li>Restructure org from functional to domain-aligned teams (Inverse Conway Maneuver).</li>
+            <li>Launch Backstage IDP with service catalog for all existing monolith modules.</li>
+          </ul>
+        </div>
+        <div class="wc-pillar">
+          <div class="wcp-title tpbf">60PB Data Plane Levers</div>
+          <ul class="wcp-list">
+            <li>S3 Object Storage Lens enabled — baseline all 60PB for class, age distribution, and access patterns.</li>
+            <li>Activate S3 Intelligent-Tiering on data between 30–730 days (18 PB identified). Target $2.1M/year savings.</li>
+            <li>Object tagging standard enforced: tenant-id, data-class, retention-epoch applied to all new objects.</li>
+            <li>Establish daily COGS dashboard. Baseline: $24,800/day as the line we improve from.</li>
+          </ul>
+        </div>
+        <div class="wc-pillar">
+          <div class="wcp-title tpbt">Tech Debt Strategy</div>
+          <ul class="wcp-list">
+            <li>Debt Inventory: Catalog all monolith coupling points via ArchUnit analysis and static dependency graphs.</li>
+            <li>Critical path: identify that Elasticsearch indexing, ingestion workers, and legal hold logic share a single process — the primary decomposition target.</li>
+            <li>Establish ADR (Architecture Decision Record) practice — all future decomposition decisions must have an ADR.</li>
+            <li>Freeze all new feature work in the monolith ingestion layer for 90 days.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="wc-outcomes">
+        <span class="outcome-chip oc-green">✓ OTel traces across 100% of monolith</span>
+        <span class="outcome-chip oc-blue">✓ 6 domain teams formed</span>
+        <span class="outcome-chip oc-purple">✓ 18PB on Intelligent-Tiering</span>
+        <span class="outcome-chip oc-amber">✓ COGS baseline established: $24,800/day</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ WAVE 1 ══════════ -->
+  <div class="wave-card">
+    <div class="wc-header">
+      <div class="wc-num" style="background:rgba(16,185,129,0.15); color:var(--w1);">
+        <div class="wn">W1</div>
+        <div class="wl">Wave 1</div>
+      </div>
+      <div class="wc-title-block">
+        <h3>Ingestion Decoupling — "Sever the Intake Path"</h3>
+        <div class="wc-sub">Extract the message ingestion workers from the monolith. Introduce Kafka (MSK) as the durable message bus. The monolith continues to consume from Kafka — the Strangler Fig replaces the producers first.</div>
+      </div>
+      <div class="wc-status-block">
+        <span class="wc-badge" style="background:rgba(16,185,129,0.15);color:var(--accent3);border:1px solid rgba(16,185,129,0.3);">✓ COMPLETE</span>
+        <span class="wc-dates">Q3–Q4 2025 · 6 months</span>
+      </div>
+    </div>
+    <div class="wc-body">
+      <div class="wc-grid">
+        <div class="wc-pillar">
+          <div class="wcp-title tpbl">Strategic Focus (Strangler Fig)</div>
+          <ul class="wcp-list">
+            <li>Deploy new Ingestion Microservice (T1) alongside monolith — initially dark-released at 0% traffic.</li>
+            <li>Introduce Amazon MSK (Kafka) as the durable event bus. Monolith becomes a Kafka consumer, not producer.</li>
+            <li>Protocol adapters (SMTP/IMAP/Graph) migrated to standalone ECS Fargate connector services.</li>
+            <li>100/0 → 50/50 → 0/100 traffic shift using weighted routing in API Gateway. Zero downtime cutover via parallel-write period.</li>
+            <li>Monolith's ingestion code paths deprecated. Database writes to legacy ingestion tables halted.</li>
+          </ul>
+        </div>
+        <div class="wc-pillar">
+          <div class="wcp-title tpbf">60PB Data Plane Levers</div>
+          <ul class="wcp-list">
+            <li>New ingestion microservice writes directly to structured S3 prefix paths (/tenant/{id}/year/month/day/) enabling precise lifecycle policy targeting.</li>
+            <li>Separate S3 buckets per data classification (hot/warm/archive) — removes all objects from the combined monolith bucket.</li>
+            <li>S3 Replication to secondary region for compliance: replication costs offset by decommissioning monolith EBS volumes.</li>
+            <li>Deduplication engine reduces duplicate message storage by estimated 8–12% of hot-tier footprint.</li>
+          </ul>
+        </div>
+        <div class="wc-pillar">
+          <div class="wcp-title tpbt">Tech Debt Strategy</div>
+          <ul class="wcp-list">
+            <li>Eliminate 3 legacy vendor SDKs (custom SMTP library, bespoke IMAP parser) — replace with standardized Apache James SMTP server.</li>
+            <li>Remove 47,000 lines of ingestion code from monolith codebase (ArchUnit-verified zero remaining coupling).</li>
+            <li>Kill the legacy Oracle-backed message queue table (5M rows/day) — replaced by Kafka with 7-day retention.</li>
+            <li>Payoff: 6ms average indexing lag caused by shared DB mutex lock — eliminated.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="wc-outcomes">
+        <span class="outcome-chip oc-green">✓ Ingestion on Kafka — zero monolith coupling</span>
+        <span class="outcome-chip oc-blue">✓ 3PB hot zone restructured per tenant</span>
+        <span class="outcome-chip oc-purple">✓ Legacy Oracle queue decommissioned</span>
+        <span class="outcome-chip oc-amber">✓ COGS reduced $2,800/day (ingest tier)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ WAVE 2 ══════════ -->
+  <div class="wave-card active-wave">
+    <div class="wc-header">
+      <div class="wc-num" style="background:rgba(59,130,246,0.18); color:var(--w2);">
+        <div class="wn">W2</div>
+        <div class="wl">Wave 2</div>
+      </div>
+      <div class="wc-title-block">
+        <h3>Search Plane Extraction — "Decouple the Index Brain" 🔵 IN PROGRESS</h3>
+        <div class="wc-sub">Extract Elasticsearch/OpenSearch indexing from the monolith. Separate the control plane (API Gateway, tenant config) from the search execution layer. This is the highest-risk wave — search downtime means compliance failure.</div>
+      </div>
+      <div class="wc-status-block">
+        <span class="wc-badge" style="background:rgba(59,130,246,0.18);color:var(--accent);border:1px solid rgba(59,130,246,0.35);">● IN PROGRESS</span>
+        <span class="wc-dates">Q1–Q2 2026 · Target: June 2026</span>
+      </div>
+    </div>
+    <div class="wc-body">
+      <div class="wc-grid">
+        <div class="wc-pillar">
+          <div class="wcp-title tpbl">Strategic Focus (Strangler Fig)</div>
+          <ul class="wcp-list">
+            <li>Migrate from self-hosted Elasticsearch on EC2 to OpenSearch Serverless collections — eliminates cluster management toil and scales to 60PB metadata indexing automatically.</li>
+            <li>New Search Microservice (T2) exposed via GraphQL API. E-Discovery team (T4) migrated to consume new search.v2 API — monolith search paths deprecated last.</li>
+            <li>Dual-write period: new indexing pipeline and monolith Elasticsearch run in parallel for 60 days. Index consistency checker job runs continuously. Cutover only when delta &lt;0.001%.</li>
+            <li>Control Plane (T5) API Gateway deployed as the single entry point for all external calls — monolith's REST endpoints proxied through it, enabling future deprecation without client changes.</li>
+          </ul>
+        </div>
+        <div class="wc-pillar">
+          <div class="wcp-title tpbf">60PB Data Plane Levers</div>
+          <ul class="wcp-list">
+            <li>Separate control plane from data plane: API calls go to T5 API Gateway; bulk data reads go directly to S3 PresignedURL — eliminating expensive API-mediated data transfers.</li>
+            <li>OpenSearch Serverless OCUs (OpenSearch Compute Units) auto-scale with query volume — no over-provisioned clusters idle at 3 AM.</li>
+            <li>Index only metadata + extracted text, not raw message blobs. Raw storage stays in S3 tiered storage — search index 40x smaller than full object footprint.</li>
+            <li>Implement S3 Select for cold-tier result expansion — avoids full Glacier restores for e-discovery snippets.</li>
+            <li>Elasticsearch EC2 cluster decommission saves estimated $9,800/mo in compute.</li>
+          </ul>
+        </div>
+        <div class="wc-pillar">
+          <div class="wcp-title tpbt">Tech Debt Strategy</div>
+          <ul class="wcp-list">
+            <li>Priority: Eliminate the synchronous indexing code path in the monolith. Current design blocks ingestion workers waiting for Elasticsearch ACK — a critical latency debt costing 80–200ms per message.</li>
+            <li>Replace all raw Elasticsearch 6.x Java client calls (deprecated) with modern OpenSearch Java client — eliminates 23 CVEs in current dependency tree.</li>
+            <li>E-Discovery search had 4 separate query builders — consolidate into 1 unified query DSL layer owned by T2.</li>
+            <li>Monolith index-rebuild job (weekly, 18-hour run) deprecated — replaced by event-driven incremental reindex pipeline on Kafka.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="wc-outcomes">
+        <span class="outcome-chip oc-blue">🔵 Target: OpenSearch Serverless live July 2026</span>
+        <span class="outcome-chip oc-green">🔵 T5 API Gateway intercepting 100% of external calls</span>
+        <span class="outcome-chip oc-amber">🔵 Target: −$9,800/mo compute (EC2 cluster kill)</span>
+        <span class="outcome-chip oc-purple">🔵 Synchronous ingest-index coupling eliminated</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ WAVE 3 ══════════ -->
+  <div class="wave-card">
+    <div class="wc-header">
+      <div class="wc-num" style="background:rgba(245,158,11,0.12); color:var(--w3);">
+        <div class="wn">W3</div>
+        <div class="wl">Wave 3</div>
+      </div>
+      <div class="wc-title-block">
+        <h3>Data Plane &amp; FinOps Optimization — "The 60PB Restructure"</h3>
+        <div class="wc-sub">Full separation of the control and data planes. Aggressive Glacier lifecycle migration to optimize the 30PB cold/deep-archive footprint. Metadata cold-store migration to DynamoDB. Target: 34% total COGS reduction.</div>
+      </div>
+      <div class="wc-status-block">
+        <span class="wc-badge" style="background:rgba(245,158,11,0.12);color:var(--accent4);border:1px solid rgba(245,158,11,0.3);">PLANNED Q3 2026</span>
+        <span class="wc-dates">Q3–Q4 2026 · 6 months</span>
+      </div>
+    </div>
+    <div class="wc-body">
+      <div class="wc-grid">
+        <div class="wc-pillar">
+          <div class="wcp-title tpbl">Strategic Focus</div>
+          <ul class="wcp-list">
+            <li>Complete control/data plane separation: all S3 data accessed via signed URLs from the data plane service — control plane (T5) never proxies object bytes.</li>
+            <li>E-Discovery (T4) microservice fully decoupled from monolith — owns its own Postgres metadata store, independent deployment pipeline.</li>
+            <li>Multi-tenancy compliance enforcement moved from monolith to T5 Authorization Service — per-request policy evaluation with OPA (Open Policy Agent).</li>
+            <li>Monolith is now a "thin shell" — only auth session management and legacy UI rendering remain.</li>
+          </ul>
+        </div>
+        <div class="wc-pillar">
+          <div class="wcp-title tpbf">60PB Data Plane Levers</div>
+          <ul class="wcp-list">
+            <li><strong>Tier 4: Glacier Migration</strong> — transition 21PB of 730d-7yr data from S3-IA to Glacier Flexible Retrieval. Saves ~$0.013/GB/mo × 21,000,000 GB = $273,000/mo.</li>
+            <li><strong>Tier 5: Deep Archive</strong> — migrate 7yr+ data (9PB) to Glacier Deep Archive at $0.00099/GB/mo. From $0.023/GB/mo S3 standard cost = $2M+/yr savings on this tier alone.</li>
+            <li>DynamoDB cold-store for message metadata (from/to/subject, dates, custodians) — eliminates expensive S3 metadata GET at e-discovery query time.</li>
+            <li>AWS Savings Plans committed for S3 and EC2 — 6-month usage pattern established in W0-W2 enables accurate commitment. Est. 26% savings on compute.</li>
+            <li>S3 Batch Operations to retroactively tag and reclassify existing objects at petabyte scale.</li>
+          </ul>
+        </div>
+        <div class="wc-pillar">
+          <div class="wcp-title tpbt">Tech Debt Strategy</div>
+          <ul class="wcp-list">
+            <li>Decommission monolith's own retention policy engine — replaced by T3's dedicated Lifecycle Policy Service with per-tenant, per-regulation configurability.</li>
+            <li>Remove shared-database coupling between E-Discovery (T4) and Control Plane (T5) — last remaining cross-domain database join eliminated.</li>
+            <li>Replace legacy RDS instance (PostgreSQL 11 EOL) hosting monolith metadata with Aurora Serverless v2 — auto-scaling, 0 idle cost, IAM auth only.</li>
+            <li>Eliminate 12 scheduled batch jobs (nightly, weekly) — replaced by event-driven Lambda functions. Reduces EC2 fleet by 40%.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="wc-outcomes">
+        <span class="outcome-chip oc-green">Target: $16,400/day COGS (−34% from baseline)</span>
+        <span class="outcome-chip oc-blue">Target: 30PB migrated to Glacier tiers</span>
+        <span class="outcome-chip oc-amber">Target: Control/Data plane 100% separated</span>
+        <span class="outcome-chip oc-purple">Target: Monolith &lt;5 services remaining</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ WAVE 4 ══════════ -->
+  <div class="wave-card">
+    <div class="wc-header">
+      <div class="wc-num" style="background:rgba(139,92,246,0.15); color:var(--w4);">
+        <div class="wn">W4</div>
+        <div class="wl">Wave 4</div>
+      </div>
+      <div class="wc-title-block">
+        <h3>Legacy Deprecation &amp; Event Mesh — "Kill the Monolith"</h3>
+        <div class="wc-sub">Full retirement of the legacy monolith codebase. Deploy Amazon EventBridge as the enterprise event mesh. All 6 domain services communicate exclusively through event contracts. Strangler Fig pattern 100% complete.</div>
+      </div>
+      <div class="wc-status-block">
+        <span class="wc-badge" style="background:rgba(139,92,246,0.12);color:var(--accent2);border:1px solid rgba(139,92,246,0.3);">PLANNED Q1 2027</span>
+        <span class="wc-dates">Q1–Q2 2027 · 6 months</span>
+      </div>
+    </div>
+    <div class="wc-body">
+      <div class="wc-grid">
+        <div class="wc-pillar">
+          <div class="wcp-title tpbl">Strategic Focus</div>
+          <ul class="wcp-list">
+            <li>Final monolith services (legacy UI, session management) migrated to dedicated microservices. Monolith EC2 fleet decomm.</li>
+            <li>Amazon EventBridge replaces all remaining point-to-point service dependencies — full async event mesh topology.</li>
+            <li>Service mesh (Istio) mTLS enforcement across all inter-service communication. Zero trust networking complete.</li>
+            <li>Chaos engineering baseline established — chaos experiments validate resilience of all 6 domain services independently.</li>
+            <li>Runbook retirement: all monolith-era operational runbooks archived. New domain-specific playbooks published in Backstage.</li>
+          </ul>
+        </div>
+        <div class="wc-pillar">
+          <div class="wcp-title tpbf">60PB Data Plane — Final State</div>
+          <ul class="wcp-list">
+            <li>S3 Object Lock COMPLIANCE mode verified across 100% of the 60PB footprint — immutability enforcement audited.</li>
+            <li>Cross-region replication (us-east-1 → us-west-2) automated via Storage Lifecycle team's IaC — no manual steps for DR.</li>
+            <li>Final storage state: 5% Hot / 15% Warm / 30% Intelligent-Tiering / 35% Glacier FR / 15% Glacier Deep Archive.</li>
+            <li>Data gravity plane is a first-class system — all storage metrics published as CloudWatch custom metrics and surfaced in the Strategy Hub dashboard.</li>
+          </ul>
+        </div>
+        <div class="wc-pillar">
+          <div class="wcp-title tpbt">Tech Debt — Final Payoff</div>
+          <ul class="wcp-list">
+            <li>Monolith codebase archived (read-only Git branch) — no production traffic, no on-call rotation, no deployments.</li>
+            <li>Total CVEs addressed: 180+ critical/high vulnerabilities eliminated from removed components.</li>
+            <li>Engineering cognitive load: from 1.2M LOC monolith to 6 services averaging 40K–80K LOC each.</li>
+            <li>DORA metrics target: Elite performer across all 4 metrics for all 6 teams.</li>
+            <li>On-call load: 60% reduction in incident volume. Each team owns its domain's incidents end-to-end.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="wc-outcomes">
+        <span class="outcome-chip oc-green">Target: Monolith 100% decommissioned</span>
+        <span class="outcome-chip oc-blue">Target: EventBridge event mesh live</span>
+        <span class="outcome-chip oc-purple">Target: DORA Elite on all 6 teams</span>
+        <span class="outcome-chip oc-amber">Target: $14,200/day COGS (final steady-state)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tech Debt Prioritization Matrix -->
+  <p class="section-title">Technical Debt Prioritization Matrix</p>
+  <div class="debt-grid">
+    <div class="debt-card">
+      <div class="debt-header"><span class="debt-icon">🔴</span><span class="debt-title">Synchronous Ingest-Index Lock</span></div>
+      <div class="debt-body">Ingestion workers block on Elasticsearch ACK before marking messages as durably received. At 4.2TB/day throughput, this mutex creates cascading back-pressure during peak hours.</div>
+      <span class="debt-priority dp-critical">CRITICAL — Wave 2</span>
+      <div class="debt-impact">FinOps Impact: +$3,200/day in over-provisioned Kafka broker capacity. Search Latency: +80–200ms P99.</div>
+    </div>
+    <div class="debt-card">
+      <div class="debt-header"><span class="debt-icon">🟠</span><span class="debt-title">Shared E-Discovery Database</span></div>
+      <div class="debt-body">Legal hold queries and control-plane tenant queries share the same RDS instance. E-discovery bulk exports cause read contention degrading API response times for all tenants.</div>
+      <span class="debt-priority dp-high">HIGH — Wave 3</span>
+      <div class="debt-impact">FinOps Impact: Requires oversized RDS r6g.4xlarge ($1,800/mo). Cross-team deployment coupling 2× per quarter.</div>
+    </div>
+    <div class="debt-card">
+      <div class="debt-header"><span class="debt-icon">🟠</span><span class="debt-title">Weekly Full Index Rebuild Job</span></div>
+      <div class="debt-body">A 18-hour nightly batch job rebuilds Elasticsearch indices from scratch due to lack of event-sourced incremental updates. Consumes 40% of search cluster compute for 75% of the week.</div>
+      <span class="debt-priority dp-high">HIGH — Wave 2</span>
+      <div class="debt-impact">FinOps Impact: $8,400/mo idle compute. During rebuild, search P99 degrades 3–5×.</div>
+    </div>
+    <div class="debt-card">
+      <div class="debt-header"><span class="debt-icon">🟡</span><span class="debt-title">Untiered Cold Object Storage</span></div>
+      <div class="debt-body">21PB of data &gt;2 years old remains in S3 Standard-IA, not yet transitioned to Glacier, due to missing lifecycle policies on pre-tagging era objects.</div>
+      <span class="debt-priority dp-medium">MEDIUM — Wave 3</span>
+      <div class="debt-impact">FinOps Impact: $273,000/mo overspend vs. Glacier Flexible Retrieval pricing for this tier.</div>
+    </div>
+  </div>
+
+  <!-- Risk Register -->
+  <p class="section-title">Modernization Risk Register</p>
+  <div class="card" style="padding:0; overflow:hidden;">
+    <table class="risk-table">
+      <thead>
+        <tr>
+          <th>Risk</th><th>Wave</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th><th>Owner</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Search degradation during OpenSearch cutover</strong><br/>Dual-write inconsistency causes missed e-discovery results during legal hold review.</td>
+          <td>W2</td>
+          <td><span class="risk-badge rb-high">High</span></td>
+          <td><span class="risk-badge rb-critical">Critical</span></td>
+          <td>60-day parallel dual-write with automated consistency checker. Cutover requires &lt;0.001% delta. Legal team notified 30 days prior.</td>
+          <td>T2 + T4</td>
+        </tr>
+        <tr>
+          <td><strong>Glacier restore SLA breach during e-discovery</strong><br/>Legal hold triggered on 10-year-old data in Deep Archive tier — 12–48h retrieval time violates court deadline.</td>
+          <td>W3</td>
+          <td><span class="risk-badge rb-medium">Med</span></td>
+          <td><span class="risk-badge rb-critical">Critical</span></td>
+          <td>Expedited retrieval tier pre-funded for active litigation custodians. Legal hold triggers auto-restore to Glacier FR on apply. SLA advisory added to legal hold API response.</td>
+          <td>T3 + T4</td>
+        </tr>
+        <tr>
+          <td><strong>Team knowledge drain during re-org</strong><br/>Monolith SMEs resist re-alignment to domain teams, creating a knowledge gap during most critical decomposition waves.</td>
+          <td>W1–W3</td>
+          <td><span class="risk-badge rb-high">High</span></td>
+          <td><span class="risk-badge rb-high">High</span></td>
+          <td>6-month "embedding program" — monolith SMEs embedded as tech leads in new domain teams with guaranteed role security. ADRs capture institutional knowledge before migration.</td>
+          <td>VP Arch</td>
+        </tr>
+        <tr>
+          <td><strong>FinOps savings not materializing (Glacier restore costs)</strong><br/>Aggressive tiering moves data to Glacier but increased e-discovery activity drives high restore costs that negate savings.</td>
+          <td>W3</td>
+          <td><span class="risk-badge rb-medium">Med</span></td>
+          <td><span class="risk-badge rb-high">High</span></td>
+          <td>Daily COGS anomaly detection alerts. Tier-cost-per-query metric tracked. Per-tenant restore frequency dashboards. Graduated Glacier migration — validate restore patterns before committing deep archive.</td>
+          <td>T3</td>
+        </tr>
+        <tr>
+          <td><strong>Strangler Fig incomplete — partial monolith dependency</strong><br/>A hidden dependency causes a new microservice to silently fall back to monolith code path, creating a phantom monolith.</td>
+          <td>All</td>
+          <td><span class="risk-badge rb-medium">Med</span></td>
+          <td><span class="risk-badge rb-medium">Medium</span></td>
+          <td>ArchUnit tests enforce zero allowed imports from monolith packages in any new service. Contract tests between services required in CI. Dependency graph scanned weekly.</td>
+          <td>T6</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+<footer>
+  <strong>Technical Strategy Hub — Output 2: Wave Modernization Model</strong> · Message Archiver Platform · Confidential · Internal Use Only
+</footer>
+</body>
+</html>

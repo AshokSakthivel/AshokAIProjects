@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bi-Weekly Executive Portfolio Command Center — SD Ashok</title>
+  <style>
+    :root {
+      --bg: #06080d; --surface: #0c1018; --surface2: #111622; --surface3: #161d2b;
+      --border: #1c2840; --border2: #223050;
+      --gold: #d4a843; --gold2: #f0c060; --gold-dim: #8a6c28;
+      --green: #10b981; --red: #ef4444; --amber: #f59e0b; --blue: #3b82f6;
+      --purple: #8b5cf6; --cyan: #06b6d4; --orange: #f97316; --rose: #f43f5e;
+      --text: #dde3ef; --text-muted: #3d5070; --text-dim: #6a88a8;
+      --p4: #6366f1; --p9: #3b82f6; --p10: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+    /* ══════ HEADER ══════ */
+    header {
+      background: linear-gradient(135deg,#04070c,#090f1a);
+      border-bottom: 1px solid rgba(212,168,67,0.25);
+      padding: 0 2rem; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { display: flex; align-items: center; gap: 14px; }
+    .logo-icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg,var(--gold),var(--gold2));
+      border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 18px;
+    }
+    .logo-text h1 { font-size: 0.95rem; font-weight: 800; color: var(--text); }
+    .logo-text p { font-size: 0.63rem; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .owner-chip { padding: 4px 14px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; background: rgba(212,168,67,0.1); color: var(--gold); border: 1px solid rgba(212,168,67,0.3); display: flex; align-items: center; gap: 7px; }
+    .cycle-chip { padding: 4px 14px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border); }
+    .dot-gold { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: blink 2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+
+    /* ══════ ESCALATION BANNER ══════ */
+    .escalation-banner {
+      background: linear-gradient(90deg,rgba(239,68,68,0.12),rgba(245,158,11,0.08),rgba(239,68,68,0.06));
+      border-bottom: 1px solid rgba(239,68,68,0.35);
+      padding: 0.65rem 2rem;
+      display: flex; align-items: center; gap: 1.5rem;
+    }
+    .eb-icon { font-size: 1rem; flex-shrink: 0; }
+    .eb-text { font-size: 0.77rem; color: var(--text-dim); flex: 1; line-height: 1.5; }
+    .eb-text strong { color: var(--red); }
+    .eb-badges { display: flex; gap: 0.5rem; flex-wrap: wrap; flex-shrink: 0; }
+    .eb-b { font-size: 0.65rem; padding: 3px 9px; border-radius: 5px; font-weight: 700; }
+    .ebb-r { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+    .ebb-a { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+    .ebb-g { background: rgba(212,168,67,0.1); color: var(--gold); border: 1px solid rgba(212,168,67,0.25); }
+
+    /* ══════ HERO ══════ */
+    .hero {
+      background: linear-gradient(135deg,#04070c 0%,#0a1020 50%,#04070c 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 2.75rem 2rem; position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 55% 60% at 15% 50%,rgba(212,168,67,0.06) 0%,transparent 70%);
+    }
+    .hero::after {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 40% 50% at 85% 40%,rgba(59,130,246,0.05) 0%,transparent 70%);
+    }
+    .hero-content { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: flex-start; gap: 2rem; }
+    .hero-left { flex: 1; }
+    .eyebrow { font-size: 0.67rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 0.7rem; }
+    .hero h2 { font-size: 1.95rem; font-weight: 900; line-height: 1.15; margin-bottom: 0.5rem; }
+    .hero h2 span { background: linear-gradient(135deg,var(--gold),var(--gold2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { color: var(--text-dim); font-size: 0.85rem; max-width: 640px; line-height: 1.65; margin-bottom: 1.25rem; }
+    .cycle-bar { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .cb-item { padding: 0.3rem 0.85rem; border-radius: 6px; font-size: 0.72rem; font-weight: 600; background: var(--surface2); border: 1px solid var(--border); color: var(--text-dim); }
+    .cb-item strong { color: var(--text); }
+    .hero-kpis { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.85rem; min-width: 340px; flex-shrink: 0; }
+    .hkpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem; text-align: center; }
+    .hkpi-val { font-size: 1.6rem; font-weight: 900; line-height: 1; display: block; }
+    .hkpi-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-top: 5px; }
+    .hkpi-delta { font-size: 0.67rem; font-weight: 700; margin-top: 4px; }
+
+    /* ══════ MAIN ══════ */
+    .main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+    .section-title { font-size: 1rem; font-weight: 800; margin-bottom: 1.15rem; display: flex; align-items: center; gap: 10px; letter-spacing: 0.01em; }
+    .section-title .st-num { font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-weight: 700; background: rgba(212,168,67,0.12); color: var(--gold); border: 1px solid rgba(212,168,67,0.25); flex-shrink: 0; }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg,var(--border),transparent); }
+
+    /* ══════ NARRATIVE SECTION ══════ */
+    .narrative-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.75rem; margin-bottom: 2rem; }
+    .narrative-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; }
+    .narr-col { }
+    .narr-col-title { font-size: 0.67rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; padding: 0.3rem 0.9rem; border-radius: 5px; display: inline-block; margin-bottom: 0.9rem; }
+    .nct-gold { background: rgba(212,168,67,0.1); color: var(--gold); border: 1px solid rgba(212,168,67,0.25); }
+    .nct-red { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
+    .nct-amber { background: rgba(245,158,11,0.1); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+    .narr-items { list-style: none; }
+    .narr-items li { font-size: 0.79rem; color: var(--text-dim); padding: 0.55rem 0; border-bottom: 1px solid var(--border); line-height: 1.6; display: flex; gap: 9px; }
+    .narr-items li:last-child { border-bottom: none; }
+    .ni-bullet { flex-shrink: 0; font-size: 0.7rem; margin-top: 2px; }
+    .narr-items strong { color: var(--text); }
+
+    /* ══════ RAG PLANE ══════ */
+    .rag-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 2rem; }
+    .rag-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .rag-top { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+    .rag-mid { padding: 1.2rem 1.5rem; }
+    .rag-project-tag { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3rem; }
+    .rag-name { font-size: 1rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .rag-scope { font-size: 0.73rem; color: var(--text-muted); line-height: 1.4; }
+    .rag-status-col { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+    .rag-badge { padding: 5px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 900; white-space: nowrap; }
+    .rag-transition { font-size: 0.67rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; }
+    .rb-green { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+    .rb-amber { background: rgba(245,158,11,0.15); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+    .rb-red { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+
+    .rag-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-bottom: 1rem; }
+    .rm { background: var(--surface2); border-radius: 8px; padding: 0.65rem 0.75rem; border: 1px solid var(--border); }
+    .rm-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 3px; }
+    .rm-val { font-size: 0.92rem; font-weight: 800; }
+    .rag-items { list-style: none; }
+    .rag-items li { font-size: 0.76rem; color: var(--text-muted); padding: 0.35rem 0; border-bottom: 1px solid var(--border); display: flex; gap: 7px; line-height: 1.45; }
+    .rag-items li:last-child { border-bottom: none; }
+    .rag-items li::before { content: '→'; flex-shrink: 0; }
+    .rag-footer { padding: 0.85rem 1.5rem; border-top: 1px solid var(--border); background: var(--surface2); font-size: 0.72rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+    .rag-footer strong { color: var(--text-dim); }
+
+    /* ══════ BURN & ROI ══════ */
+    .fin-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; margin-bottom: 2rem; }
+    .fin-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; }
+    .fc-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 1.1rem; display: flex; justify-content: space-between; align-items: center; }
+    .fc-tag { font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-weight: 700; }
+    .fct-g { background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
+    .fct-a { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+    .fct-r { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
+
+    /* Spend rows */
+    .spend-row { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
+    .spend-row:last-child { border-bottom: none; }
+    .sr-project { width: 180px; flex-shrink: 0; }
+    .sr-p-name { font-size: 0.8rem; font-weight: 700; }
+    .sr-p-sub { font-size: 0.67rem; color: var(--text-muted); }
+    .sr-bar-wrap { flex: 1; }
+    .sr-bar-labels { display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-muted); margin-bottom: 4px; }
+    .sr-bars { display: flex; flex-direction: column; gap: 4px; }
+    .sr-bar-row { display: flex; align-items: center; gap: 8px; }
+    .sr-type { font-size: 0.62rem; color: var(--text-muted); width: 80px; flex-shrink: 0; text-align: right; }
+    .sr-bar-bg { flex: 1; height: 10px; border-radius: 5px; background: var(--surface2); overflow: hidden; }
+    .sr-bar-fill { height: 100%; border-radius: 5px; }
+    .sr-vals { min-width: 170px; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; font-size: 0.73rem; }
+    .sv-act { font-weight: 800; }
+    .sv-fcast { color: var(--text-muted); }
+    .sv-var { font-size: 0.68rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; }
+    .svar-g { background: rgba(16,185,129,0.12); color: var(--green); }
+    .svar-a { background: rgba(245,158,11,0.12); color: var(--amber); }
+    .svar-r { background: rgba(239,68,68,0.12); color: var(--red); }
+
+    /* ROI summary */
+    .roi-stack { display: flex; flex-direction: column; gap: 0.85rem; }
+    .roi-item { background: var(--surface2); border-radius: 10px; padding: 0.85rem; border: 1px solid var(--border); }
+    .roi-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 4px; }
+    .roi-val { font-size: 1.3rem; font-weight: 900; line-height: 1; }
+    .roi-sub { font-size: 0.67rem; color: var(--text-muted); margin-top: 3px; line-height: 1.4; }
+    .roi-trend { font-size: 0.68rem; font-weight: 700; margin-top: 5px; }
+
+    /* ══════ CRITICAL PATH MATRIX ══════ */
+    .cpm-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; }
+    .dep-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem; }
+    .dep-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; }
+    .dep-head { display: flex; align-items: center; gap: 10px; margin-bottom: 0.9rem; }
+    .dep-from { font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 5px; }
+    .dep-arrow { font-size: 0.9rem; color: var(--text-muted); }
+    .dep-to { font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 5px; }
+    .dep-type { margin-left: auto; font-size: 0.63rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; }
+    .dt-block { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
+    .dt-risk { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+    .dt-seq { background: rgba(59,130,246,0.12); color: var(--blue); border: 1px solid rgba(59,130,246,0.25); }
+    .dt-ok { background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
+    .dep-title { font-size: 0.83rem; font-weight: 800; margin-bottom: 4px; }
+    .dep-body { font-size: 0.76rem; color: var(--text-dim); line-height: 1.6; }
+    .dep-action { margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: var(--surface); border-radius: 7px; font-size: 0.73rem; color: var(--text-dim); border: 1px solid var(--border); line-height: 1.45; }
+    .dep-action strong { color: var(--text); }
+
+    /* 14-day critical path timeline */
+    .cpt-timeline { }
+    .cpt-title { font-size: 0.67rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 0.85rem; }
+    .cpt-row { display: flex; align-items: flex-start; gap: 1rem; padding: 0.65rem 0; border-bottom: 1px solid var(--border); }
+    .cpt-row:last-child { border-bottom: none; }
+    .cpt-date { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); width: 70px; flex-shrink: 0; padding-top: 2px; }
+    .cpt-event { flex: 1; font-size: 0.78rem; color: var(--text-dim); line-height: 1.5; }
+    .cpt-event strong { color: var(--text); display: block; margin-bottom: 2px; }
+    .cpt-owner { font-size: 0.67rem; font-weight: 700; padding: 2px 8px; border-radius: 5px; flex-shrink: 0; }
+    .cpt-risk { font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; flex-shrink: 0; }
+
+    /* ══════ DECISION LOG ══════ */
+    .dl-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; }
+    .dl-table { width: 100%; border-collapse: collapse; font-size: 0.76rem; }
+    .dl-table th { background: var(--surface2); color: var(--text-muted); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.07em; padding: 0.55rem 0.75rem; border: 1px solid var(--border); text-align: left; }
+    .dl-table td { padding: 0.75rem 0.75rem; border: 1px solid var(--border); color: var(--text-dim); vertical-align: top; line-height: 1.5; }
+    .dl-table tr:hover td { background: var(--surface2); }
+    .dl-irr { font-size: 0.62rem; padding: 2px 7px; border-radius: 4px; font-weight: 700; white-space: nowrap; }
+    .irr-yes { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
+    .irr-no { background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
+    .irr-part { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+    .proj-pill { font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; font-weight: 700; white-space: nowrap; }
+    .pp4 { background: rgba(99,102,241,0.12); color: var(--p4); border: 1px solid rgba(99,102,241,0.2); }
+    .pp9 { background: rgba(59,130,246,0.12); color: var(--p9); border: 1px solid rgba(59,130,246,0.2); }
+    .pp10 { background: rgba(16,185,129,0.12); color: var(--p10); border: 1px solid rgba(16,185,129,0.2); }
+
+    /* ══════ ESCALATION REGISTER ══════ */
+    .esc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; margin-bottom: 2rem; }
+    .esc-card { background: var(--surface); border: 1px solid; border-radius: 14px; padding: 1.25rem; }
+    .esc-num { font-size: 1.4rem; font-weight: 900; float: right; margin: -4px -4px 0 0; opacity: 0.15; }
+    .esc-sev { font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800; margin-bottom: 0.4rem; }
+    .esc-title { font-size: 0.92rem; font-weight: 800; margin-bottom: 0.75rem; line-height: 1.3; }
+    .esc-body { font-size: 0.76rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 0.9rem; }
+    .esc-body strong { color: var(--text-dim); }
+    .esc-action { background: var(--surface2); border-radius: 8px; padding: 0.65rem 0.85rem; font-size: 0.73rem; color: var(--text-dim); line-height: 1.5; border: 1px solid var(--border); }
+    .esc-action strong { color: var(--text); }
+    .esc-projects { display: flex; gap: 5px; margin-top: 0.75rem; }
+    .esc1 { border-color: rgba(239,68,68,0.35); background: rgba(239,68,68,0.04); }
+    .esc2 { border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.04); }
+    .esc3 { border-color: rgba(99,102,241,0.3); background: rgba(99,102,241,0.04); }
+
+    /* ══════ NEXT 14 DAYS ══════ */
+    .next-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.85rem; margin-bottom: 2rem; }
+    .next-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; }
+    .nc-date { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; }
+    .nc-title { font-size: 0.82rem; font-weight: 800; margin-bottom: 0.35rem; }
+    .nc-body { font-size: 0.73rem; color: var(--text-muted); line-height: 1.55; }
+    .nc-proj { display: flex; gap: 5px; margin-top: 0.6rem; flex-wrap: wrap; }
+    .nc-urgency { font-size: 0.62rem; padding: 2px 7px; border-radius: 4px; font-weight: 700; margin-bottom: 0.4rem; display: inline-block; }
+    .nu-crit { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
+    .nu-high { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+    .nu-med { background: rgba(59,130,246,0.12); color: var(--blue); border: 1px solid rgba(59,130,246,0.25); }
+    .nu-low { background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
+
+    /* ══════ PORTFOLIO HEALTH SUMMARY BAR ══════ */
+    .health-bar-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem 1.5rem; margin-bottom: 2rem; }
+    .health-bar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.75rem; }
+    .hb { background: var(--surface2); border-radius: 9px; padding: 0.75rem; border: 1px solid var(--border); text-align: center; }
+    .hb-val { font-size: 1.25rem; font-weight: 900; line-height: 1; display: block; }
+    .hb-label { font-size: 0.59rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-top: 4px; }
+
+    footer { border-top: 1px solid rgba(212,168,67,0.15); text-align: center; padding: 1.5rem; color: var(--text-muted); font-size: 0.72rem; margin-top: 2rem; }
+    footer strong { color: var(--gold-dim); }
+
+    /* ══════ THE MIMECAST WAY ══════ */
+    .mw-section {
+      position: relative; overflow: hidden;
+      background: linear-gradient(160deg, #0e0616 0%, #130c1e 30%, #0d1525 60%, #060d18 100%);
+      border-top: 1px solid rgba(180, 80, 255, 0.18);
+      border-bottom: 1px solid rgba(180, 80, 255, 0.12);
+      padding: 4rem 2rem;
+      margin-top: 3rem;
+    }
+    .mw-section::before {
+      content: '';
+      position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 70% at 10% 80%, rgba(220, 50, 80, 0.09) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 90% 20%, rgba(130, 60, 220, 0.11) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 60% at 50% 100%, rgba(59, 130, 246, 0.07) 0%, transparent 70%);
+    }
+    .mw-section::after {
+      content: '"';
+      position: absolute; top: -1rem; left: 1.5rem;
+      font-size: 18rem; font-weight: 900; line-height: 1;
+      color: rgba(180, 80, 255, 0.05);
+      font-family: Georgia, serif; pointer-events: none; user-select: none;
+    }
+    .mw-inner { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
+
+    .mw-eyebrow {
+      font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+      font-weight: 800; margin-bottom: 0.75rem;
+      background: linear-gradient(90deg, #c084fc, #818cf8);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      display: inline-block;
+    }
+    .mw-headline {
+      font-size: 3rem; font-weight: 900; line-height: 1.1; margin-bottom: 0.35rem;
+      letter-spacing: -0.02em;
+    }
+    .mw-headline .mw-h1 { color: #f8f9fc; }
+    .mw-headline .mw-h2 {
+      background: linear-gradient(135deg, #e0aaff, #c084fc, #818cf8);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .mw-headline .mw-h3 {
+      background: linear-gradient(135deg, #f472b6, #e879f9, #c084fc);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    .mw-manifesto {
+      font-size: 1.05rem; color: #8ba5c8; line-height: 1.85;
+      max-width: 780px; margin: 2rem 0 0;
+      border-left: 3px solid rgba(192, 132, 252, 0.4);
+      padding-left: 1.5rem;
+    }
+    .mw-manifesto em { font-style: normal; color: #d4b8f5; font-weight: 600; }
+    .mw-manifesto .mw-boldline {
+      display: block; margin-top: 1.1rem;
+      font-size: 1.15rem; font-weight: 800;
+      background: linear-gradient(90deg, #e0aaff, #c084fc, #f472b6);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      letter-spacing: 0.01em;
+    }
+
+    /* Pillars layout */
+    .mw-body { display: grid; grid-template-columns: 1fr 1.4fr; gap: 3rem; margin-top: 3rem; align-items: start; }
+
+    .mw-pillars { display: flex; flex-direction: column; gap: 0.85rem; }
+    .mw-pillar {
+      display: flex; align-items: flex-start; gap: 1rem;
+      padding: 1.1rem 1.25rem; border-radius: 14px;
+      border: 1px solid; cursor: default;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .mw-pillar:hover { transform: translateX(6px); }
+    .mw-pillar::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    }
+
+    .mp1 { background: rgba(220, 38, 127, 0.07); border-color: rgba(220, 38, 127, 0.22); }
+    .mp1::before { background: linear-gradient(90deg, #ec4899, #f472b6); }
+    .mp1:hover { box-shadow: 0 6px 24px rgba(220, 38, 127, 0.15); }
+
+    .mp2 { background: rgba(168, 85, 247, 0.07); border-color: rgba(168, 85, 247, 0.22); }
+    .mp2::before { background: linear-gradient(90deg, #a855f7, #c084fc); }
+    .mp2:hover { box-shadow: 0 6px 24px rgba(168, 85, 247, 0.15); }
+
+    .mp3 { background: rgba(59, 130, 246, 0.07); border-color: rgba(59, 130, 246, 0.22); }
+    .mp3::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .mp3:hover { box-shadow: 0 6px 24px rgba(59, 130, 246, 0.15); }
+
+    .mp4 { background: rgba(16, 185, 129, 0.07); border-color: rgba(16, 185, 129, 0.22); }
+    .mp4::before { background: linear-gradient(90deg, #10b981, #34d399); }
+    .mp4:hover { box-shadow: 0 6px 24px rgba(16, 185, 129, 0.15); }
+
+    .mp5 { background: rgba(251, 113, 49, 0.07); border-color: rgba(251, 113, 49, 0.22); }
+    .mp5::before { background: linear-gradient(90deg, #fb7131, #fbbf24); }
+    .mp5:hover { box-shadow: 0 6px 24px rgba(251, 113, 49, 0.15); }
+
+    .mw-pillar-icon { font-size: 1.6rem; flex-shrink: 0; margin-top: 2px; }
+    .mw-pillar-text { flex: 1; }
+    .mw-pillar-title { font-size: 0.9rem; font-weight: 800; margin-bottom: 0.3rem; }
+    .mw-pillar-desc { font-size: 0.76rem; color: #7a9ab8; line-height: 1.55; }
+
+    /* Quote & CTA side */
+    .mw-right { display: flex; flex-direction: column; gap: 1.75rem; }
+    .mw-quote-card {
+      background: linear-gradient(135deg, rgba(130, 60, 220, 0.1), rgba(59, 130, 246, 0.07));
+      border: 1px solid rgba(192, 132, 252, 0.2); border-radius: 20px;
+      padding: 2rem 2rem 1.75rem;
+      position: relative; overflow: hidden;
+    }
+    .mw-quote-card::before {
+      content: '';
+      position: absolute; top: -40px; right: -40px;
+      width: 160px; height: 160px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.12) 0%, transparent 70%);
+    }
+    .mwq-header { font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; color: #9d7fca; font-weight: 700; margin-bottom: 1rem; }
+    .mwq-body { font-size: 0.9rem; color: #a8bdd4; line-height: 1.9; font-style: italic; }
+    .mwq-body strong { color: #d4b8f5; font-style: normal; font-weight: 700; }
+    .mwq-body .mwq-threat {
+      display: block; margin-top: 1rem;
+      font-style: normal; font-size: 0.88rem; font-weight: 700;
+      color: #f87171;
+      padding: 0.65rem 0.9rem; border-radius: 8px;
+      background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    /* CTA strip */
+    .mw-cta {
+      text-align: center; padding: 2rem 1.5rem 1.5rem;
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.09), rgba(236, 72, 153, 0.07));
+      border: 1px solid rgba(192, 132, 252, 0.18); border-radius: 20px;
+    }
+    .mw-cta-tag { font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: #9d7fca; font-weight: 700; margin-bottom: 0.75rem; }
+    .mw-cta-title {
+      font-size: 1.55rem; font-weight: 900; line-height: 1.2; margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #e0aaff, #f472b6, #fbbf24);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .mw-cta-sub { font-size: 0.82rem; color: #7a9ab8; line-height: 1.55; }
+
+    /* Team shoutout bar */
+    .mw-shoutout {
+      margin-top: 2.5rem; padding: 1.5rem 2rem;
+      background: rgba(255, 255, 255, 0.025); border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      display: flex; gap: 2rem; align-items: center; flex-wrap: wrap;
+    }
+    .mws-left { flex: 1; min-width: 250px; }
+    .mws-tag { font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.1em; color: #9d7fca; font-weight: 700; margin-bottom: 0.4rem; }
+    .mws-msg { font-size: 0.88rem; color: #9ab8d4; line-height: 1.6; }
+    .mws-msg strong { color: #d4c8f5; }
+    .mws-avatars { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+    .mwa { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .mwa-dot {
+      width: 38px; height: 38px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 800; border: 2px solid;
+    }
+    .mwa-label { font-size: 0.58rem; color: #4d6880; font-weight: 600; }
+
+    @media (max-width: 900px) {
+      .mw-body { grid-template-columns: 1fr; gap: 2rem; }
+      .mw-headline { font-size: 2rem; }
+    }
+
+    @media (max-width: 1100px) { .hero-content,.fin-grid { flex-direction: column; grid-template-columns: 1fr; } .rag-grid,.narrative-grid,.esc-grid { grid-template-columns: 1fr; } .next-grid { grid-template-columns: 1fr 1fr; } .dep-grid { grid-template-columns: 1fr; } .health-bar-grid { grid-template-columns: repeat(4,1fr); } }
+    @media (max-width: 700px) { nav { display: none; } .next-grid { grid-template-columns: 1fr; } .hero-kpis { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════════════════════════ -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div class="logo-text">
+      <h1>Portfolio Command Center</h1>
+      <p>Executive Bi-Weekly Review · GCI Message Archiver</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="cycle-chip">Cycle: Mar 9 – Mar 23, 2026 · Sprint 7</div>
+    <div class="owner-chip"><div class="dot-gold"></div>SD Ashok · Portfolio Owner</div>
+  </div>
+</header>
+
+<!-- Escalation Banner -->
+<div class="escalation-banner">
+  <div class="eb-icon">🚨</div>
+  <div class="eb-text">
+    <strong>3 Items Require SD Ashok's Immediate Unblock:</strong> (1) T5 Control Plane decomposition (P9) must be sequenced against T5's 79% error budget burn (P10) — simultaneous execution is generating compounded instability. (2) P4 Data Migration kicks off April 1 with zero SRE-framework coverage from P10. (3) T2 SEV-2 (PD-4892) is blocking Wave 2 velocity in P9. All three require executive decision within this review cycle.
+  </div>
+  <div class="eb-badges">
+    <span class="eb-b ebb-r">P10 T5 Conflict</span>
+    <span class="eb-b ebb-a">P4 SRE Gap</span>
+    <span class="eb-b ebb-r">P9 W2 Blocked</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     HERO
+══════════════════════════════════════════════════════════════ -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-left">
+      <p class="eyebrow">Bi-Weekly Executive Briefing · Cycle 7 · March 23, 2026</p>
+      <h2>GCI Portfolio <span>Bi-Weekly</span> Command Digest</h2>
+      <p>
+        Synthesized intelligence across 3 active projects — P4 Data Migration, P9 Monolith Decomposition,
+        and P10 SRE Reliability. 60 engineers, 60PB managed data, $744K/month platform COGS.
+        This cycle surfaces a critical <strong style="color:var(--gold);">3-way cross-project dependency</strong>
+        between T5 Control Plane decomposition, budget burn, and P4 migration readiness that requires
+        executive sequencing before the next sprint.
+      </p>
+      <div class="cycle-bar">
+        <div class="cb-item">Review Period: <strong>Mar 9 – 23, 2026</strong></div>
+        <div class="cb-item">Next Review: <strong>Apr 6, 2026</strong></div>
+        <div class="cb-item">Projects Active: <strong>3 of 3</strong></div>
+        <div class="cb-item">Engineers Across Portfolio: <strong>60</strong></div>
+        <div class="cb-item">P4 Kickoff: <strong style="color:var(--amber);">April 1 (T−9 days)</strong></div>
+      </div>
+    </div>
+    <div class="hero-kpis">
+      <div class="hkpi" style="border-color:rgba(99,102,241,0.3);">
+        <span class="hkpi-val" style="color:var(--p4);">P4</span>
+        <div class="hkpi-label">Data Migration</div>
+        <div class="hkpi-delta" style="color:var(--amber);">⚠ Pre-Kickoff</div>
+      </div>
+      <div class="hkpi" style="border-color:rgba(59,130,246,0.3);">
+        <span class="hkpi-val" style="color:var(--p9);">W2</span>
+        <div class="hkpi-label">P9 Wave Active</div>
+        <div class="hkpi-delta" style="color:var(--amber);">⚠ T5 Conflict</div>
+      </div>
+      <div class="hkpi" style="border-color:rgba(239,68,68,0.3);">
+        <span class="hkpi-val" style="color:var(--red);">79%</span>
+        <div class="hkpi-label">P10 T5 Budget Burn</div>
+        <div class="hkpi-delta" style="color:var(--red);">🚨 Critical</div>
+      </div>
+      <div class="hkpi">
+        <span class="hkpi-val" style="color:var(--gold);">3</span>
+        <div class="hkpi-label">Cross-Project Blocks</div>
+        <div class="hkpi-delta" style="color:var(--red);">Needs Unblock</div>
+      </div>
+      <div class="hkpi">
+        <span class="hkpi-val" style="color:var(--green);">99.97%</span>
+        <div class="hkpi-label">Platform Uptime</div>
+        <div class="hkpi-delta" style="color:var(--green);">↑ On Track</div>
+      </div>
+      <div class="hkpi">
+        <span class="hkpi-val" style="color:var(--amber);">$744K</span>
+        <div class="hkpi-label">Monthly COGS</div>
+        <div class="hkpi-delta" style="color:var(--green);">↓ −$18K/day savings</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MAIN CONTENT
+══════════════════════════════════════════════════════════════ -->
+<main class="main">
+
+  <!-- ── PORTFOLIO HEALTH SUMMARY ── -->
+  <p class="section-title"><span class="st-num">KPI PULSE</span> Portfolio Health Summary — This Cycle</p>
+  <div class="health-bar-wrap">
+    <div class="health-bar-grid">
+      <div class="hb">
+        <span class="hb-val" style="color:var(--green);">99.97%</span>
+        <div class="hb-label">Platform Uptime</div>
+      </div>
+      <div class="hb">
+        <span class="hb-val" style="color:var(--amber);">4.2 min</span>
+        <div class="hb-label">MTTA P10</div>
+      </div>
+      <div class="hb">
+        <span class="hb-val" style="color:var(--amber);">18.6 min</span>
+        <div class="hb-label">MTTR P10</div>
+      </div>
+      <div class="hb">
+        <span class="hb-val" style="color:var(--red);">SEV-2 🔴</span>
+        <div class="hb-label">Active Incident</div>
+      </div>
+      <div class="hb">
+        <span class="hb-val" style="color:var(--blue);">W2 ●</span>
+        <div class="hb-label">P9 Wave Active</div>
+      </div>
+      <div class="hb">
+        <span class="hb-val" style="color:var(--amber);">T−9</span>
+        <div class="hb-label">Days to P4 Kickoff</div>
+      </div>
+      <div class="hb">
+        <span class="hb-val" style="color:var(--gold);">82%</span>
+        <div class="hb-label">COE Closure Rate</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       OUTPUT 1: BI-WEEKLY NARRATIVE
+  ══════════════════════════════════════ -->
+  <p class="section-title"><span class="st-num">OUTPUT 1</span> Bi-Weekly Strategic Narrative — Synthesized Executive Briefing</p>
+  <div class="narrative-wrap">
+    <div class="narrative-grid">
+
+      <div class="narr-col">
+        <div class="narr-col-title nct-gold">Unified 14-Day Delta — What Changed</div>
+        <ul class="narr-items">
+          <li><span class="ni-bullet" style="color:var(--p9);">●</span><span><strong>P9 Wave 2 entered active execution.</strong> The Search Plane bounded context is now being formally extracted via a dual-write pipeline, with T2 engineers running new OpenSearch indices in parallel with the legacy monolith's search layer. Wave 1 (Ingestion) is retired. T5 Control Plane extraction has begun under Wave 2 scope — this is the critical signal this cycle.</span></li>
+          <li><span class="ni-bullet" style="color:var(--red);">●</span><span><strong>P10 SEV-2 PD-4892 declared.</strong> T2's dual-write consistency lag elevated to 47 minutes — directly attributable to the P9 Wave 2 dual-write architecture entering the hot path. The migration-induced instability is consuming T2's error budget at an accelerated rate (+22.3 points in 14 days).</span></li>
+          <li><span class="ni-bullet" style="color:var(--amber);">●</span><span><strong>P10 T5 budget burn hit 79%.</strong> Error budget consumed since the start of T5 Control Plane decomposition activity in Wave 2. Feature freeze imposed. SRE Manager embedded T6 Platform engineers into T5. This is the compounded risk signal: decomposition activity (P9) is directly driving reliability debt (P10).</span></li>
+          <li><span class="ni-bullet" style="color:var(--p4);">●</span><span><strong>P4 pre-kickoff readiness reached 90%.</strong> Arjun's AWS environment provisioning checklist is 90% complete. VPC architecture reviewed. DMS configurations validated. Kickoff meeting confirmed April 1, 2026 — T−9 days from today. All 6 phase owners confirmed and onboarded.</span></li>
+          <li><span class="ni-bullet" style="color:var(--green);">●</span><span><strong>P9 T3 Storage FinOps: $18,400/day lifecycle savings confirmed.</strong> Lifecycle tiering policies now operational across all 60.4PB. S3 Intelligent-Tiering generating realized savings against the $24,800/day COGS baseline. T3 reliability is the healthiest team in the portfolio (12% error budget consumed).</span></li>
+        </ul>
+      </div>
+
+      <div class="narr-col">
+        <div class="narr-col-title nct-red">Cross-Project Friction — New Dependencies</div>
+        <ul class="narr-items">
+          <li><span class="ni-bullet" style="color:var(--red);">⚡</span><span><strong>[P9 W2 ↔ P10 T2] Architectural Migration is Causing Operational Instability.</strong> P9's Wave 2 dual-write pipeline IS the root cause of P10's T2 SEV-2. These are not separate events — they are the same event viewed from two different project lenses. Wave 2 progress is now gated on P10 resolving PD-4892. SD Ashok must decide: pause Wave 2 T2 extraction until P10 declares resolution, or accept continued SLO degradation during migration.</span></li>
+          <li><span class="ni-bullet" style="color:var(--red);">⚡</span><span><strong>[P9 W2 ↔ P10 T5] Simultaneous Decomposition and Reliability Crisis on T5.</strong> T5 Control Plane is being decomposed (P9 Wave 2 scope) while simultaneously burning 79% of its error budget (P10). SRE-mandated feature freeze conflicts with Wave 2 decomposition sprint commitments. One backlog is blocked. This creates the risk of T5 engineers "workaround sprinting" to clear both P9 milestones and P10 COE actions simultaneously — without adequate focus on either.</span></li>
+          <li><span class="ni-bullet" style="color:var(--amber);">⚡</span><span><strong>[P4 Kickoff ↔ P10 SRE Mandate] No SRE Coverage Plan for Migrated Workloads.</strong> P4's 6-phase timeline (Apr 1 – Jul 5) will produce new AWS-native workloads (DMS jobs, ECS services, S3 pipelines) that are currently outside P10's SLI/SLO framework. Phase 3 milestone (May 31 go-live) is 10 weeks away but no P10 engagement is scheduled. Consequence: P4's production cutover on June 30 will run without operationally-mature SLOs — a direct non-compliance with the SRE mandate established in P10 Phase 1.</span></li>
+          <li><span class="ni-bullet" style="color:var(--blue);">⚡</span><span><strong>[P4 FinOps Phase ↔ P9 T3 FinOps] Uncoordinated Cost Baseline Conflict.</strong> P4 Phase 4 (Cheran, May 25–Jun 7) will re-baseline COGS after migration to AWS. P9 T3's current $18,400/day savings trajectory assumes a fixed data gravity model. P4's migration will introduce net-new AWS compute and storage costs not currently captured in P9's FinOps baseline, potentially causing T3 FinOps dashboard to misreport true COGS post-migration.</span></li>
+        </ul>
+      </div>
+
+      <div class="narr-col">
+        <div class="narr-col-title nct-amber">Aggregated Risk Escalation — Needs SD Ashok Unblock</div>
+        <ul class="narr-items">
+          <li><span class="ni-bullet" style="color:var(--red);">🔴</span><span><strong>ESCALATION 1 — Sequence T5 Activities (P9/P10):</strong> SD Ashok must declare the priority order for T5 engineers this sprint: (A) resolve P10 reliability debt first (COE actions, error budget recovery), then resume P9 decomposition; OR (B) run decomposition with explicit risk acceptance of SLO breach. Option A is recommended. Without a decision, T5 engineers will context-switch continuously — worsening both outcomes.</span></li>
+          <li><span class="ni-bullet" style="color:var(--amber);">🟠</span><span><strong>ESCALATION 2 — Mandate P10 Engagement for P4:</strong> By April 5 (before P4 sprint 2), SD Ashok must task P10 SRE Manager to produce a "P4 SRE Readiness Plan" defining: SLOs for DMS ingestion pipeline, ECS service availability, and S3 migration jobs. This plan must be signed off before P4's Phase 3 milestone (May 31). Non-action risks a zero-SRE production launch on June 30.</span></li>
+          <li><span class="ni-bullet" style="color:var(--amber);">🟠</span><span><strong>ESCALATION 3 — Wave 2 Gating Decision on T2 SEV-2:</strong> SD Ashok must align P9 Wave 2 lead and P10 IC on a conditional gate: Wave 2 T2 extraction velocity cannot accelerate while PD-4892 is active. Recommend a formal "Wave 2 T2 Green Light" meeting within 5 business days of PD-4892 resolution. Until then, T2's Wave 2 sprint scope is capped at read-only observability tasks only — no new dual-write schema changes.</span></li>
+          <li><span class="ni-bullet" style="color:var(--blue);">🔵</span><span><strong>ESCALATION 4 — Align P4 FinOps Baseline with P9 T3 Model:</strong> By May 1, SD Ashok must instruct Cheran (P4 FinOps owner) and T3 lead (P9) to jointly re-baseline the platform COGS model to include P4's new AWS workload costs. Failure to align will produce contradictory financial reporting at P4's June 7 FinOps milestone and P9's quarterly review.</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       OUTPUT 2a: RAG STATE PLANE
+  ══════════════════════════════════════ -->
+  <p class="section-title"><span class="st-num">OUTPUT 2A</span> Fortnightly State Plane — RAG Status Matrix</p>
+  <div class="rag-grid">
+
+    <!-- P4 -->
+    <div class="rag-card" style="border-color:rgba(99,102,241,0.3);">
+      <div class="rag-top" style="background:rgba(99,102,241,0.04);">
+        <div>
+          <div class="rag-project-tag" style="color:var(--p4);">Project 4 · Data Migration</div>
+          <div class="rag-name">AWS Migration Command Center</div>
+          <div class="rag-scope">6-phase migration plan · Apr 1 – Jul 5, 2026 · Owners: Arjun, Bala, Cheran, Divya</div>
+        </div>
+        <div class="rag-status-col">
+          <span class="rag-badge rb-amber">🟡 AMBER</span>
+          <div class="rag-transition" style="color:var(--text-muted);">Green → Amber this cycle</div>
+        </div>
+      </div>
+      <div class="rag-mid">
+        <div class="rag-metrics">
+          <div class="rm"><div class="rm-label">Kickoff In</div><div class="rm-val" style="color:var(--amber);">T−9 Days</div></div>
+          <div class="rm"><div class="rm-label">Phases Complete</div><div class="rm-val">0 / 6</div></div>
+          <div class="rm"><div class="rm-label">Next Milestone</div><div class="rm-val" style="color:var(--p4);">Apr 1 Kickoff</div></div>
+          <div class="rm"><div class="rm-label">P10 SRE Coverage</div><div class="rm-val" style="color:var(--red);">⚠ None Planned</div></div>
+        </div>
+        <ul class="rag-items">
+          <li>P1 &amp; P2 (AWS Infra) active Apr 1 — Arjun's environment checklist 90% complete. VPC/DMS/S3 architecture validated.</li>
+          <li>Status upgraded to Amber: P10 SRE engagement gap identified — no SLO coverage plan for migrated AWS workloads before Phase 3 go-live (May 31).</li>
+          <li>Phase 5 (Customer Comms, Jun 15) and Phase 6 (Maintenance Window, Jun 30) have zero SRE readiness plan — executive action required.</li>
+          <li>FinOps Phase 4 (Cheran, May 25–Jun 7) needs alignment with P9 T3 COGS baseline model before execution.</li>
+        </ul>
+      </div>
+      <div class="rag-footer">
+        <strong>Owner This Cycle:</strong> Arjun (Infra), Divya (Comms) · <strong>Risk Horizon:</strong> April 1 kickoff readiness gate
+      </div>
+    </div>
+
+    <!-- P9 -->
+    <div class="rag-card" style="border-color:rgba(59,130,246,0.3);">
+      <div class="rag-top" style="background:rgba(59,130,246,0.04);">
+        <div>
+          <div class="rag-project-tag" style="color:var(--p9);">Project 9 · Decomposition Strategy</div>
+          <div class="rag-name">Monolith Modernization — 60PB Platform</div>
+          <div class="rag-scope">Strangler Fig 5-Wave Model · Wave 2 Active · 60 engineers, 6 domain teams</div>
+        </div>
+        <div class="rag-status-col">
+          <span class="rag-badge rb-amber">🟡 AMBER</span>
+          <div class="rag-transition" style="color:var(--text-muted);">Green → Amber this cycle</div>
+        </div>
+      </div>
+      <div class="rag-mid">
+        <div class="rag-metrics">
+          <div class="rm"><div class="rm-label">Current Wave</div><div class="rm-val" style="color:var(--blue);">Wave 2 / 5</div></div>
+          <div class="rm"><div class="rm-label">Waves Complete</div><div class="rm-val" style="color:var(--green);">W0, W1 ✓</div></div>
+          <div class="rm"><div class="rm-label">T2 Extraction</div><div class="rm-val" style="color:var(--red);">Blocked (SEV-2)</div></div>
+          <div class="rm"><div class="rm-label">T5 Decomposition</div><div class="rm-val" style="color:var(--red);">⚠ Frozen (P10)</div></div>
+        </div>
+        <ul class="rag-items">
+          <li>Wave 2 Search Plane extraction entered active phase — dual-write pipeline live. T2's OpenSearch architecture progressing but now directly blocked by P10 SEV-2 (PD-4892).</li>
+          <li>T5 Control Plane decomposition within Wave 2 scope — however, P10 SRE feature freeze on T5 is creating sprint conflict. Amber status declared.</li>
+          <li>COGS savings on track: $18,400/day from T3 lifecycle policies. P9 FinOps target (−43% COGS = $5M/year) requires P4 alignment to remain valid post-migration.</li>
+          <li>W3 (Data Plane) and W4 (Deprecation) remain green — no near-term risk. Planned Q3 and Q1-2027 respectively.</li>
+        </ul>
+      </div>
+      <div class="rag-footer">
+        <strong>Blocked By:</strong> P10 T2 SEV-2 (PD-4892) · T5 P10 Feature Freeze · <strong>Wave 2 Target:</strong> Q2 2026
+      </div>
+    </div>
+
+    <!-- P10 -->
+    <div class="rag-card" style="border-color:rgba(239,68,68,0.35);">
+      <div class="rag-top" style="background:rgba(239,68,68,0.05);">
+        <div>
+          <div class="rag-project-tag" style="color:var(--red);">Project 10 · SRE Reliability</div>
+          <div class="rag-name">GCI Operations Hub — SRE Mandate</div>
+          <div class="rag-scope">Phase 2 (Incident Mastery) Active · 6 teams · 18 SLOs · 60PB coverage</div>
+        </div>
+        <div class="rag-status-col">
+          <span class="rag-badge rb-red">🔴 RED</span>
+          <div class="rag-transition" style="color:var(--red);">Amber → Red this cycle</div>
+        </div>
+      </div>
+      <div class="rag-mid">
+        <div class="rag-metrics">
+          <div class="rm"><div class="rm-label">Platform Uptime</div><div class="rm-val" style="color:var(--green);">99.97%</div></div>
+          <div class="rm"><div class="rm-label">T5 Budget Burn</div><div class="rm-val" style="color:var(--red);">79% 🚨</div></div>
+          <div class="rm"><div class="rm-label">Active SEV</div><div class="rm-val" style="color:var(--orange);">SEV-2 PD-4892</div></div>
+          <div class="rm"><div class="rm-label">COE Closure</div><div class="rm-val" style="color:var(--amber);">82% (↓ below 90%)</div></div>
+        </div>
+        <ul class="rag-items">
+          <li>Elevated to Red: T5 Control Plane at 79% error budget — feature freeze imposed. T6 Platform embedded to address toil (24% vs. 20% policy cap).</li>
+          <li>Active SEV-2 (PD-4892): T2 OpenSearch dual-write lag 47 minutes. Blast radius includes 3 active legal holds. IC @m.okonkwo engaged. Cause traced to P9 Wave 2 dual-write pipeline.</li>
+          <li>3 COE action items overdue (T5 owns 2). COE closure rate dropped to 82% — below 90% target. P10 SRE Manager has escalated to VP Architecture.</li>
+          <li>MTTA 4.2 min (+2% vs. last cycle). MTTR 18.6 min (−18% vs. last cycle — positive). Alert actionability improving: 74% (target 80%).</li>
+        </ul>
+      </div>
+      <div class="rag-footer">
+        <strong>Critical:</strong> T5 feature freeze active · PD-4892 open · <strong>Phase 2 Progress:</strong> 68% of IC rotation objectives met
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
+       OUTPUT 2b: BURN & ROI TRACKER
+  ══════════════════════════════════════ -->
+  <p class="section-title"><span class="st-num">OUTPUT 2B</span> Bi-Weekly Burn &amp; ROI Tracker — Actual vs. Forecasted</p>
+  <div class="fin-grid">
+    <div class="fin-card">
+      <div class="fc-title">
+        Engineering &amp; Cloud Spend (14-Day Cycle: Mar 9–23, 2026)
+        <span class="fc-tag fct-a">⚠ T5 Over-Budget</span>
+      </div>
+      <!-- P4 -->
+      <div class="spend-row">
+        <div class="sr-project">
+          <div class="sr-p-name" style="color:var(--p4);">Project 4 · Migration</div>
+          <div class="sr-p-sub">Pre-kickoff sprint. Planning &amp; AWS provisioning.</div>
+        </div>
+        <div class="sr-bar-wrap">
+          <div class="sr-bar-labels"><span>Engineering Spend</span><span>Cloud Infra</span></div>
+          <div class="sr-bars">
+            <div class="sr-bar-row">
+              <div class="sr-type">Engineering</div>
+              <div class="sr-bar-bg"><div class="sr-bar-fill" style="width:38%;background:var(--p4);"></div></div>
+            </div>
+            <div class="sr-bar-row">
+              <div class="sr-type">AWS Pre-Provision</div>
+              <div class="sr-bar-bg"><div class="sr-bar-fill" style="width:12%;background:rgba(99,102,241,0.4);"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="sr-vals">
+          <span class="sv-act" style="color:var(--p4);">$48,200</span>
+          <span class="sv-fcast">/ $52,000 fcst</span>
+          <span class="sv-var svar-g">−$3,800</span>
+        </div>
+      </div>
+      <!-- P9 -->
+      <div class="spend-row">
+        <div class="sr-project">
+          <div class="sr-p-name" style="color:var(--p9);">Project 9 · Decomposition</div>
+          <div class="sr-p-sub">Wave 2 active. T2 dual-write + T5 extraction.</div>
+        </div>
+        <div class="sr-bar-wrap">
+          <div class="sr-bar-labels"><span>Engineering Spend</span><span>Platform COGS</span></div>
+          <div class="sr-bars">
+            <div class="sr-bar-row">
+              <div class="sr-type">Engineering</div>
+              <div class="sr-bar-bg"><div class="sr-bar-fill" style="width:72%;background:var(--p9);"></div></div>
+            </div>
+            <div class="sr-bar-row">
+              <div class="sr-type">Platform COGS (14d)</div>
+              <div class="sr-bar-bg"><div class="sr-bar-fill" style="width:58%;background:rgba(59,130,246,0.4);"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="sr-vals">
+          <span class="sv-act" style="color:var(--p9);">$344,400</span>
+          <span class="sv-fcast">/ $348,000 fcst</span>
+          <span class="sv-var svar-g">−$3,600</span>
+        </div>
+      </div>
+      <!-- P10 -->
+      <div class="spend-row">
+        <div class="sr-project">
+          <div class="sr-p-name" style="color:var(--red);">Project 10 · SRE</div>
+          <div class="sr-p-sub">T5 feature freeze. T6 embed costs. SEV-2 incident labor.</div>
+        </div>
+        <div class="sr-bar-wrap">
+          <div class="sr-bar-labels"><span>Engineering Spend</span><span>Incident Costs</span></div>
+          <div class="sr-bars">
+            <div class="sr-bar-row">
+              <div class="sr-type">SRE Engineering</div>
+              <div class="sr-bar-bg"><div class="sr-bar-fill" style="width:88%;background:var(--red);"></div></div>
+            </div>
+            <div class="sr-bar-row">
+              <div class="sr-type">Incident Labor (SEV-2)</div>
+              <div class="sr-bar-bg"><div class="sr-bar-fill" style="width:40%;background:rgba(239,68,68,0.4);"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="sr-vals">
+          <span class="sv-act" style="color:var(--red);">$94,800</span>
+          <span class="sv-fcast">/ $78,000 fcst</span>
+          <span class="sv-var svar-r">+$16,800 over</span>
+        </div>
+      </div>
+      <div style="margin-top:1rem;padding:0.9rem 1rem;background:var(--surface2);border-radius:9px;border:1px solid var(--border);font-size:0.78rem;color:var(--text-dim);">
+        <strong style="color:var(--text);">14-Day Portfolio Total:</strong> $487,400 actual vs. $478,000 forecasted.
+        <strong style="color:var(--red);">P10 over-budget by $16,800</strong> due to unplanned SEV-2 incident labor (T6 embed on T5 + IC rotation hours).
+        P4 and P9 are favorable — net portfolio variance: <span style="color:var(--amber);font-weight:700;">+$9,400 over forecast (+2.0%).</span>
+        P10 overrun is expected to persist until PD-4892 is resolved and T5 feature freeze is lifted.
+      </div>
+    </div>
+
+    <div class="fin-card">
+      <div class="fc-title">ROI &amp; Savings Tracker</div>
+      <div class="roi-stack">
+        <div class="roi-item">
+          <div class="roi-label">P9 · Lifecycle Savings (Realized)</div>
+          <div class="roi-val" style="color:var(--green);">$18,400<span style="font-size:0.9rem;font-weight:600;">/day</span></div>
+          <div class="roi-sub">T3 Storage FinOps: S3 Intelligent-Tiering + Glacier Deep Archive on 60.4PB. 14-day cycle savings: $257,600. Annualized run-rate: $6.7M/year.</div>
+          <div class="roi-trend" style="color:var(--green);">↑ +$1,200/day vs. prior cycle</div>
+        </div>
+        <div class="roi-item">
+          <div class="roi-label">P9 · COGS Target vs. Baseline</div>
+          <div class="roi-val" style="color:var(--blue);">$24,800 → $14,136<span style="font-size:0.8rem;font-weight:600;">/day</span></div>
+          <div class="roi-sub">Baseline COGS: $24,800/day. Wave 1–2 progress: $18,400/day current. Remaining gap to −43% target: $4,264/day — addressable via W3 Data Plane tiering.</div>
+          <div class="roi-trend" style="color:var(--amber);">⚠ 73% of COGS target achieved. W3 (Q3 2026) needed for remainder.</div>
+        </div>
+        <div class="roi-item">
+          <div class="roi-label">P10 · SEV-2 Incident Cost (PD-4892)</div>
+          <div class="roi-val" style="color:var(--red);">$16,800<span style="font-size:0.8rem;font-weight:600;"> incident labor</span></div>
+          <div class="roi-sub">Estimated 48 engineer-hours across IC, On-Call, T6 embed. Unplanned. Recovery cost: 2 additional T5 sprint days to resolve COE overdue actions.</div>
+          <div class="roi-trend" style="color:var(--red);">↑ Budget overrun: avoidable if Wave 2 had gating on SLO stability.</div>
+        </div>
+        <div class="roi-item">
+          <div class="roi-label">P4 · Projected ROI (Post-Migration)</div>
+          <div class="roi-val" style="color:var(--p4);">TBD<span style="font-size:0.8rem;"> (Cheran validates Jun 7)</span></div>
+          <div class="roi-sub">Phase 4 FinOps validation will produce first ROI model. Preliminary estimate: 20–30% infrastructure cost reduction vs. legacy on-prem posture. Final figures at P4 Phase 4 milestone review.</div>
+          <div class="roi-trend" style="color:var(--text-muted);">Phase 4 gated on successful Phase 3 go-live (May 31).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       OUTPUT 2c: CRITICAL PATH MATRIX
+  ══════════════════════════════════════ -->
+  <p class="section-title"><span class="st-num">OUTPUT 2C</span> Critical Path Matrix — 14-Day Technical Dependency Map</p>
+  <div class="cpm-wrap">
+    <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1.25rem;line-height:1.6;">
+      The following dependencies are <strong style="color:var(--text);">active blockers or risk vectors</strong> identified during this bi-weekly cycle.
+      Teams cannot proceed at full velocity on downstream tasks until upstream dependencies are resolved.
+      SD Ashok's executive decision on T5 sequencing (Escalation 1) is the critical path unlock.
+    </p>
+    <div class="dep-grid">
+
+      <div class="dep-card" style="border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.03);">
+        <div class="dep-head">
+          <span class="dep-from" style="background:rgba(59,130,246,0.15);color:var(--blue);">P9 Wave 2 / T2</span>
+          <span class="dep-arrow">→</span>
+          <span class="dep-to" style="background:rgba(239,68,68,0.15);color:var(--red);">P10 SEV-2 PD-4892</span>
+          <span class="dep-type dt-block">BLOCKING</span>
+        </div>
+        <div class="dep-title">Wave 2 Dual-Write Pipeline is Root Cause of Active SEV-2</div>
+        <div class="dep-body">
+          T2's P9 Wave 2 dual-write architecture (new OpenSearch index + legacy monolith writes in parallel) is generating a 47-minute consistency lag. P10 SEV-2 is not an independent failure — it is the operational signature of an active architectural migration. P9 Wave 2 cannot advance T2 schema changes while this incident is live.
+        </div>
+        <div class="dep-action">
+          <strong>Unblock Action:</strong> P9 Wave 2 T2 scope frozen at observability-only tasks until PD-4892 resolves. Estimated unblock: within 5 business days.
+          Owner: P10 IC @m.okonkwo + P9 Wave 2 lead.
+        </div>
+      </div>
+
+      <div class="dep-card" style="border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.03);">
+        <div class="dep-head">
+          <span class="dep-from" style="background:rgba(59,130,246,0.15);color:var(--blue);">P9 Wave 2 / T5</span>
+          <span class="dep-arrow">→</span>
+          <span class="dep-to" style="background:rgba(239,68,68,0.15);color:var(--red);">P10 T5 Feature Freeze</span>
+          <span class="dep-type dt-block">BLOCKING</span>
+        </div>
+        <div class="dep-title">T5 Decomposition Blocked by SRE-Mandated Feature Freeze</div>
+        <div class="dep-body">
+          T5 Control Plane engineers cannot execute Wave 2 decomposition sprint commits (new API boundary extraction, multi-tenant routing refactor) while P10's feature freeze is active (79% error budget burned). P9 Wave 2 T5 milestones are stalled until P10 budget recovers below the 50% re-engagement threshold.
+        </div>
+        <div class="dep-action">
+          <strong>Unblock Action (SD Ashok decision required):</strong> Formally acknowledge T5 Wave 2 scope is paused this sprint. Redirect T5 engineers to COE action item closure (2 overdue). Reset Wave 2 T5 sprint after error budget drops below 50%.
+        </div>
+      </div>
+
+      <div class="dep-card" style="border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.03);">
+        <div class="dep-head">
+          <span class="dep-from" style="background:rgba(99,102,241,0.15);color:var(--p4);">P4 Phase 3</span>
+          <span class="dep-arrow">→</span>
+          <span class="dep-to" style="background:rgba(16,185,129,0.15);color:var(--green);">P10 SRE Framework</span>
+          <span class="dep-type dt-risk">AT RISK</span>
+        </div>
+        <div class="dep-title">P4 Go-Live (May 31) Requires P10 SRE Coverage Before Cutover</div>
+        <div class="dep-body">
+          P4's Phase 3 milestone (frontend → backend integration go-live, Bala, May 31) will introduce new production AWS workloads — ECS services, DMS jobs, S3 pipelines. P10's SRE mandate requires all production services to have defined SLIs and PagerDuty on-call coverage before first customer traffic.
+          Current gap: zero engagement between P4 and P10 teams.
+        </div>
+        <div class="dep-action">
+          <strong>Unblock Action:</strong> SD Ashok tasks P10 SRE Manager to produce "P4 SRE Readiness Plan" by Apr 5. Deliverable: P4 service SLO catalogue (DMS ingestion, ECS availability, S3 PUT) and PagerDuty routing configuration. Required before May 15 to allow 2-week runbook validation before May 31 cutover.
+        </div>
+      </div>
+
+      <div class="dep-card" style="border-color:rgba(99,102,241,0.25);background:rgba(99,102,241,0.03);">
+        <div class="dep-head">
+          <span class="dep-from" style="background:rgba(99,102,241,0.15);color:var(--p4);">P4 Phase 4 / Cheran</span>
+          <span class="dep-arrow">→</span>
+          <span class="dep-to" style="background:rgba(59,130,246,0.15);color:var(--blue);">P9 T3 COGS Baseline</span>
+          <span class="dep-type dt-seq">SEQUENCED</span>
+        </div>
+        <div class="dep-title">P4 FinOps Baseline Must Align With P9 T3 COGS Model Before May 25</div>
+        <div class="dep-body">
+          P4 Phase 4 (FinOps validation, Cheran, May 25–Jun 7) will produce a post-migration COGS baseline. P9 T3's existing lifecycle savings model ($18,400/day) was constructed on pre-P4 data gravity assumptions. If P4 introduces $X/day in new AWS compute without coordinating with T3, the P9 COGS dashboard will show incorrect trajectories at the June quarterly review.
+        </div>
+        <div class="dep-action">
+          <strong>Unblock Action:</strong> Cheran (P4 FinOps) and T3 lead (P9) must align on a shared cost model framework by May 1. A joint "COGS re-baseline" meeting should be scheduled for Apr 14 to establish methodology alignment 6 weeks before Cheran's Phase 4 execution.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 14-Day Forward Critical Path -->
+    <div class="cpt-timeline">
+      <div class="cpt-title">14-Day Forward Critical Path — March 23 → April 5, 2026</div>
+      <div class="cpt-row">
+        <div class="cpt-date">Mar 24–25</div>
+        <div class="cpt-event"><strong>P10: PD-4892 SEV-2 Resolution Target</strong> IC @m.okonkwo targets resolution by 16:00 UTC Mar 24. Consumer scale-out (3→6 ECS replicas) in progress. If lag not resolved by Mar 25 EOD, escalate to SEV-1.</div>
+        <span class="cpt-owner" style="background:rgba(239,68,68,0.12);color:var(--red);">P10 T2</span>
+        <span class="cpt-risk" style="background:rgba(239,68,68,0.12);color:var(--red);">Critical</span>
+      </div>
+      <div class="cpt-row">
+        <div class="cpt-date">Mar 26</div>
+        <div class="cpt-event"><strong>P10: T5 COE Overdue Actions — Final Deadline</strong> GCI-4401 (OpenSearch dual-write runbook) and GCI-4402 (auth token cache warm-up) past due. T5 must deliver both by Mar 26 or SRE Reliability Improvement Plan (RIP) is triggered.</div>
+        <span class="cpt-owner" style="background:rgba(239,68,68,0.12);color:var(--red);">P10 T5</span>
+        <span class="cpt-risk" style="background:rgba(239,68,68,0.12);color:var(--red);">Critical</span>
+      </div>
+      <div class="cpt-row">
+        <div class="cpt-date">Mar 28</div>
+        <div class="cpt-event"><strong>SD Ashok Decision Gate: T5 Sequencing (P9 vs. P10)</strong> Executive decision required: P9 Wave 2 T5 scope paused until P10 error budget below 50%? All T5 Wave 2 sprint items in hold pending this decision. Recommended: T5 focuses on COE closure + reliability recovery this sprint, Wave 2 resumes next cycle.</div>
+        <span class="cpt-owner" style="background:rgba(212,168,67,0.12);color:var(--gold);">SD Ashok</span>
+        <span class="cpt-risk" style="background:rgba(245,158,11,0.12);color:var(--amber);">High</span>
+      </div>
+      <div class="cpt-row">
+        <div class="cpt-date">Apr 1</div>
+        <div class="cpt-event"><strong>P4: Project Kickoff — All 6 Phase Owners Required</strong> Arjun leads kickoff. P1 (Execution) and P2 (AWS Infra) begin simultaneously. VPC, IAM, DMS configuration activation. T−0 for the migration clock. SD Ashok recommended to attend 30-minute executive sponsor slot.</div>
+        <span class="cpt-owner" style="background:rgba(99,102,241,0.12);color:var(--p4);">P4 Arjun</span>
+        <span class="cpt-risk" style="background:rgba(245,158,11,0.12);color:var(--amber);">High</span>
+      </div>
+      <div class="cpt-row">
+        <div class="cpt-date">Apr 5</div>
+        <div class="cpt-event"><strong>P10 → P4: SRE Readiness Plan Due</strong> P10 SRE Manager must deliver "P4 SRE Readiness Plan" (SLO catalogue for DMS, ECS, S3 services) to P4 team by end of P4 Sprint 1. This is the earliest gate before the May 15 validation window required for Phase 3 go-live.</div>
+        <span class="cpt-owner" style="background:rgba(16,185,129,0.12);color:var(--green);">P10 SRE Mgr</span>
+        <span class="cpt-risk" style="background:rgba(245,158,11,0.12);color:var(--amber);">High</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       OUTPUT 2d: STRATEGIC DECISION LOG
+  ══════════════════════════════════════ -->
+  <p class="section-title"><span class="st-num">OUTPUT 2D</span> Strategic Decision Log — 14-Day Lookback (Mar 9–23, 2026)</p>
+  <div class="dl-wrap">
+    <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1.1rem;line-height:1.55;">
+      Irreversible architectural and financial decisions logged since the last bi-weekly review.
+      <strong style="color:var(--text);">Irreversible decisions cannot be undone without material cost, re-architecture, or SLA impact.</strong>
+      All decisions are tracked regardless of project for cross-portfolio visibility.
+    </p>
+    <table class="dl-table">
+      <thead>
+        <tr>
+          <th>Date</th><th>Project</th><th>Decision</th><th>Owner</th>
+          <th>Rationale</th><th>Irreversible?</th><th>Cross-Portfolio Impact</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="white-space:nowrap;"><strong>Mar 10</strong></td>
+          <td><span class="proj-pill pp9">P9 Wave 2</span></td>
+          <td><strong>Dual-write architecture activated for T2 Search Plane extraction</strong></td>
+          <td>P9 Wave 2 Lead</td>
+          <td style="font-size:0.73rem;">Strangler Fig requires dual-write to prevent data loss during OpenSearch migration. Legacy and new index writes coexist during transition period.</td>
+          <td><span class="dl-irr irr-part">Partially</span></td>
+          <td style="font-size:0.73rem;"><strong style="color:var(--red);">P10: Direct contributor to SEV-2 PD-4892.</strong> Dual-write lag is the operational manifestation of this architectural commitment. Can be rolled back but at cost of data consistency window.</td>
+        </tr>
+        <tr>
+          <td style="white-space:nowrap;"><strong>Mar 12</strong></td>
+          <td><span class="proj-pill pp10">P10 SRE</span></td>
+          <td><strong>T5 Control Plane SRE Feature Freeze imposed (79% error budget threshold)</strong></td>
+          <td>SRE Manager</td>
+          <td style="font-size:0.73rem;">Per P10 SRE policy: error budget exhaustion at &gt;75% within a calendar month triggers automatic feature freeze on the responsible team. T5 crossed threshold this cycle.</td>
+          <td><span class="dl-irr irr-no">Reversible</span></td>
+          <td style="font-size:0.73rem;"><strong style="color:var(--amber);">P9: T5 Wave 2 decomposition sprint blocked.</strong> Feature freeze overrides any product or architectural backlog commitment. P9 Wave 2 T5 milestones will slip ~1 sprint unless SD Ashok grants formal exception.</td>
+        </tr>
+        <tr>
+          <td style="white-space:nowrap;"><strong>Mar 15</strong></td>
+          <td><span class="proj-pill pp9">P9 T3</span></td>
+          <td><strong>S3 Glacier Deep Archive lifecycle policy activated on 13.3PB of data (10+ year objects)</strong></td>
+          <td>T3 Storage Lead</td>
+          <td style="font-size:0.73rem;">Objects older than 10 years with no active holds moved to Deep Archive. $0.00099/GB/month vs. $0.023/GB/month on Standard. Payback immediate.</td>
+          <td><span class="dl-irr irr-yes">Irreversible</span></td>
+          <td style="font-size:0.73rem;"><strong style="color:var(--amber);">P4 + P10:</strong> Any Glacier restore request for this data now takes 12–48 hours. P4 migration jobs that touch archival objects must account for restore SLA. T4 legal hold restores must pre-warm archived objects 48h before any litigation deadline.</td>
+        </tr>
+        <tr>
+          <td style="white-space:nowrap;"><strong>Mar 18</strong></td>
+          <td><span class="proj-pill pp4">P4</span></td>
+          <td><strong>AWS Direct Connect dedicated 1Gbps link ordered for Private DC → AWS migration data path</strong></td>
+          <td>Arjun (Infra)</td>
+          <td style="font-size:0.73rem;">DMS bulk migration requires dedicated 1Gbps link to achieve 4TB/hr sustained throughput without incurring internet egress costs. Link lead time: 35–45 days. Must be ordered now to be live before May 31 go-live milestone.</td>
+          <td><span class="dl-irr irr-yes">Irreversible</span></td>
+          <td style="font-size:0.73rem;"><strong style="color:var(--blue);">P9:</strong> Direct Connect will serve as shared infrastructure for both P4 migration AND P9 Wave 3 Data Plane workloads. T3 and T6 teams should be informed. Capacity planning for shared bandwidth required before W3 activation.</td>
+        </tr>
+        <tr>
+          <td style="white-space:nowrap;"><strong>Mar 20</strong></td>
+          <td><span class="proj-pill pp10">P10 SRE</span></td>
+          <td><strong>PagerDuty on-call rotation extended to include T6 Platform Engineering embed on T5 incidents</strong></td>
+          <td>SRE Manager</td>
+          <td style="font-size:0.73rem;">T5 toil at 24% (over 20% policy cap). T6 platform engineers embedded to absorb operational toil and reduce T5 on-call load while T5 recovers error budget. Temporary measure — reviewed quarterly.</td>
+          <td><span class="dl-irr irr-no">Reversible</span></td>
+          <td style="font-size:0.73rem;"><strong style="color:var(--p4);">P4:</strong> T6 Platform Engineering capacity is now partially allocated to T5 support. If P4 requests T6 embed for AWS EKS/IaC setup post-kickoff, T6 bandwidth may be constrained through Q2 2026.</td>
+        </tr>
+        <tr>
+          <td style="white-space:nowrap;"><strong>Mar 22</strong></td>
+          <td><span class="proj-pill pp9">P9 Wave 2</span></td>
+          <td><strong>T5 Control Plane decomposition sprint included in Wave 2 scope (previously Wave 3)</strong></td>
+          <td>VP Architecture</td>
+          <td style="font-size:0.73rem;">Decision to accelerate T5 extraction into Wave 2 to reduce the monolith's coupling to the Control Plane before P4's AWS migration introduces new tenants into the existing control surface.</td>
+          <td><span class="dl-irr irr-part">Partially</span></td>
+          <td style="font-size:0.73rem;"><strong style="color:var(--red);">P10 CONFLICT:</strong> This decision was made without consulting P10 SRE status. T5's entry into Wave 2 decomposition scope directly conflicts with the active feature freeze. This decision needs to be revisited in the Mar 28 SD Ashok T5 sequencing gate.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       ESCALATION REGISTER (Summary)
+  ══════════════════════════════════════ -->
+  <p class="section-title"><span class="st-num">ESCALATION</span> Compounded Risk Escalation Register — SD Ashok Action Required</p>
+  <div class="esc-grid">
+    <div class="esc-card esc1">
+      <div class="esc-num">01</div>
+      <div class="esc-sev" style="color:var(--red);">🔴 P1 · Immediate</div>
+      <div class="esc-title">T5 Control Plane: Dual Crisis — Decomposition in P9 vs. Feature Freeze in P10</div>
+      <div class="esc-body">
+        T5 engineers cannot simultaneously execute <strong>Wave 2 architectural extraction (P9)</strong> and <strong>resolve 2 overdue COE actions + recover error budget (P10)</strong>. Without an explicit priority decision from SD Ashok, T5 will context-switch between both backlogs — producing sub-optimal outcomes in both projects. This is the highest-compounded risk in the portfolio. The Mar 22 scope decision (T5 into Wave 2) was made without P10 SRE input and must be reviewed.
+      </div>
+      <div class="esc-action">
+        <strong>Required Action by Mar 28:</strong> SD Ashok chairs 45-minute T5 Sequencing Gate with P9 Wave 2 Lead, P10 SRE Manager, and T5 Team Lead. Decision: P10 recovery first (recommended) or formal risk acceptance for Wave 2 continuation.
+      </div>
+      <div class="esc-projects" style="margin-top:0.75rem;">
+        <span class="proj-pill pp9">P9 T5</span>
+        <span class="proj-pill pp10">P10 T5</span>
+      </div>
+    </div>
+    <div class="esc-card esc2">
+      <div class="esc-num">02</div>
+      <div class="esc-sev" style="color:var(--amber);">🟠 P2 · High</div>
+      <div class="esc-title">P4 Production Launch (Jun 30) Without SRE Framework — Compliance Risk</div>
+      <div class="esc-body">
+        P4's June 30 maintenance window will expose new AWS workloads to production traffic. P10's SRE mandate (Phase 1, Q2 2025) requires <strong>all production services to have ratified SLOs and PagerDuty coverage</strong> before first customer traffic. P4 is not currently in scope for P10. With Phase 3 go-live on May 31 and customer notifications going out June 15, any SRE onboarding must begin <strong>no later than mid-April</strong> to allow 6 weeks of SLO baselining.
+      </div>
+      <div class="esc-action">
+        <strong>Required Action by Apr 5:</strong> SD Ashok mandates P10 SRE Manager to produce P4 SRE Readiness Plan. P4 DMS, ECS service, and S3 pipeline SLOs must be drafted before Phase 3 sprint begins (May 1).
+      </div>
+      <div class="esc-projects" style="margin-top:0.75rem;">
+        <span class="proj-pill pp4">P4</span>
+        <span class="proj-pill pp10">P10</span>
+      </div>
+    </div>
+    <div class="esc-card esc3">
+      <div class="esc-num">03</div>
+      <div class="esc-sev" style="color:var(--p4);">🔵 P3 · Medium</div>
+      <div class="esc-title">COGS Compliance: P4 Migration Will Invalidate P9 FinOps Savings Baseline</div>
+      <div class="esc-body">
+        P9 T3's lifecycle savings model ($18,400/day toward $24,800/day baseline) treats the platform COGS as a closed system. P4's migration will introduce <strong>net-new AWS compute costs</strong> (DMS replication instances, ECS tasks, Direct Connect fees) that are not reflected in the current COGS model. Consequence: P9's advertised −43% COGS target may appear to backslide in Q2 reporting even if T3's work is on track — creating false executive optics.
+      </div>
+      <div class="esc-action">
+        <strong>Required Action by Apr 14:</strong> SD Ashok tasks Cheran (P4 FinOps) + T3 Lead (P9) to co-design a unified COGS reporting framework that accounts for incremental P4 compute before P4 Phase 4 (May 25). Deliverable: joint COGS Model v2.0.
+      </div>
+      <div class="esc-projects" style="margin-top:0.75rem;">
+        <span class="proj-pill pp4">P4</span>
+        <span class="proj-pill pp9">P9 T3</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       NEXT 14-DAY COMMITMENTS
+  ══════════════════════════════════════ -->
+  <p class="section-title"><span class="st-num">NEXT CYCLE</span> Next 14-Day Sprint Commitments — Mar 23 → Apr 5, 2026</p>
+  <div class="next-grid">
+    <div class="next-card" style="border-color:rgba(239,68,68,0.3);">
+      <div class="nc-urgency nu-crit">P1 · Critical — SD Ashok</div>
+      <div class="nc-date">Mar 28 Decision Gate</div>
+      <div class="nc-title">T5 Sequencing Decision</div>
+      <div class="nc-body">Chair 45-minute T5 Sequencing Gate. Declare P9 Wave 2 T5 scope paused or formally accept SLO breach risk. No ambiguity — T5 engineers need a single backlog to own this sprint.</div>
+      <div class="nc-proj"><span class="proj-pill pp9">P9</span><span class="proj-pill pp10">P10</span></div>
+    </div>
+    <div class="next-card" style="border-color:rgba(239,68,68,0.3);">
+      <div class="nc-urgency nu-crit">P1 · Critical — P10 IC</div>
+      <div class="nc-date">Mar 24–25</div>
+      <div class="nc-title">Resolve SEV-2 PD-4892</div>
+      <div class="nc-body">Confirm consumer scale-out (3→6 ECS replicas) is reducing T2 dual-write lag. If lag not below 5 min by Mar 25 EOD, escalate to SEV-1 and invoke DR protocol. Publish COE within 5 business days of resolution.</div>
+      <div class="nc-proj"><span class="proj-pill pp10">P10 T2</span></div>
+    </div>
+    <div class="next-card" style="border-color:rgba(245,158,11,0.3);">
+      <div class="nc-urgency nu-high">P2 · High — Arjun</div>
+      <div class="nc-date">April 1 Milestone</div>
+      <div class="nc-title">P4 Project Kickoff</div>
+      <div class="nc-body">Finalize remaining 10% of AWS provisioning checklist. Confirm all 6 phase owners present. SD Ashok attends executive sponsor slot. P1 and P2 sprint backlogs activated simultaneously. Direct Connect order confirmed (Mar 18).</div>
+      <div class="nc-proj"><span class="proj-pill pp4">P4</span></div>
+    </div>
+    <div class="next-card" style="border-color:rgba(245,158,11,0.3);">
+      <div class="nc-urgency nu-high">P2 · High — P10 SRE Mgr</div>
+      <div class="nc-date">April 5 Deadline</div>
+      <div class="nc-title">P4 SRE Readiness Plan</div>
+      <div class="nc-body">Draft SLOs for P4's 3 critical services (DMS ingestion, ECS availability, S3 PUT pipeline). Propose PagerDuty routing trees. Deliver to P4 team by end of Sprint 1. Baseline collection must begin May 1 to meet May 31 gate.</div>
+      <div class="nc-proj"><span class="proj-pill pp10">P10</span><span class="proj-pill pp4">P4</span></div>
+    </div>
+    <div class="next-card">
+      <div class="nc-urgency nu-high">P2 · High — T5 Team</div>
+      <div class="nc-date">Mar 26 Deadline</div>
+      <div class="nc-title">Close Overdue COE Actions</div>
+      <div class="nc-body">Deliver GCI-4401 (OpenSearch dual-write runbook) and GCI-4402 (auth token cache warm-up script). Both are 5+ days overdue. Non-delivery by Mar 26 triggers SRE Reliability Improvement Plan for T5.</div>
+      <div class="nc-proj"><span class="proj-pill pp10">P10 T5</span></div>
+    </div>
+    <div class="next-card">
+      <div class="nc-urgency nu-med">P3 · Medium — P9 Wave 2</div>
+      <div class="nc-date">Mar 24 onwards</div>
+      <div class="nc-title">Freeze T2 Dual-Write Schema Changes</div>
+      <div class="nc-body">No new OpenSearch index schema changes or dual-write configuration updates until PD-4892 is resolved and COE published. T2 Wave 2 work restricted to observability and runbook documentation tasks only.</div>
+      <div class="nc-proj"><span class="proj-pill pp9">P9 T2</span></div>
+    </div>
+    <div class="next-card">
+      <div class="nc-urgency nu-med">P3 · Medium — Cheran</div>
+      <div class="nc-date">Apr 14 (Next Cycle)</div>
+      <div class="nc-title">Schedule COGS Alignment Meeting</div>
+      <div class="nc-body">Confirm joint meeting with P9 T3 Lead to co-design unified COGS reporting model (P4 migration costs + P9 lifecycle savings). Deliverable: COGS Model v2.0 by May 1. Prevents contradictory financial reporting at Q2 review.</div>
+      <div class="nc-proj"><span class="proj-pill pp4">P4</span><span class="proj-pill pp9">P9</span></div>
+    </div>
+    <div class="next-card">
+      <div class="nc-urgency nu-low">P4 · Monitoring — T3</div>
+      <div class="nc-date">Ongoing</div>
+      <div class="nc-title">Monitor Glacier Restore SLA Impact</div>
+      <div class="nc-body">Mar 15 decision moved 13.3PB to Deep Archive (12–48h restore SLA). P4 migration jobs and T4 legal hold requests must be audited to confirm no active objects were archived prematurely. T3 to publish restore impact report by Apr 1.</div>
+      <div class="nc-proj"><span class="proj-pill pp9">P9 T3</span><span class="proj-pill pp10">P10 T4</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       THE MIMECAST WAY  ·  A Closing Word from SD Ashok to the 60-engineer team
+       ══════════════════════════════════════════════════════════════════════ -->
+  <section class="mw-section">
+    <div class="mw-inner">
+
+      <!-- Hero headline -->
+      <div class="mw-eyebrow">From Senior Director Ashok · For Every Engineer on This Portfolio</div>
+      <div class="mw-headline">
+        <div class="mw-h1">Before you close this dashboard,</div>
+        <div class="mw-h2">remember who we are</div>
+        <div class="mw-h3">and why it matters.</div>
+      </div>
+
+      <!-- 2-column body -->
+      <div class="mw-body">
+
+        <!-- LEFT — 5 Pillars mapped to current sprint reality -->
+        <div class="mw-pillars">
+
+          <div class="mw-pillar mp1">
+            <div class="mw-pillar-icon">🏗️</div>
+            <div class="mw-pillar-text">
+              <div class="mw-pillar-title" style="color:#f9a8d4;">Build Our Company Together</div>
+              <div class="mw-pillar-desc">We're empowered by our mission. Every sprint, every design decision, every line of code is a brick in something bigger than any one of us. With P4 kickoff in T−9 days, <strong style="color:#e0b8d4;">60 engineers across 6 teams</strong> are building the same cathedral — even if you can only see your corner of it right now.</div>
+            </div>
+          </div>
+
+          <div class="mw-pillar mp2">
+            <div class="mw-pillar-icon">⭐</div>
+            <div class="mw-pillar-text">
+              <div class="mw-pillar-title" style="color:#c084fc;">Deliver a Remarkable Experience</div>
+              <div class="mw-pillar-desc">We deliver quickly — and outstandingly. Good is never good enough for Mimecasters. <strong style="color:#d4b8f5;">$18.4K in daily savings</strong> is proof you delivered. <strong style="color:#d4b8f5;">99.97% uptime</strong> across 60PB of mission-critical data is remarkable. Don't let a tough Cycle 7 make you forget what you've already built.</div>
+            </div>
+          </div>
+
+          <div class="mw-pillar mp3">
+            <div class="mw-pillar-icon">🔧</div>
+            <div class="mw-pillar-text">
+              <div class="mw-pillar-title" style="color:#60a5fa;">Make Things Better</div>
+              <div class="mw-pillar-desc">We're big on honesty because it makes us better. Every COE, every blameless retro, every escalation on this dashboard — that's not failure. That's the team doing exactly what Mimecasters do. <strong style="color:#a8d4f5;">82% COE actions closed</strong>. We're honest. We improve. We ship better.</div>
+            </div>
+          </div>
+
+          <div class="mw-pillar mp4">
+            <div class="mw-pillar-icon">🤝</div>
+            <div class="mw-pillar-text">
+              <div class="mw-pillar-title" style="color:#34d399;">Invest in Another</div>
+              <div class="mw-pillar-desc">We never leave anyone behind. <strong style="color:#a8f5d8;">Team T5 is in a 68% budget burn crisis</strong> and facing a live SEV-2. The whole portfolio sees it. T6 engineers are embedded with T5. When one team is under pressure, we all lean in — that's not kindness, that's how Mimecasters win.</div>
+            </div>
+          </div>
+
+          <div class="mw-pillar mp5">
+            <div class="mw-pillar-icon">🛡️</div>
+            <div class="mw-pillar-text">
+              <div class="mw-pillar-title" style="color:#fb923c;">Bring a Resilient Spirit</div>
+              <div class="mw-pillar-desc">If cybercriminals have a good day, we work twice as hard to make the rest of their day a nightmare. While we run migration sprints, the SRE war room is live. <strong style="color:#fed7aa;">Our customers never stop. Neither do we.</strong> That resilience is what makes Mimecast worth fighting for.</div>
+            </div>
+          </div>
+
+        </div><!-- /mw-pillars -->
+
+        <!-- RIGHT — The Manifesto card + CTA + Team recognition -->
+        <div class="mw-right">
+
+          <div class="mw-quote-card">
+            <div class="mwq-header">The Mimecast Way · Our Manifesto</div>
+            <div class="mwq-body">
+              <strong>We never leave anyone behind.</strong> We deliver quickly — and outstandingly.
+              We're big on honesty because it makes us better. We're empowered by our mission.<br/><br/>
+              <span class="mwq-threat">And if cybercriminals have a good day, we work twice as hard to make the rest of their day a nightmare.</span>
+              <br/><br/>
+              <strong style="font-size:1.05rem; font-style:normal; color:#e0aaff; display:block; text-align:right; letter-spacing:0.03em;">That's the Mimecast Way. &nbsp;🟣</strong>
+            </div>
+          </div>
+
+          <div class="mw-cta">
+            <div class="mw-cta-tag">A Personal Note · Cycle 7</div>
+            <div class="mw-cta-title">You're not just engineers.<br/>You're Mimecasters.</div>
+            <div class="mw-cta-sub">
+              This cycle has asked a lot. Budget decisions, SEV-2 alerts, migration blockers, and the ever-present pressure of 60PB in motion. But look at what this team has built, what it has protected, and what it is still building.<br/><br/>
+              Every green on this RAG board is yours. Every amber is a problem you're already solving. Every red is a fire you're already in — and Mimecasters don't run from fires.
+            </div>
+          </div>
+
+        </div><!-- /mw-right -->
+
+      </div><!-- /mw-body -->
+
+      <!-- Team shoutout bar -->
+      <div class="mw-shoutout">
+        <div class="mws-left">
+          <div class="mws-tag">Portfolio Teams · Cycle 7 Heroes</div>
+          <div class="mws-msg">
+            Arjun, Bala, Cheran, Divya and every engineer pulling across <strong>T1–T6</strong> — the mission lives because you show up. Carry <em>The Mimecast Way</em> into the next sprint. See you at the April 6 review.
+            <strong style="color:#c084fc; display:block; margin-top:0.4rem;">— SD Ashok</strong>
+          </div>
+        </div>
+        <div class="mws-avatars">
+          <div class="mwa">
+            <div class="mwa-dot" style="background:rgba(236,72,153,0.12); border-color:rgba(236,72,153,0.4); color:#f9a8d4;">AJ</div>
+            <div class="mwa-label">Arjun</div>
+          </div>
+          <div class="mwa">
+            <div class="mwa-dot" style="background:rgba(168,85,247,0.12); border-color:rgba(168,85,247,0.4); color:#c084fc;">BA</div>
+            <div class="mwa-label">Bala</div>
+          </div>
+          <div class="mwa">
+            <div class="mwa-dot" style="background:rgba(59,130,246,0.12); border-color:rgba(59,130,246,0.4); color:#60a5fa;">CH</div>
+            <div class="mwa-label">Cheran</div>
+          </div>
+          <div class="mwa">
+            <div class="mwa-dot" style="background:rgba(16,185,129,0.12); border-color:rgba(16,185,129,0.4); color:#34d399;">DV</div>
+            <div class="mwa-label">Divya</div>
+          </div>
+          <div class="mwa">
+            <div class="mwa-dot" style="background:rgba(251,113,49,0.12); border-color:rgba(251,113,49,0.4); color:#fb923c;">T5</div>
+            <div class="mwa-label">Resilient</div>
+          </div>
+          <div class="mwa">
+            <div class="mwa-dot" style="background:rgba(212,168,67,0.12); border-color:rgba(212,168,67,0.4); color:#d4a843;">+54</div>
+            <div class="mwa-label">Engineers</div>
+          </div>
+        </div>
+      </div><!-- /mw-shoutout -->
+
+    </div><!-- /mw-inner -->
+  </section><!-- /mw-section -->
+
+</main>
+
+<footer>
+  <strong>Portfolio Command Center · Project 11 — Bi-Weekly Executive Summary</strong><br/>
+  Owner: Senior Director Ashok · GCI Message Archiver Platform · Cadence: Fortnightly · Cycle 7 · March 23, 2026<br/>
+  Confidential · Internal Executive Use Only · Next Review: April 6, 2026 · Projects: P4, P9, P10
+</footer>
+
+</body>
+</html>

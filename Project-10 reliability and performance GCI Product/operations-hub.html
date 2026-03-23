@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Operations Hub — GCI SRE</title>
+  <style>
+    :root {
+      --bg: #080d12; --surface: #0d1421; --surface2: #111d2e; --border: #1a2d44;
+      --green: #10b981; --red: #ef4444; --amber: #f59e0b; --blue: #3b82f6;
+      --purple: #8b5cf6; --cyan: #06b6d4;
+      --text: #e2e8f0; --text-muted: #4b6070; --text-dim: #7fa3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+    header { background: linear-gradient(135deg,#060b10,#0b1826); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 34px; height: 34px; background: linear-gradient(135deg,var(--green),var(--cyan)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .logo-text h1 { font-size: 0.95rem; font-weight: 700; }
+    .logo-text p { font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; }
+    nav { display: flex; gap: 3px; }
+    nav a { color: var(--text-dim); text-decoration: none; padding: 5px 13px; border-radius: 6px; font-size: 0.78rem; font-weight: 500; transition: all 0.2s; border: 1px solid transparent; }
+    nav a:hover { color: var(--text); background: var(--surface2); border-color: var(--border); }
+    nav a.active { color: #fff; background: var(--cyan); border-color: var(--cyan); }
+
+    .hero { background: linear-gradient(135deg,#060b10,#0c1a2e,#060b10); border-bottom: 1px solid var(--border); padding: 2.5rem 2rem; position: relative; overflow: hidden; }
+    .hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 50% 60% at 80% 40%,rgba(6,182,212,0.07) 0%,transparent 70%); }
+    .hero-content { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
+    .eyebrow { font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--cyan); font-weight: 700; margin-bottom: 0.6rem; }
+    .hero h2 { font-size: 1.8rem; font-weight: 900; margin-bottom: 0.5rem; }
+    .hero h2 span { background: linear-gradient(135deg,var(--cyan),var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { color: var(--text-dim); font-size: 0.87rem; max-width: 680px; line-height: 1.6; }
+    .hero-meta { display: flex; gap: 1rem; margin-top: 1.25rem; flex-wrap: wrap; }
+    .hm { padding: 0.35rem 0.85rem; border-radius: 7px; font-size: 0.72rem; font-weight: 600; border: 1px solid var(--border); background: var(--surface); color: var(--text-dim); }
+    .hm strong { color: var(--cyan); }
+
+    .main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+    .section-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px; }
+    .section-title::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--border),transparent); }
+
+    /* Executive Plane */
+    .exec-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin-bottom: 1rem; }
+    .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.1rem; }
+    .kpi-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .kpi-value { font-size: 2rem; font-weight: 900; line-height: 1; margin-bottom: 0.35rem; }
+    .kpi-sub { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .kpi-bar-bg { height: 4px; border-radius: 2px; background: var(--surface2); }
+    .kpi-bar-fill { height: 4px; border-radius: 2px; }
+    .kpi-delta { font-size: 0.68rem; margin-top: 0.4rem; }
+
+    /* MTTA/MTTR trend */
+    .trend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+    .trend-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; }
+    .tc-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1rem; }
+    .tc-head h3 { font-size: 0.9rem; font-weight: 700; }
+    .tc-head .tval { font-size: 1.6rem; font-weight: 900; }
+    .trend-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 0.6rem; }
+    .tbr-label { font-size: 0.72rem; color: var(--text-dim); width: 80px; flex-shrink: 0; text-align: right; }
+    .tbr-bar-bg { flex: 1; height: 20px; border-radius: 5px; background: var(--surface2); overflow: hidden; }
+    .tbr-bar { height: 100%; border-radius: 5px; display: flex; align-items: center; padding-left: 8px; font-size: 0.65rem; font-weight: 700; white-space: nowrap; }
+    .tbr-val { font-size: 0.72rem; color: var(--text-dim); width: 55px; flex-shrink: 0; text-align: left; }
+
+    /* Team SLO health matrix — expandable */
+    .team-matrix { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; margin-bottom: 2rem; }
+    .tm-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+    .tm-table th { background: var(--surface2); color: var(--text-muted); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.55rem 0.75rem; border: 1px solid var(--border); text-align: center; }
+    .tm-table th:first-child { text-align: left; }
+    .tm-table td { padding: 0.65rem 0.75rem; border: 1px solid var(--border); text-align: center; color: var(--text-dim); }
+    .tm-table td:first-child { text-align: left; font-weight: 600; }
+    .tm-table tr:hover td { background: var(--surface2); }
+    .sp { display: inline-block; padding: 3px 9px; border-radius: 5px; font-size: 0.67rem; font-weight: 700; }
+    .sp-g { background: rgba(16,185,129,0.15); color: var(--green); }
+    .sp-a { background: rgba(245,158,11,0.15); color: var(--amber); }
+    .sp-r { background: rgba(239,68,68,0.15); color: var(--red); }
+    .sp-b { background: rgba(59,130,246,0.15); color: var(--blue); }
+    .team-pill { display: inline-flex; align-items: center; gap: 6px; }
+    .tp-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* 60PB Telemetry */
+    .telem-tabs { display: flex; gap: 4px; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+    .telem-tab { padding: 0.5rem 1.1rem; cursor: pointer; font-size: 0.8rem; font-weight: 600; border-radius: 8px 8px 0 0; color: var(--text-muted); border: 1px solid transparent; border-bottom: none; transition: all 0.2s; }
+    .telem-tab.tt-active { background: var(--surface2); color: var(--cyan); border-color: var(--border); border-bottom: 1px solid var(--surface2); margin-bottom: -1px; }
+    .telem-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-bottom: 2rem; }
+    .tel-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; }
+    .tel-card.tel-warn { border-color: rgba(245,158,11,0.35); background: rgba(245,158,11,0.04); }
+    .tel-card.tel-crit { border-color: rgba(239,68,68,0.35); background: rgba(239,68,68,0.04); }
+    .tel-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.9rem; }
+    .tel-title { font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; }
+    .tel-sub { font-size: 0.68rem; color: var(--text-muted); }
+    .tel-badge { font-size: 0.65rem; padding: 3px 8px; border-radius: 5px; font-weight: 700; }
+    .tel-stat { display: flex; justify-content: space-between; align-items: baseline; padding: 0.45rem 0; border-bottom: 1px solid var(--border); }
+    .tel-stat:last-child { border-bottom: none; }
+    .tel-stat-label { font-size: 0.73rem; color: var(--text-dim); }
+    .tel-stat-val { font-size: 0.82rem; font-weight: 700; }
+    .tel-sparkline { height: 40px; display: flex; align-items: flex-end; gap: 2px; margin-top: 0.8rem; }
+    .tsb { flex: 1; border-radius: 2px 2px 0 0; min-height: 4px; }
+
+    /* Runbook compliance */
+    .runbook-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+    .rb-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; }
+    .rb-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+    .rb-title { font-size: 0.82rem; font-weight: 700; margin-bottom: 3px; }
+    .rb-sub { font-size: 0.67rem; color: var(--text-muted); }
+    .rb-score { font-size: 1.6rem; font-weight: 900; }
+    .rb-bar-bg { height: 6px; border-radius: 3px; background: var(--surface2); margin-bottom: 0.75rem; }
+    .rb-bar { height: 6px; border-radius: 3px; }
+    .rb-items { font-size: 0.73rem; color: var(--text-dim); line-height: 1.6; }
+    .rb-item { display: flex; justify-content: space-between; padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+    .rb-item:last-child { border-bottom: none; }
+
+    /* Alert noise report */
+    .alert-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; margin-bottom: 2rem; }
+    .alert-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+    .alert-table th { background: var(--surface2); color: var(--text-muted); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.5rem 0.75rem; border: 1px solid var(--border); text-align: left; }
+    .alert-table td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); color: var(--text-dim); }
+    .alert-table tr:hover td { background: var(--surface2); }
+    .noise-bar { height: 8px; border-radius: 4px; display: inline-block; vertical-align: middle; margin-right: 6px; }
+
+    footer { border-top: 1px solid var(--border); text-align: center; padding: 1.5rem; color: var(--text-muted); font-size: 0.72rem; margin-top: 2rem; }
+    footer strong { color: var(--text-dim); }
+
+    @media (max-width: 1100px) { .exec-grid { grid-template-columns: repeat(2,1fr); } .telem-grid { grid-template-columns: 1fr 1fr; } .runbook-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 768px) { nav { display: none; } .exec-grid,.trend-grid,.telem-grid,.runbook-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🛡️</div>
+    <div class="logo-text">
+      <h1>GCI Operations Hub</h1>
+      <p>Site Reliability Engineering · Message Archiver</p>
+    </div>
+  </div>
+  <nav>
+    <a href="index.html">Command Center</a>
+    <a href="reliability-framework.html">Reliability Framework</a>
+    <a href="operations-hub.html" class="active">Operations Hub</a>
+    <a href="war-room.html">War Room &amp; Post-Mortems</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <div class="hero-content">
+    <p class="eyebrow">Output 2 · Operational Command Center · 60PB Telemetry Intelligence</p>
+    <h2>The <span>Operations Command Center</span></h2>
+    <p>
+      Deep-dive reliability observability across all 6 domain teams and 60PB of live archive data.
+      Executive reliability plane, per-team SLO health matrix, telemetry drill-down, and
+      actionable alert noise analysis.
+    </p>
+    <div class="hero-meta">
+      <div class="hm">Last Refresh <strong>2 min ago</strong></div>
+      <div class="hm">Data Window <strong>30-Day Rolling</strong></div>
+      <div class="hm">Coverage <strong>100% of services</strong></div>
+      <div class="hm">Active SLOs <strong>18 across 6 teams</strong></div>
+    </div>
+  </div>
+</div>
+
+<main class="main">
+
+  <!-- Executive Reliability Plane -->
+  <p class="section-title">Executive Reliability Plane — 30-Day Window</p>
+  <div class="exec-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Platform Uptime (SLA Relevant)</div>
+      <div class="kpi-value" style="color:var(--green);">99.97%</div>
+      <div class="kpi-sub">Target: 99.9% · SLA: 99.5%</div>
+      <div class="kpi-bar-bg"><div class="kpi-bar-fill" style="width:99.97%;background:var(--green);"></div></div>
+      <div class="kpi-delta" style="color:var(--green);">↑ +0.02% vs last month</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Mean Time to Acknowledge</div>
+      <div class="kpi-value" style="color:var(--cyan);">4.2<span style="font-size:1rem;"> min</span></div>
+      <div class="kpi-sub">SLO: &lt;5 min · SEV-1: &lt;2 min</div>
+      <div class="kpi-bar-bg"><div class="kpi-bar-fill" style="width:84%;background:var(--cyan);"></div></div>
+      <div class="kpi-delta" style="color:var(--green);">↓ −0.8 min vs last month</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Mean Time to Resolve</div>
+      <div class="kpi-value" style="color:var(--amber);">18.6<span style="font-size:1rem;"> min</span></div>
+      <div class="kpi-sub">SLO: &lt;30 min (SEV-2) · SEV-1: &lt;15</div>
+      <div class="kpi-bar-bg"><div class="kpi-bar-fill" style="width:62%;background:var(--amber);"></div></div>
+      <div class="kpi-delta" style="color:var(--green);">↓ −4.1 min vs last month</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Error Budget Consumed (Avg)</div>
+      <div class="kpi-value" style="color:var(--amber);">38.1%</div>
+      <div class="kpi-sub">T5 Control Plane critical at 79%</div>
+      <div class="kpi-bar-bg"><div class="kpi-bar-fill" style="width:38%;background:var(--amber);"></div></div>
+      <div class="kpi-delta" style="color:var(--red);">↑ +6.3% vs last month · T5 driving average</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Total Incidents (30d)</div>
+      <div class="kpi-value" style="color:var(--text);">47</div>
+      <div class="kpi-sub">SEV-1: 1 · SEV-2: 3 · SEV-3: 18 · SEV-4: 25</div>
+      <div class="kpi-bar-bg"><div class="kpi-bar-fill" style="width:58%;background:var(--blue);"></div></div>
+      <div class="kpi-delta" style="color:var(--green);">↓ −9 incidents vs last month</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">COE Actions Overdue</div>
+      <div class="kpi-value" style="color:var(--red);">3</div>
+      <div class="kpi-sub">14 open · 11 on-track · 3 past due</div>
+      <div class="kpi-bar-bg"><div class="kpi-bar-fill" style="width:21%;background:var(--red);"></div></div>
+      <div class="kpi-delta" style="color:var(--red);">↑ +1 overdue — T5 owns 2 of 3</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Alert Actionability Rate</div>
+      <div class="kpi-value" style="color:var(--green);">74%</div>
+      <div class="kpi-sub">Target: &gt;80% · 26% noisy alerts</div>
+      <div class="kpi-bar-bg"><div class="kpi-bar-fill" style="width:74%;background:var(--green);"></div></div>
+      <div class="kpi-delta" style="color:var(--green);">↑ +8% vs Q1 (after T3 audit)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Toil % of Sprint Capacity</div>
+      <div class="kpi-value" style="color:var(--amber);">17%</div>
+      <div class="kpi-sub">Cap: 20% · Target: &lt;10% by Phase 3</div>
+      <div class="kpi-bar-bg"><div class="kpi-bar-fill" style="width:85%;background:var(--amber);"></div></div>
+      <div class="kpi-delta" style="color:var(--green);">↓ −3% vs Q4 2024 baseline</div>
+    </div>
+  </div>
+
+  <!-- MTTA / MTTR Trends per team -->
+  <p class="section-title">MTTA &amp; MTTR Trends — Per Team (30-Day Average)</p>
+  <div class="trend-grid">
+    <div class="trend-card">
+      <div class="tc-head">
+        <div>
+          <h3>Mean Time to Acknowledge (MTTA)</h3>
+          <div style="font-size:0.72rem;color:var(--text-muted);">SLO: &lt;5 min (SEV-1: &lt;2 min)</div>
+        </div>
+        <div class="tval" style="color:var(--cyan);">4.2 min</div>
+      </div>
+      <div class="trend-bar-row"><div class="tbr-label">T1 Ingestion</div><div class="tbr-bar-bg"><div class="tbr-bar" style="width:62%;background:var(--green);">T1 — 3.1m</div></div><div class="tbr-val" style="color:var(--green);">3.1 min</div></div>
+      <div class="trend-bar-row"><div class="tbr-label">T2 Search</div><div class="tbr-bar-bg"><div class="tbr-bar" style="width:78%;background:var(--amber);">T2 — 3.9m</div></div><div class="tbr-val" style="color:var(--amber);">3.9 min</div></div>
+      <div class="trend-bar-row"><div class="tbr-label">T3 FinOps</div><div class="tbr-bar-bg"><div class="tbr-bar" style="width:60%;background:var(--green);">T3 — 3.0m</div></div><div class="tbr-val" style="color:var(--green);">3.0 min</div></div>
+      <div class="trend-bar-row"><div class="tbr-label">T4 Compliance</div><div class="tbr-bar-bg"><div class="tbr-bar" style="width:72%;background:var(--green);">T4 — 3.6m</div></div><div class="tbr-val" style="color:var(--green);">3.6 min</div></div>
+      <div class="trend-bar-row"><div class="tbr-label">T5 Control</div><div class="tbr-bar-bg"><div class="tbr-bar" style="width:100%;background:var(--red);">T5 — 5.0m ⚠</div></div><div class="tbr-val" style="color:var(--red);">5.0 min</div></div>
+      <div class="trend-bar-row"><div class="tbr-label">T6 Platform</div><div class="tbr-bar-bg"><div class="tbr-bar" style="width:66%;background:var(--green);">T6 — 3.3m</div></div><div class="tbr-val" style="color:var(--green);">3.3 min</div></div>
+      <div style="font-size:0.72rem;color:var(--red);margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border);">⚠ T5 breaching SEV-2 MTTA SLO — on-call rotation gap identified. Staffing review scheduled 2025-07-28.</div>
+    </div>
+    <div class="trend-card">
+      <div class="tc-head">
+        <div>
+          <h3>Mean Time to Resolve (MTTR)</h3>
+          <div style="font-size:0.72rem;color:var(--text-muted);">SLO: &lt;30 min (SEV-2) · SEV-1: &lt;15 min</div>
+        </div>
+        <div class="tval" style="color:var(--amber);">18.6 min</div>
+      </div>
+      <div class="trend-bar-row"><div class="tbr-label">T1 Ingestion</div><div class="tbr-bar-bg"><div class="tbr-bar" style="width:40%;background:var(--green);">T1 — 12m</div></div><div class="tbr-val" style="color:var(--green);">12 min</div></div>
+      <div class="trend-bar-row"><div class="tbr-label">T2 Search</div><div class="tbr-bar-bg"><div class="tbr-bar" style="width:83%;background:var(--amber);">T2 — 25m</div></div><div class="tbr-val" style="color:var(--amber);">25 min</div></div>
+      <div class="trend-bar-row"><div class="tbr-label">T3 FinOps</div><div class="tbr-bar-bg"><div class="tbr-bar" style="width:33%;background:var(--green);">T3 — 10m</div></div><div class="tbr-val" style="color:var(--green);">10 min</div></div>
+      <div class="trend-bar-row"><div class="tbr-label">T4 Compliance</div><div class="tbr-bar-bg"><div class="tbr-bar" style="width:60%;background:var(--green);">T4 — 18m</div></div><div class="tbr-val" style="color:var(--green);">18 min</div></div>
+      <div class="trend-bar-row"><div class="tbr-label">T5 Control</div><div class="tbr-bar-bg"><div class="tbr-bar" style="width:100%;background:var(--red);">T5 — 38m 🚨</div></div><div class="tbr-val" style="color:var(--red);">38 min</div></div>
+      <div class="trend-bar-row"><div class="tbr-label">T6 Platform</div><div class="tbr-bar-bg"><div class="tbr-bar" style="width:40%;background:var(--green);">T6 — 12m</div></div><div class="tbr-val" style="color:var(--green);">12 min</div></div>
+      <div style="font-size:0.72rem;color:var(--red);margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border);">🚨 T5 MTTR at 38 min — breaching SEV-2 SLO of 30 min. Root cause: insufficient runbook coverage for OpenSearch dual-write failures. RCA in progress.</div>
+    </div>
+  </div>
+
+  <!-- Team SLO Health Matrix -->
+  <p class="section-title">Team SLO Health Matrix — 30-Day Rolling</p>
+  <div class="team-matrix">
+    <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:1rem;">
+      Each cell shows the SLO compliance % over 30 days, relative to the team's set target.
+      A cell turning amber or red means the team's error budget is eroding — feature freeze is automatic at 100% budget consumed.
+    </p>
+    <table class="tm-table">
+      <thead>
+        <tr>
+          <th style="min-width:160px;">Team</th>
+          <th>Availability</th>
+          <th>Latency P99</th>
+          <th>Durability</th>
+          <th>Error Budget</th>
+          <th>On-Call Load</th>
+          <th>Toil %</th>
+          <th>COE Health</th>
+          <th>Overall</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="team-pill"><div class="tp-dot" style="background:#ef4444;"></div>T1 · Ingestion</div></td>
+          <td><span class="sp sp-g">99.991%</span></td>
+          <td><span class="sp sp-g">88ms avg</span></td>
+          <td><span class="sp sp-g">100%</span></td>
+          <td><span class="sp sp-g">18% used</span></td>
+          <td><span class="sp sp-g">8 pages/wk</span></td>
+          <td><span class="sp sp-g">14%</span></td>
+          <td><span class="sp sp-g">All actions ✓</span></td>
+          <td><span class="sp sp-g">✓ Healthy</span></td>
+        </tr>
+        <tr>
+          <td><div class="team-pill"><div class="tp-dot" style="background:#6366f1;"></div>T2 · Search &amp; Index</div></td>
+          <td><span class="sp sp-a">99.91%</span></td>
+          <td><span class="sp sp-g">420ms P99</span></td>
+          <td><span class="sp sp-g">100%</span></td>
+          <td><span class="sp sp-a">54% used</span></td>
+          <td><span class="sp sp-a">14 pages/wk</span></td>
+          <td><span class="sp sp-a">18%</span></td>
+          <td><span class="sp sp-a">1 action late</span></td>
+          <td><span class="sp sp-a">⚠ Watch</span></td>
+        </tr>
+        <tr>
+          <td><div class="team-pill"><div class="tp-dot" style="background:#10b981;"></div>T3 · Storage &amp; FinOps</div></td>
+          <td><span class="sp sp-g">99.99%</span></td>
+          <td><span class="sp sp-g">N/A</span></td>
+          <td><span class="sp sp-g">100%</span></td>
+          <td><span class="sp sp-g">12% used</span></td>
+          <td><span class="sp sp-g">5 pages/wk</span></td>
+          <td><span class="sp sp-g">11%</span></td>
+          <td><span class="sp sp-g">All actions ✓</span></td>
+          <td><span class="sp sp-g">✓ Healthy</span></td>
+        </tr>
+        <tr>
+          <td><div class="team-pill"><div class="tp-dot" style="background:#f59e0b;"></div>T4 · E-Discovery</div></td>
+          <td><span class="sp sp-g">99.98%</span></td>
+          <td><span class="sp sp-g">Apply &lt;4h</span></td>
+          <td><span class="sp sp-g">100% WORM</span></td>
+          <td><span class="sp sp-a">41% used</span></td>
+          <td><span class="sp sp-g">7 pages/wk</span></td>
+          <td><span class="sp sp-g">15%</span></td>
+          <td><span class="sp sp-g">All actions ✓</span></td>
+          <td><span class="sp sp-g">✓ Healthy</span></td>
+        </tr>
+        <tr style="background:rgba(239,68,68,0.04);">
+          <td><div class="team-pill"><div class="tp-dot" style="background:#3b82f6;"></div>T5 · Control Plane</div></td>
+          <td><span class="sp sp-a">99.94%</span></td>
+          <td><span class="sp sp-g">38ms P99</span></td>
+          <td><span class="sp sp-g">N/A</span></td>
+          <td><span class="sp sp-r">79% used 🚨</span></td>
+          <td><span class="sp sp-r">22 pages/wk</span></td>
+          <td><span class="sp sp-r">24% over cap</span></td>
+          <td><span class="sp sp-r">2 actions OD</span></td>
+          <td><span class="sp sp-r">🚨 Critical</span></td>
+        </tr>
+        <tr>
+          <td><div class="team-pill"><div class="tp-dot" style="background:#8b5cf6;"></div>T6 · Platform Eng</div></td>
+          <td><span class="sp sp-g">99.97%</span></td>
+          <td><span class="sp sp-g">Build: 4.2min</span></td>
+          <td><span class="sp sp-g">99.8% pipeline</span></td>
+          <td><span class="sp sp-g">22% used</span></td>
+          <td><span class="sp sp-g">6 pages/wk</span></td>
+          <td><span class="sp sp-g">13%</span></td>
+          <td><span class="sp sp-g">All actions ✓</span></td>
+          <td><span class="sp sp-g">✓ Healthy</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top:1rem;padding:0.75rem 1rem;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.25);border-radius:8px;font-size:0.78rem;color:var(--text-dim);">
+      <strong style="color:var(--red);">🚨 T5 Control Plane SRE Escalation:</strong>
+      Error budget at 79% with 14 days remaining in the month. T5 has entered a soft feature freeze effective immediately.
+      SRE Manager has embedded a Platform Engineering (T6) engineer to reduce operational toil (currently 24% — over the 20% cap).
+      COE actions overdue: PD-4401 (OpenSearch dual-write runbook) and PD-4215 (auth token caching layer). Both due 2025-07-25.
+    </div>
+  </div>
+
+  <!-- 60PB Telemetry Hub -->
+  <p class="section-title">60PB Telemetry Hub — Domain Plane Intelligence</p>
+
+  <div class="telem-grid">
+    <!-- T1 Ingestion Telemetry -->
+    <div class="tel-card">
+      <div class="tel-head">
+        <div>
+          <div class="tel-title">T1 · Ingestion Pipeline</div>
+          <div class="tel-sub">Kafka → S3 · Private DC + AWS</div>
+        </div>
+        <span class="tel-badge" style="background:rgba(16,185,129,0.15);color:var(--green);">✓ Nominal</span>
+      </div>
+      <div class="tel-stat"><div class="tel-stat-label">Current Ingest Rate</div><div class="tel-stat-val" style="color:var(--green);">4.2 TB/hr</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Kafka Consumer Lag</div><div class="tel-stat-val" style="color:var(--green);">1,240 msgs</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">S3 PUT Latency P99</div><div class="tel-stat-val" style="color:var(--green);">88ms</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">DLQ Depth</div><div class="tel-stat-val" style="color:var(--green);">0 msgs</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Active Connectors</div><div class="tel-stat-val">47 / 47</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">30-Day Throughput</div><div class="tel-stat-val" style="color:var(--cyan);">62.4 PB ingested</div></div>
+      <div class="tel-sparkline">
+        <div class="tsb" style="height:55%;background:var(--green);opacity:0.7;"></div>
+        <div class="tsb" style="height:60%;background:var(--green);opacity:0.7;"></div>
+        <div class="tsb" style="height:70%;background:var(--green);opacity:0.7;"></div>
+        <div class="tsb" style="height:65%;background:var(--green);opacity:0.7;"></div>
+        <div class="tsb" style="height:80%;background:var(--green);opacity:0.7;"></div>
+        <div class="tsb" style="height:75%;background:var(--green);opacity:0.7;"></div>
+        <div class="tsb" style="height:85%;background:var(--green);opacity:0.8;"></div>
+        <div class="tsb" style="height:90%;background:var(--green);opacity:0.9;"></div>
+        <div class="tsb" style="height:85%;background:var(--green);"></div>
+        <div class="tsb" style="height:100%;background:var(--cyan);"></div>
+      </div>
+    </div>
+
+    <!-- T2 Search Telemetry -->
+    <div class="tel-card tel-warn">
+      <div class="tel-head">
+        <div>
+          <div class="tel-title">T2 · Search &amp; Indexing</div>
+          <div class="tel-sub">OpenSearch hot-tier · 3-node cluster</div>
+        </div>
+        <span class="tel-badge" style="background:rgba(245,158,11,0.15);color:var(--amber);">⚠ Degraded</span>
+      </div>
+      <div class="tel-stat"><div class="tel-stat-label">Hot-Tier Query P99</div><div class="tel-stat-val" style="color:var(--green);">420ms</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Dual-Write Lag</div><div class="tel-stat-val" style="color:var(--red);">47 min 🚨</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Index Queue Depth</div><div class="tel-stat-val" style="color:var(--amber);">82,400 docs</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Cluster Health</div><div class="tel-stat-val" style="color:var(--amber);">YELLOW (1 unassigned shard)</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Search Success Rate</div><div class="tel-stat-val" style="color:var(--amber);">99.91%</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Active E-Discovery Queries</div><div class="tel-stat-val" style="color:var(--cyan);">3 concurrent</div></div>
+      <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:0.5rem;margin-top:0.75rem;font-size:0.7rem;color:var(--red);">
+        ❗ Dual-write lag (47 min) exceeds 30-min SLO threshold. PD-4892 is active SEV-2. IC engaged. T4 has been notified — 3 active legal holds at risk.
+      </div>
+    </div>
+
+    <!-- T3 Storage Telemetry -->
+    <div class="tel-card">
+      <div class="tel-head">
+        <div>
+          <div class="tel-title">T3 · Storage &amp; FinOps</div>
+          <div class="tel-sub">AWS S3 · Glacier Deep Archive · Lifecycle</div>
+        </div>
+        <span class="tel-badge" style="background:rgba(16,185,129,0.15);color:var(--green);">✓ Nominal</span>
+      </div>
+      <div class="tel-stat"><div class="tel-stat-label">Total Managed Data</div><div class="tel-stat-val" style="color:var(--cyan);">60.4 PB</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Hot-Tier (S3 Standard)</div><div class="tel-stat-val">4.8 PB (8%)</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Warm-Tier (S3-IA)</div><div class="tel-stat-val">18.2 PB (30%)</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Cold-Tier (Glacier Instant)</div><div class="tel-stat-val">24.1 PB (40%)</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Archive Tier (Deep Archive)</div><div class="tel-stat-val">13.3 PB (22%)</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Daily Lifecycle Savings</div><div class="tel-stat-val" style="color:var(--green);">$18,400/day</div></div>
+      <div class="tel-sparkline">
+        <div class="tsb" style="height:50%;background:var(--blue);opacity:0.6;"></div>
+        <div class="tsb" style="height:55%;background:var(--blue);opacity:0.6;"></div>
+        <div class="tsb" style="height:58%;background:var(--blue);opacity:0.7;"></div>
+        <div class="tsb" style="height:60%;background:var(--blue);opacity:0.7;"></div>
+        <div class="tsb" style="height:62%;background:var(--blue);opacity:0.8;"></div>
+        <div class="tsb" style="height:65%;background:var(--blue);opacity:0.8;"></div>
+        <div class="tsb" style="height:70%;background:var(--blue);opacity:0.9;"></div>
+        <div class="tsb" style="height:72%;background:var(--blue);opacity:0.9;"></div>
+        <div class="tsb" style="height:75%;background:var(--cyan);opacity:0.9;"></div>
+        <div class="tsb" style="height:80%;background:var(--cyan);"></div>
+      </div>
+    </div>
+
+    <!-- T4 Compliance Telemetry -->
+    <div class="tel-card">
+      <div class="tel-head">
+        <div>
+          <div class="tel-title">T4 · E-Discovery &amp; Compliance</div>
+          <div class="tel-sub">WORM · Legal Holds · Glacier Restore</div>
+        </div>
+        <span class="tel-badge" style="background:rgba(16,185,129,0.15);color:var(--green);">✓ Nominal</span>
+      </div>
+      <div class="tel-stat"><div class="tel-stat-label">WORM Object Lock Coverage</div><div class="tel-stat-val" style="color:var(--green);">100% of new objects</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Active Legal Holds</div><div class="tel-stat-val" style="color:var(--amber);">3 holds (⚠ T2 lag risk)</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Pending Glacier Restores</div><div class="tel-stat-val">2 (SLA: 4–12hr)</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Legal Hold Apply Time P95</div><div class="tel-stat-val" style="color:var(--green);">41 min</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Compliance Audit Log Coverage</div><div class="tel-stat-val" style="color:var(--green);">100%</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Next Retention Review</div><div class="tel-stat-val" style="color:var(--cyan);">2025-08-01</div></div>
+      <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:6px;padding:0.5rem;margin-top:0.75rem;font-size:0.7rem;color:var(--amber);">
+        ⚠ 3 active legal holds depend on T2 search freshness. T2 dual-write lag of 47 min may affect legal discovery completeness. T4 team lead notified. Monitoring hourly.
+      </div>
+    </div>
+
+    <!-- T5 Control Plane Telemetry -->
+    <div class="tel-card tel-crit">
+      <div class="tel-head">
+        <div>
+          <div class="tel-title">T5 · Control Plane &amp; API</div>
+          <div class="tel-sub">EKS · OAuth2 · Multi-tenant routing</div>
+        </div>
+        <span class="tel-badge" style="background:rgba(239,68,68,0.15);color:var(--red);">🚨 Critical</span>
+      </div>
+      <div class="tel-stat"><div class="tel-stat-label">API Availability (30d)</div><div class="tel-stat-val" style="color:var(--amber);">99.94%</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">AuthN Latency P99</div><div class="tel-stat-val" style="color:var(--green);">38ms</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Error Budget Consumed</div><div class="tel-stat-val" style="color:var(--red);">79% 🚨 (7d remain)</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Error Rate (last 1h)</div><div class="tel-stat-val" style="color:var(--red);">0.08% (SLO threshold: 0.05%)</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">EKS Pod Restarts (24h)</div><div class="tel-stat-val" style="color:var(--amber);">14 restarts (elevated)</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Tenant Routing Health</div><div class="tel-stat-val" style="color:var(--green);">100%</div></div>
+      <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:0.5rem;margin-top:0.75rem;font-size:0.7rem;color:var(--red);">
+        🚨 FEATURE FREEZE ACTIVE. Intermittent 5xx errors traced to OpenSearch dual-write consistency check timeout in API gateway middleware. T5 has soft-frozen feature PRs. T6 embed in progress to address toil at 24%.
+      </div>
+    </div>
+
+    <!-- T6 Platform Telemetry -->
+    <div class="tel-card">
+      <div class="tel-head">
+        <div>
+          <div class="tel-title">T6 · Platform Engineering</div>
+          <div class="tel-sub">CI/CD · Backstage · Terraform · EKS Baseline</div>
+        </div>
+        <span class="tel-badge" style="background:rgba(16,185,129,0.15);color:var(--green);">✓ Nominal</span>
+      </div>
+      <div class="tel-stat"><div class="tel-stat-label">CI/CD Pipeline Uptime</div><div class="tel-stat-val" style="color:var(--green);">99.97%</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Avg Build Time (main)</div><div class="tel-stat-val" style="color:var(--green);">4.2 min</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Deployments Today</div><div class="tel-stat-val">7 deployments (0 rollbacks)</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Terraform State Drift</div><div class="tel-stat-val" style="color:var(--green);">0 resources drifted</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Backstage Service Catalog</div><div class="tel-stat-val">47 services registered</div></div>
+      <div class="tel-stat"><div class="tel-stat-label">Open T5 Embed Tickets</div><div class="tel-stat-val" style="color:var(--cyan);">2 active (T5 support)</div></div>
+      <div class="tel-sparkline">
+        <div class="tsb" style="height:80%;background:var(--purple);opacity:0.7;"></div>
+        <div class="tsb" style="height:85%;background:var(--purple);opacity:0.7;"></div>
+        <div class="tsb" style="height:70%;background:var(--purple);opacity:0.7;"></div>
+        <div class="tsb" style="height:90%;background:var(--purple);opacity:0.8;"></div>
+        <div class="tsb" style="height:75%;background:var(--purple);opacity:0.8;"></div>
+        <div class="tsb" style="height:85%;background:var(--purple);opacity:0.8;"></div>
+        <div class="tsb" style="height:95%;background:var(--purple);opacity:0.9;"></div>
+        <div class="tsb" style="height:80%;background:var(--purple);opacity:0.9;"></div>
+        <div class="tsb" style="height:90%;background:var(--purple);"></div>
+        <div class="tsb" style="height:100%;background:var(--cyan);"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Runbook Compliance -->
+  <p class="section-title">Runbook Coverage &amp; Alert Actionability</p>
+  <div class="runbook-grid">
+    <div class="rb-card">
+      <div class="rb-head">
+        <div><div class="rb-title">T1 · Ingestion Runbooks</div><div class="rb-sub">Alert coverage per alert rule</div></div>
+        <div class="rb-score" style="color:var(--green);">94%</div>
+      </div>
+      <div class="rb-bar-bg"><div class="rb-bar" style="width:94%;background:var(--green);"></div></div>
+      <div class="rb-items">
+        <div class="rb-item"><span>Kafka Broker Failure</span><span style="color:var(--green);">✓ Runbook</span></div>
+        <div class="rb-item"><span>DLQ Depth &gt;5k</span><span style="color:var(--green);">✓ Runbook</span></div>
+        <div class="rb-item"><span>Connector Cert Expiry</span><span style="color:var(--green);">✓ Runbook</span></div>
+        <div class="rb-item"><span>S3 PUT Throttle</span><span style="color:var(--amber);">⚠ Draft</span></div>
+      </div>
+    </div>
+    <div class="rb-card">
+      <div class="rb-head">
+        <div><div class="rb-title">T2 · Search Runbooks</div><div class="rb-sub">Alert coverage per alert rule</div></div>
+        <div class="rb-score" style="color:var(--amber);">71%</div>
+      </div>
+      <div class="rb-bar-bg"><div class="rb-bar" style="width:71%;background:var(--amber);"></div></div>
+      <div class="rb-items">
+        <div class="rb-item"><span>OpenSearch Node Down</span><span style="color:var(--green);">✓ Runbook</span></div>
+        <div class="rb-item"><span>Index Lag &gt;30min</span><span style="color:var(--red);">✗ Missing — PD-4401</span></div>
+        <div class="rb-item"><span>Dual-Write Failure</span><span style="color:var(--red);">✗ Missing — PD-4401</span></div>
+        <div class="rb-item"><span>Query SLO Breach</span><span style="color:var(--green);">✓ Runbook</span></div>
+      </div>
+    </div>
+    <div class="rb-card">
+      <div class="rb-head">
+        <div><div class="rb-title">T5 · Control Plane Runbooks</div><div class="rb-sub">Alert coverage per alert rule</div></div>
+        <div class="rb-score" style="color:var(--red);">58%</div>
+      </div>
+      <div class="rb-bar-bg"><div class="rb-bar" style="width:58%;background:var(--red);"></div></div>
+      <div class="rb-items">
+        <div class="rb-item"><span>API 5xx Rate Spike</span><span style="color:var(--amber);">⚠ Outdated</span></div>
+        <div class="rb-item"><span>Auth Token Cache Miss</span><span style="color:var(--red);">✗ Missing — PD-4215</span></div>
+        <div class="rb-item"><span>EKS Pod CrashLoop</span><span style="color:var(--green);">✓ Runbook</span></div>
+        <div class="rb-item"><span>Multi-tenant Routing Fail</span><span style="color:var(--red);">✗ Missing</span></div>
+      </div>
+    </div>
+    <div class="rb-card">
+      <div class="rb-head">
+        <div><div class="rb-title">T4 · Compliance Runbooks</div><div class="rb-sub">Alert coverage per alert rule</div></div>
+        <div class="rb-score" style="color:var(--green);">100%</div>
+      </div>
+      <div class="rb-bar-bg"><div class="rb-bar" style="width:100%;background:var(--green);"></div></div>
+      <div class="rb-items">
+        <div class="rb-item"><span>WORM Object Lock Fail</span><span style="color:var(--green);">✓ Runbook</span></div>
+        <div class="rb-item"><span>Legal Hold Apply Timeout</span><span style="color:var(--green);">✓ Runbook</span></div>
+        <div class="rb-item"><span>Glacier Restore Failure</span><span style="color:var(--green);">✓ Runbook</span></div>
+        <div class="rb-item"><span>Audit Log Failure</span><span style="color:var(--green);">✓ Runbook</span></div>
+      </div>
+    </div>
+    <div class="rb-card">
+      <div class="rb-head">
+        <div><div class="rb-title">T3 · FinOps Runbooks</div><div class="rb-sub">Alert coverage per alert rule</div></div>
+        <div class="rb-score" style="color:var(--green);">89%</div>
+      </div>
+      <div class="rb-bar-bg"><div class="rb-bar" style="width:89%;background:var(--green);"></div></div>
+      <div class="rb-items">
+        <div class="rb-item"><span>Cost Anomaly &gt;20%</span><span style="color:var(--green);">✓ Runbook</span></div>
+        <div class="rb-item"><span>Lifecycle Policy Fail</span><span style="color:var(--green);">✓ Runbook</span></div>
+        <div class="rb-item"><span>Untagged Resources</span><span style="color:var(--amber);">⚠ Draft</span></div>
+        <div class="rb-item"><span>S3 Replication Fail</span><span style="color:var(--green);">✓ Runbook</span></div>
+      </div>
+    </div>
+    <div class="rb-card">
+      <div class="rb-head">
+        <div><div class="rb-title">T6 · Platform Runbooks</div><div class="rb-sub">Alert coverage per alert rule</div></div>
+        <div class="rb-score" style="color:var(--green);">96%</div>
+      </div>
+      <div class="rb-bar-bg"><div class="rb-bar" style="width:96%;background:var(--green);"></div></div>
+      <div class="rb-items">
+        <div class="rb-item"><span>Pipeline Failure</span><span style="color:var(--green);">✓ Runbook</span></div>
+        <div class="rb-item"><span>Terraform Drift Detected</span><span style="color:var(--green);">✓ Runbook</span></div>
+        <div class="rb-item"><span>EKS Node NotReady</span><span style="color:var(--green);">✓ Runbook</span></div>
+        <div class="rb-item"><span>Backstage Catalog Fail</span><span style="color:var(--green);">✓ Runbook</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alert Noise Report -->
+  <p class="section-title">Alert Quality Report — Top Noisy Alerts (30-Day)</p>
+  <div class="alert-table-wrap">
+    <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:1rem;">
+      Per policy: any alert with a &lt;40% actionable rate over 30 days is flagged for deletion or recalibration.
+      Target: <strong style="color:var(--text);">&gt;80% actionability rate</strong> across all alerts.
+    </p>
+    <table class="alert-table">
+      <thead>
+        <tr>
+          <th>Alert Name</th><th>Team</th><th>Fires/Month</th><th>Actionable</th><th>Noise Rate</th><th>Recommendation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>KafkaConsumerLagWarning</strong></td>
+          <td>T1 Ingestion</td>
+          <td>142</td>
+          <td>38 (27%)</td>
+          <td><div style="display:flex;align-items:center;"><div class="noise-bar" style="width:73%;background:var(--red);height:8px;border-radius:4px;"></div><span style="color:var(--red);font-size:0.72rem;">73% noise</span></div></td>
+          <td style="color:var(--amber);">⚠ Raise threshold from 1k to 5k msgs</td>
+        </tr>
+        <tr>
+          <td><strong>UntaggedS3Bucket</strong></td>
+          <td>T3 FinOps</td>
+          <td>88</td>
+          <td>12 (14%)</td>
+          <td><div style="display:flex;align-items:center;"><div class="noise-bar" style="width:86%;background:var(--red);height:8px;border-radius:4px;"></div><span style="color:var(--red);font-size:0.72rem;">86% noise</span></div></td>
+          <td style="color:var(--red);">✗ Convert to weekly batch report — not a page</td>
+        </tr>
+        <tr>
+          <td><strong>EKSPodRestartWarn</strong></td>
+          <td>T5 Control</td>
+          <td>204</td>
+          <td>58 (28%)</td>
+          <td><div style="display:flex;align-items:center;"><div class="noise-bar" style="width:72%;background:var(--red);height:8px;border-radius:4px;"></div><span style="color:var(--red);font-size:0.72rem;">72% noise</span></div></td>
+          <td style="color:var(--red);">✗ Suppress if &lt;3 restarts in 10min window</td>
+        </tr>
+        <tr>
+          <td><strong>OpenSearchCPUHigh</strong></td>
+          <td>T2 Search</td>
+          <td>67</td>
+          <td>31 (46%)</td>
+          <td><div style="display:flex;align-items:center;"><div class="noise-bar" style="width:54%;background:var(--amber);height:8px;border-radius:4px;"></div><span style="color:var(--amber);font-size:0.72rem;">54% noise</span></div></td>
+          <td style="color:var(--amber);">⚠ Add correlation with query volume</td>
+        </tr>
+        <tr>
+          <td><strong>GlacierRestoreQueued</strong></td>
+          <td>T4 Compliance</td>
+          <td>34</td>
+          <td>29 (85%)</td>
+          <td><div style="display:flex;align-items:center;"><div class="noise-bar" style="width:15%;background:var(--green);height:8px;border-radius:4px;"></div><span style="color:var(--green);font-size:0.72rem;">15% noise</span></div></td>
+          <td style="color:var(--green);">✓ Well-tuned — keep as-is</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+<footer>
+  <strong>GCI Operations Hub — Output 2: Operations Command Center</strong> · 60PB Telemetry Intelligence · Confidential · Internal Use Only
+</footer>
+</body>
+</html>
